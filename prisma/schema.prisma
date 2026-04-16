@@ -1,0 +1,220 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model SiteSettings {
+  id             String   @id @default("singleton")
+  logoUrl        String?
+  phone          String?
+  email          String?
+  referralSystem String?
+  description    String?
+  footerImageUrl String?
+  lineSupportUrl String?
+  facebookUrl    String?
+  updatedAt      DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model Banner {
+  id           Int      @id @default(autoincrement())
+  title        String?
+  description  String?  @map("altText")
+  imageUrl     String
+  mobileImage  String?  @map("mobileUrl")
+  linkUrl      String?  @map("link")
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0) @map("order")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("banners")
+}
+
+model Agent {
+  id           Int      @id @default(autoincrement())
+  name         String
+  phoneNumber  String
+  role         String
+  closedDeal   Int      @default(0)
+  photoUrl     String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("agents")
+}
+
+model MenuCategory {
+  id           String   @id @default(cuid())
+  iconUrl      String
+  alt          String
+  text         String
+  path         String
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("menu_categories")
+}
+
+model HomeSection {
+  id         String   @id @default(cuid())
+  sectionKey String   @unique
+  title      String?
+  subtitle   String?
+  imageUrl   String?
+  linkUrl    String?
+  jsonData   Json?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("home_sections")
+}
+
+model Package {
+  id           String   @id @default(cuid())
+  code         String
+  name         String
+  imageUrl     String?
+  freebie      Json?
+  speed        String
+  price        Float
+  details      Json?
+  type         String?
+  buyUrl       String?
+  status       Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("packages")
+}
+
+model Promotion {
+  id           String   @id @default(cuid())
+  type         String
+  categoryName String?
+  name         String
+  price        Float
+  priceNote    String?
+  speed        String?
+  validity     String?
+  imageUrl     String?
+  promoBadge   String?
+  perks        Json?
+  details      Json?
+  buyUrl       String?
+  status       Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("promotions")
+}
+
+model NavigationItem {
+  id           String   @id @default(cuid())
+  label        String
+  path         String
+  parentKey    String?
+  iconUrl      String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("navigation_items")
+}
+
+model FooterLink {
+  id           String   @id @default(cuid())
+  section      String
+  label        String
+  path         String
+  external     Boolean  @default(false)
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("footer_links")
+}
+
+model ContactMethod {
+  id           String   @id @default(cuid())
+  key          String   @unique
+  title        String
+  description  String?
+  iconUrl      String?
+  href         String
+  colorClass   String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("contact_methods")
+}
+
+model PackageCategory {
+  id        Int           @id @default(autoincrement())
+  name      String
+  slug      String        @unique
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime @updatedAt
+  items     PackageItem[]
+
+  @@map("package_categories")
+}
+
+model PackageItem {
+  id             Int             @id @default(autoincrement())
+  categoryId     Int             @map("category_id")
+  name           String
+  price          Float
+  priceNote      String?         @map("price_note")
+  highlightPrice Float?          @map("highlight_price")
+  description    String?
+  downloadSpeed  Int?            @map("download_speed")
+  uploadSpeed    Int?            @map("upload_speed")
+  speedUnit      String          @default("Mbps") @map("speed_unit")
+  contractMonths Int             @default(24) @map("contract_months")
+  promoBadge     String?         @map("promo_badge")
+  buyLink        String?         @default("#") @map("buy_link")
+  displayOrder   Int             @default(0) @map("display_order")
+  isActive       Boolean         @default(true) @map("is_active")
+  headerTheme    String?         @map("header_theme")
+  perks          Json?
+  freebies       Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime @updatedAt
+  category       PackageCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("package_items")
+}
+
+model ServiceCard {
+  id          Int      @id @default(autoincrement())
+  type        String
+  title       String
+  detail      String
+  image       String
+  hoverImage  String?
+  path        String
+  displayOrder Int      @default(0) @map("order")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("service_cards")
+}
