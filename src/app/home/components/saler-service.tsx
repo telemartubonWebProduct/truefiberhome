@@ -101,94 +101,98 @@ export default function SalerService({
 
   return (
     <section className="flex flex-col w-full bg-white pb-16 font-prompt">
-      {/* ── Hero Header ── */}
-      <div className="relative bg-[#111] pt-20 pb-44 text-white text-center shadow-inner overflow-hidden flex flex-col items-center justify-center">
-        {/* Animated Background Gradients */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-20"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 120%, rgba(255,0,0,0.3) 0%, transparent 60%)",
-          }}
-        />
+      {false && (
+        <>
+          {/* ── Hero Header ── */}
+          <div className="relative bg-[#111] pt-20 pb-44 text-white text-center shadow-inner overflow-hidden flex flex-col items-center justify-center">
+            {/* Animated Background Gradients */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-20"
+              style={{
+                background:
+                  "radial-gradient(circle at 50% 120%, rgba(255,0,0,0.3) 0%, transparent 60%)",
+              }}
+            />
 
-        <motion.p
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="relative text-sm md:text-base font-medium text-[#ff3b30] mb-3"
-        >
-          พบกับทีมผู้เชี่ยวชาญของเรา
-        </motion.p>
-
-        <motion.h2
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.7, type: "spring" }}
-          className="relative text-4xl md:text-5xl font-bold tracking-tight"
-        >
-          ทีมงานมืออาชีพ{" "}
-          <span className="text-[#ff3b30] drop-shadow-[0_0_15px_rgba(255,59,48,0.5)]">
-            พร้อมให้บริการ
-          </span>
-        </motion.h2>
-      </div>
-
-      {/* ── Agent Cards ── */}
-      <div className="max-w-6xl mx-auto px-4 -mt-32 relative z-10 w-full mb-20">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          className="flex flex-wrap justify-center gap-8 md:gap-10"
-        >
-          {agentsList.map((agent, i) => (
-            <motion.div
-              key={agent.id}
-              variants={itemVariants}
-              whileHover={{ y: -10, transition: { duration: 0.3 } }}
-              className="relative flex flex-col items-center bg-white rounded-2xl overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(255,0,0,0.12)] transition-shadow duration-300 group w-full max-w-[320px]"
+            <motion.p
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              className="relative text-sm md:text-base font-medium text-[#ff3b30] mb-3"
             >
-              {/* Image Container */}
-              <div className="w-full h-[280px] bg-[#f8f9fa] relative flex items-end justify-center overflow-hidden">
-                {agent.photo ? (
-                  <Image
-                    src={agent.photo}
-                    alt={agent.name}
-                    width={300}
-                    height={400}
-                    className="object-cover h-full w-auto transition-transform duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-[#eceff3] text-gray-400">
-                    <SupportAgentIcon className="!text-6xl" />
+              พบกับทีมผู้เชี่ยวชาญของเรา
+            </motion.p>
+
+            <motion.h2
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.7, type: "spring" }}
+              className="relative text-4xl md:text-5xl font-bold tracking-tight"
+            >
+              ทีมงานมืออาชีพ{" "}
+              <span className="text-[#ff3b30] drop-shadow-[0_0_15px_rgba(255,59,48,0.5)]">
+                พร้อมให้บริการ
+              </span>
+            </motion.h2>
+          </div>
+
+          {/* ── Agent Cards ── */}
+          <div className="max-w-6xl mx-auto px-4 -mt-32 relative z-10 w-full mb-20">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              className="flex flex-wrap justify-center gap-8 md:gap-10"
+            >
+              {agentsList.map((agent, i) => (
+                <motion.div
+                  key={agent.id}
+                  variants={itemVariants}
+                  whileHover={{ y: -10, transition: { duration: 0.3 } }}
+                  className="relative flex flex-col items-center bg-white rounded-2xl overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(255,0,0,0.12)] transition-shadow duration-300 group w-full max-w-[320px]"
+                >
+                  {/* Image Container */}
+                  <div className="w-full h-[280px] bg-[#f8f9fa] relative flex items-end justify-center overflow-hidden">
+                    {agent.photo ? (
+                      <Image
+                        src={agent.photo}
+                        alt={agent.name}
+                        width={300}
+                        height={400}
+                        className="object-cover h-full w-auto transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center bg-[#eceff3] text-gray-400">
+                        <SupportAgentIcon className="!text-6xl" />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Content Container */}
-              <div className="w-full bg-white p-6 text-center z-20 flex flex-col items-center">
-                <h4 className="font-bold text-[#111] text-xl mb-1">
-                  {agent.name}
-                </h4>
-                <p className="font-bold text-[#ff3b30] text-sm mb-4">
-                  {agent.phoneNumber}
-                </p>
+                  {/* Content Container */}
+                  <div className="w-full bg-white p-6 text-center z-20 flex flex-col items-center">
+                    <h4 className="font-bold text-[#111] text-xl mb-1">
+                      {agent.name}
+                    </h4>
+                    <p className="font-bold text-[#ff3b30] text-sm mb-4">
+                      {agent.phoneNumber}
+                    </p>
 
-                {/* Divider */}
-                <div className="w-8 h-[2px] bg-[#ff3b30] rounded-full mb-4 opacity-80" />
+                    {/* Divider */}
+                    <div className="w-8 h-[2px] bg-[#ff3b30] rounded-full mb-4 opacity-80" />
 
-                <p className="text-xs font-medium text-gray-500">
-                  {agent.role}
-                </p>
-              </div>
+                    <p className="text-xs font-medium text-gray-500">
+                      {agent.role}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
-        </motion.div>
-      </div>
+          </div>
+        </>
+      )}
 
       {/* ── Why Choose Section ── */}
       <motion.div

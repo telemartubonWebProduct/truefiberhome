@@ -38,7 +38,7 @@ export default function TermsAndPrivacyClient() {
     month: "long",
     day: "numeric",
   });
-  //test re push github
+
 
   return (
     <main className="bg-slate-50 py-24 font-prompt text-slate-800">
