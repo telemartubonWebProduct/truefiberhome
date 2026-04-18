@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Box, Button, Typography, Link } from "@mui/material";
 
-const COOKIE_KEY = "cookie-consent-accepted";
+const COOKIE_KEY = "cookie-consent-accepted-v2";
 
 export default function CookieConsent() {
   const [open, setOpen] = useState(false);
@@ -14,7 +14,7 @@ export default function CookieConsent() {
         ? window.localStorage.getItem(COOKIE_KEY)
         : null;
 
-      if (!accepted) {
+      if (accepted !== "true") {
         setOpen(true);
       }
     } catch {
@@ -52,44 +52,43 @@ export default function CookieConsent() {
     <Box
       sx={{
         position: "fixed",
-        top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 1400,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        bgcolor: "rgba(0, 0, 0, 0.4)",
-        backdropFilter: "blur(6px)",
-        p: 2,
+        zIndex: 1300,
+        px: { xs: 1, sm: 1.5 },
+        pb: { xs: 1, sm: 1.5 },
+        pointerEvents: "none",
       }}
     >
       <Box
         sx={{
           width: "100%",
-          maxWidth: "400px",
+          maxWidth: "780px",
+          mx: "auto",
           bgcolor: "rgba(15, 23, 42, 0.95)",
           color: "white",
-          p: { xs: 2.5, sm: 3 },
-          borderRadius: 3,
-          boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
+          p: { xs: 1.25, sm: 1.5 },
+          borderRadius: 1.5,
+          boxShadow: "0 10px 20px rgba(0,0,0,0.3)",
           border: "1px solid rgba(255,255,255,0.1)",
           display: "flex",
-          flexDirection: "column",
-          gap: 1.5,
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "flex-start", sm: "center" },
+          gap: 1,
+          pointerEvents: "auto",
         }}
       >
-        <Box>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
           variant="subtitle2"
-          sx={{ fontWeight: 600, mb: 0.5, fontFamily: "Prompt", fontSize: "0.95rem" }}
+          sx={{ fontWeight: 600, mb: 0.25, fontFamily: "Prompt", fontSize: "0.84rem" }}
         >
           เราใช้คุกกี้เพื่อประสบการณ์ที่ดียิ่งขึ้น 🍪
         </Typography>
         <Typography
           variant="body2"
-          sx={{ opacity: 0.85, fontSize: "0.8rem", fontFamily: "Prompt", lineHeight: 1.5 }}
+          sx={{ opacity: 0.85, fontSize: "0.72rem", fontFamily: "Prompt", lineHeight: 1.35 }}
         >
           เราใช้คุกกี้และเทคโนโลยีที่คล้ายกันเพื่อปรับปรุงประสบการณ์ของคุณและวิเคราะห์การใช้งานเว็บไซต์ 
           อ่านรายละเอียดเพิ่มเติมได้ที่{" "}
@@ -107,8 +106,9 @@ export default function CookieConsent() {
         sx={{
           display: "flex",
           gap: 1,
-          justifyContent: "flex-end",
-          mt: 0.5,
+          justifyContent: { xs: "flex-end", sm: "flex-start" },
+          width: { xs: "100%", sm: "auto" },
+          flexShrink: 0,
         }}
       >
         <Button
@@ -120,8 +120,9 @@ export default function CookieConsent() {
             borderColor: "rgba(148,163,184,0.4)",
             color: "rgba(226,232,240,0.9)",
             fontFamily: "Prompt",
-            fontSize: "0.75rem",
-            px: 2,
+            fontSize: "0.68rem",
+            minHeight: 28,
+            px: 1.5,
             "&:hover": { borderColor: "rgba(148,163,184,0.8)", bgcolor: "rgba(255,255,255,0.05)" }
           }}
         >
@@ -135,8 +136,9 @@ export default function CookieConsent() {
             bgcolor: "#22c55e",
             color: "#fff",
             fontFamily: "Prompt",
-            fontSize: "0.75rem",
-            px: 3,
+            fontSize: "0.68rem",
+            minHeight: 28,
+            px: 2,
             "&:hover": { bgcolor: "#16a34a" },
             boxShadow: "none"
           }}
