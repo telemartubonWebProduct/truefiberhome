@@ -58,6 +58,10 @@ const QUICK_ACTIONS = [
   },
 ] as const;
 
+function isRecoverableSessionStatus(status: number) {
+  return status === 403 || status === 404;
+}
+
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(true);
   const [visitorId, setVisitorId] = useState<string | null>(null);
@@ -92,6 +96,14 @@ export default function ChatWidget() {
           "x-chat-visitor-id": currentVisitorId,
         },
       });
+
+      if (isRecoverableSessionStatus(response.status)) {
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem(CHAT_SESSION_STORAGE_KEY);
+        }
+
+        return null;
+      }
 
       if (!response.ok) {
         throw new Error(`Failed to load session: ${response.status}`);
@@ -160,7 +172,11 @@ export default function ChatWidget() {
         const storedSessionId = window.localStorage.getItem(CHAT_SESSION_STORAGE_KEY);
 
         if (storedSessionId) {
-          await loadSession(storedSessionId, currentVisitorId);
+          const restoredSession = await loadSession(storedSessionId, currentVisitorId);
+
+          if (!restoredSession) {
+            await createSession(currentVisitorId);
+          }
         } else {
           await createSession(currentVisitorId);
         }
@@ -251,15 +267,23 @@ export default function ChatWidget() {
       status === "WAITING_FOR_ADMIN" || status === "ADMIN_ACTIVE" ? 3000 : 10000;
 
     const intervalId = window.setInterval(() => {
-      void loadSession(sessionId, visitorId).catch(() => {
-        // Keep polling silent; realtime handles the happy path.
-      });
+      void loadSession(sessionId, visitorId)
+        .then((loadedSession) => {
+          if (!loadedSession) {
+            void createSession(visitorId).catch(() => {
+              // Keep polling resilient; the next cycle will retry recovery.
+            });
+          }
+        })
+        .catch(() => {
+          // Keep polling silent; realtime handles the happy path.
+        });
     }, pollIntervalMs);
 
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isOpen, loadSession, sessionId, status, visitorId]);
+  }, [createSession, isOpen, loadSession, sessionId, status, visitorId]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -342,6 +366,13 @@ export default function ChatWidget() {
         }),
       });
 
+      if (isRecoverableSessionStatus(response.status)) {
+        setMessages((current) => current.filter((message) => message.id !== optimisticMessage.id));
+        await createSession(visitorId);
+        setError("แชทเดิมหมดอายุแล้ว ระบบเริ่มห้องใหม่ให้แล้ว กรุณาส่งข้อความอีกครั้ง");
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(`Message send failed: ${response.status}`);
       }
@@ -368,7 +399,7 @@ export default function ChatWidget() {
     } finally {
       setIsSending(false);
     }
-  }, [input, isSending, sessionId, visitorId]);
+  }, [createSession, input, isSending, sessionId, visitorId]);
 
   const handleQuickAction = useCallback(
     (message: string) => {
@@ -397,18 +428,28 @@ export default function ChatWidget() {
         }),
       });
 
+      if (isRecoverableSessionStatus(response.status)) {
+        await createSession(visitorId);
+        setError("แชทเดิมหมดอายุแล้ว ระบบเริ่มห้องใหม่ให้แล้ว");
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(`Handoff request failed: ${response.status}`);
       }
 
-      await loadSession(sessionId, visitorId);
+      const loadedSession = await loadSession(sessionId, visitorId);
+      if (!loadedSession) {
+        await createSession(visitorId);
+        setError("แชทเดิมหมดอายุแล้ว ระบบเริ่มห้องใหม่ให้แล้ว");
+      }
     } catch (handoffError) {
       console.error("Failed to request human handoff", handoffError);
       setError("ไม่สามารถส่งคำขอคุยกับเจ้าหน้าที่ได้");
     } finally {
       setIsRequestingHuman(false);
     }
-  }, [isRequestingHuman, loadSession, sessionId, visitorId]);
+  }, [createSession, isRequestingHuman, loadSession, sessionId, visitorId]);
 
   return (
     <>
