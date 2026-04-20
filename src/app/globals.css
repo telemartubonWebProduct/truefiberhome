@@ -17,14 +17,4 @@ body {
   background: var(--background);
   font-family: "Prompt", Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
-  
-/* เพิ่มให้ n8n chat ขยับสูงขึ้นหนีเมนูด้านล่างหรือปุ่มอื่นๆ */
-:root {
-  --chat--window--bottom: 100px;
-}
-
-.chat-window-wrapper {
-  bottom: 100px !important;
-  z-index: 9999 !important;
-}
 

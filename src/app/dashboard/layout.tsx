@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/src/lib/supabase-server";
+import { getOptionalAdmin } from "@/src/lib/dashboard-auth";
 import DashboardSidebar from "./components/DashboardSidebar";
 
 
@@ -28,13 +28,14 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, admin } = await getOptionalAdmin();
 
   if (!user) {
     redirect("/login");
+  }
+
+  if (!admin) {
+    redirect("/");
   }
 
   return (

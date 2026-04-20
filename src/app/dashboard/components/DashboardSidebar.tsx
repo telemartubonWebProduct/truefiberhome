@@ -19,6 +19,19 @@ const navItems = [
     ),
   },
   {
+    label: "Live Chat",
+    href: "/dashboard/chat",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h.008v.008h-.008V9.75zm3.75 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h.008v.008h-.008V9.75zm3.75 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h.008v.008h-.008V9.75zM3.75 18l2.116-2.116a1.5 1.5 0 011.06-.44H19.5a1.5 1.5 0 001.5-1.5V6.75a1.5 1.5 0 00-1.5-1.5h-15a1.5 1.5 0 00-1.5 1.5v10.19A1.5 1.5 0 003.75 18z"
+        />
+      </svg>
+    ),
+  },
+  {
     label: "Home Content",
     href: "/dashboard/home-content",
     icon: (

@@ -1,1 +1,1 @@
-export const lineSupport = "https://lin.ee/6jZ9SNX";
+export const lineSupport = "https://lin.ee/xSz1QQe";

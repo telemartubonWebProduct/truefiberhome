@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://truefiberhome.com";
 
-const routes = [
+export const PUBLIC_SITE_ROUTES = [
   "/home",
   "/boardband",
   "/topup",
@@ -20,7 +20,7 @@ const routes = [
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  return routes.map((route, index) => ({
+  return PUBLIC_SITE_ROUTES.map((route, index) => ({
     url: `${siteUrl}${route}`,
     lastModified: now,
     changeFrequency: index === 0 ? "daily" : "weekly",

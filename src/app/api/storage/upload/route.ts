@@ -1,12 +1,23 @@
 import { NextResponse } from "next/server";
-import { requireDashboardUser } from "@/src/lib/dashboard-auth";
+import { requireAdmin } from "@/src/lib/dashboard-auth";
 import { createServiceRoleClient } from "@/src/lib/supabase-server";
 
-function resolveBucketName(formBucket: unknown): string {
-  if (typeof formBucket === "string" && formBucket.trim()) {
-    return formBucket.trim();
-  }
+const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
 
+const MIME_EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
+
+function resolveBucketName(): string {
   const envBucket =
     process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET ||
     process.env.SUPABASE_STORAGE_BUCKET;
@@ -18,40 +29,31 @@ function resolveBucketName(formBucket: unknown): string {
   return "banners";
 }
 
-async function ensureBucketExists(bucket: string) {
+async function ensureBucketReady(bucket: string) {
   const supabase = await createServiceRoleClient();
 
   const { data: bucketData, error: getBucketError } = await supabase.storage.getBucket(bucket);
 
-  if (!getBucketError && bucketData) {
-    return supabase;
-  }
-
-  if (getBucketError && !/not found|does not exist/i.test(getBucketError.message)) {
+  if (getBucketError) {
     throw new Error(`Cannot inspect storage bucket: ${getBucketError.message}`);
   }
 
-  const { error: createBucketError } = await supabase.storage.createBucket(bucket, {
-    public: true,
-  });
-
-  if (createBucketError && !/already exists|duplicate/i.test(createBucketError.message)) {
-    throw new Error(`Cannot create storage bucket: ${createBucketError.message}`);
+  if (!bucketData) {
+    throw new Error(`Storage bucket \"${bucket}\" is not available`);
   }
 
   return supabase;
 }
 
 function createFilePath(file: File): string {
-  const originalExt = file.name.includes(".") ? file.name.split(".").pop() ?? "bin" : "bin";
-  const safeExt = originalExt.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+  const safeExt = MIME_EXTENSIONS[file.type] || "bin";
   const id = crypto.randomUUID().slice(0, 8);
 
   return `uploads/${Date.now()}-${id}.${safeExt}`;
 }
 
 export async function POST(request: Request) {
-  const auth = await requireDashboardUser();
+  const auth = await requireAdmin();
   if (auth.response) {
     return auth.response;
   }
@@ -64,10 +66,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "file is required" }, { status: 400 });
     }
 
-    const bucket = resolveBucketName(formData.get("bucket"));
+    if (fileValue.size <= 0) {
+      return NextResponse.json({ error: "file cannot be empty" }, { status: 400 });
+    }
+
+    if (fileValue.size > MAX_UPLOAD_SIZE_BYTES) {
+      return NextResponse.json(
+        { error: "file is too large (max 5 MB)" },
+        { status: 413 }
+      );
+    }
+
+    if (!ALLOWED_MIME_TYPES.has(fileValue.type)) {
+      return NextResponse.json(
+        { error: "Unsupported file type. Only jpg, png, webp, gif are allowed." },
+        { status: 415 }
+      );
+    }
+
+    const bucket = resolveBucketName();
     const filePath = createFilePath(fileValue);
 
-    const supabase = await ensureBucketExists(bucket);
+    const supabase = await ensureBucketReady(bucket);
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)
