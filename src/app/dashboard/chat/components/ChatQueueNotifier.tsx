@@ -57,7 +57,7 @@ export default function ChatQueueNotifier() {
       if (notifyOnNew) {
         for (const id of nextWaitingIds) {
           if (!waitingSessionIds.current.has(id)) {
-            notifyQueue("มีลูกค้ารอแอดมิน", "มีคำขอคุยกับเจ้าหน้าที่ใหม่ในคิว Live Chat");
+            notifyQueue("มีลูกค้ารอเจ้าหน้าที่", "มีคำขอพูดคุยใหม่ในคิวแชทสด");
           }
         }
       }
@@ -116,7 +116,7 @@ export default function ChatQueueNotifier() {
           }
 
           waitingSessionIds.current.add(row.id);
-          notifyQueue("มีลูกค้ารอแอดมิน", "มีคำขอคุยกับเจ้าหน้าที่ใหม่ในคิว Live Chat");
+          notifyQueue("มีลูกค้ารอเจ้าหน้าที่", "มีคำขอพูดคุยใหม่ในคิวแชทสด");
         }
       )
       .on(
@@ -137,7 +137,7 @@ export default function ChatQueueNotifier() {
           ) {
             if (!waitingSessionIds.current.has(next.id)) {
               waitingSessionIds.current.add(next.id);
-              notifyQueue("ลูกค้าขอคุยกับเจ้าหน้าที่", "มีห้องแชทเปลี่ยนสถานะเป็น WAITING_FOR_ADMIN");
+              notifyQueue("ลูกค้าขอคุยกับเจ้าหน้าที่", "มีห้องแชทใหม่รอการรับช่วง");
             }
 
             return;

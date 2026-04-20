@@ -6,7 +6,7 @@ import { createClient } from "@/src/lib/supabase";
 
 const navItems = [
   {
-    label: "Overview",
+    label: "แดช์บอร์ด",
     href: "/dashboard/overview",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -19,7 +19,7 @@ const navItems = [
     ),
   },
   {
-    label: "Live Chat",
+    label: "แชทสด",
     href: "/dashboard/chat",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -32,7 +32,7 @@ const navItems = [
     ),
   },
   {
-    label: "Home Content",
+    label: "จัดการเนื้อหาหน้าแรก",
     href: "/dashboard/home-content",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -41,7 +41,7 @@ const navItems = [
     ),
   },
   {
-    label: "Promotions",
+    label: "โปรโมชั่น",
     href: "/dashboard/promotions",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -54,7 +54,7 @@ const navItems = [
     ),
   },
   {
-    label: "Monthly Packages",
+    label: "แพ็กเกจรายเดือน",
     href: "/dashboard/monthly",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -67,7 +67,7 @@ const navItems = [
     ),
   },
   {
-    label: "Topup Packages",
+    label: "แพ็กเกจเติมเงิน",
     href: "/dashboard/topup",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -80,7 +80,7 @@ const navItems = [
     ),
   },
   {
-    label: "Solar Packages",
+    label: "แพ็กเกจโซลาร์เซลล์",
     href: "/dashboard/solar",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -93,7 +93,7 @@ const navItems = [
     ),
   },
   {
-    label: "Solar Content",
+    label: "จัดการเนื้อหาโซลาร์เซลล์",
     href: "/dashboard/solar-content",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -106,7 +106,7 @@ const navItems = [
     ),
   },
   {
-    label: "Service Content",
+    label: "จัดการเนื้อหาบริการ-ติดต่อ",
     href: "/dashboard/service-content",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

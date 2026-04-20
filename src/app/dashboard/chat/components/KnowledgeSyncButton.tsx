@@ -93,14 +93,14 @@ export default function KnowledgeSyncButton() {
   }, [isSyncing]);
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-gray-700 bg-gray-900/70 px-3 py-2 shadow-lg shadow-black/20">
       <button
         type="button"
         onClick={handleSync}
         disabled={isSyncing}
-        className="rounded-full border border-gray-700 bg-gray-900/70 px-4 py-2 text-xs font-semibold text-gray-100 transition hover:border-gray-500 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-full border border-red-500/35 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-200 transition hover:border-red-500/50 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isSyncing ? "กำลังซิงก์ข้อมูล..." : "Sync Chat Knowledge"}
+        {isSyncing ? "กำลังซิงก์คลังความรู้..." : "ซิงก์คลังความรู้แชท"}
       </button>
 
       <p className="text-xs text-gray-400">
@@ -109,7 +109,7 @@ export default function KnowledgeSyncButton() {
           : `อัปเดตล่าสุด: ${formatUpdatedAt(status?.updatedAt ?? null)} | ขนาดข้อมูล: ${status?.contentLength ?? 0} ตัวอักษร`}
       </p>
 
-      {feedback && <p className="text-xs text-emerald-300">{feedback}</p>}
+      {feedback && <p className="text-xs font-medium text-emerald-300">{feedback}</p>}
     </div>
   );
 }

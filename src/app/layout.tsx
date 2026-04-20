@@ -88,7 +88,7 @@ import ScrollToTop from "@/src/components/layout/ScrollToTop";
 import CookieConsent from "@/src/components/layout/CookieConsent";
 import { prisma } from "@/src/lib/prisma";
 import { SiteSettingsProvider } from "@/src/context/SiteSettingsContext";
-import ChatWidget from "@/src/components/chat/ChatWidget";
+import ChatWidgetVisibility from "@/src/components/chat/ChatWidgetVisibility";
 
 export default async function RootLayout({
   children,
@@ -206,7 +206,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <BottomNav />
               </div>
               <ToastContainer position="bottom-right" theme="dark"  />
-              <ChatWidget />
+              <ChatWidgetVisibility />
             </ThemeProvider>
           </AppRouterCacheProvider>
         </SiteSettingsProvider>

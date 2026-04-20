@@ -4,9 +4,10 @@ import React, { useMemo } from "react";
 import { Container, Typography, Link, Box } from "@mui/material";
 import { Grid } from "@mui/material";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
-import LineIcon from "@/public/assets/icons/line-icon.svg";
+import LineIcon from "@/src/assets/icons/line-icon.svg";
 
 interface FooterLinkItem {
   id: string;
@@ -172,18 +173,11 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
                   target={lineSupportUrl ? "_blank" : undefined}
                   rel={lineSupportUrl ? "noopener noreferrer" : undefined}
                   color="inherit"
-                  className="flex items-center space-x-2 hover:text-gray-300"
+                  aria-label="LINE support"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#00B900] px-3 py-2 text-white transition-colors hover:bg-[#009f00]"
                 >
-                  <motion.img
-                    src="/assets/icons/line-icon.svg"
-                    alt="ช่องทางติดต่อ Line ทางการ"
-                    width={48}
-                    height={48}
-                    className="w-12 h-12 object-contain"
-                  />
-                  <Typography variant="body1" sx={{ fontFamily: "Prompt" }} color="#ffffff">
-                    Line: {lineDisplay}
-                  </Typography>
+                  <Image src={LineIcon} alt="LINE" width={20} height={20} className="h-5 w-5 object-contain" />
+                  
                 </Link>
               </Box>
 

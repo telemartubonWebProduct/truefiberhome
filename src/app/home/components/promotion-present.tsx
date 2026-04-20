@@ -475,7 +475,7 @@ function PromotionCard({ pkg }: { pkg: PackageData }) {
                         <CardGiftcardIcon sx={{ fontSize: 22, color: "#9ca3af" }} />
                       )}
                     </Box>
-                    <Typography
+                    {/* <Typography
                       variant="caption"
                       sx={{
                         fontWeight: 600,
@@ -487,7 +487,7 @@ function PromotionCard({ pkg }: { pkg: PackageData }) {
                       }}
                     >
                       {gift.label}
-                    </Typography>
+                    </Typography> */}
                   </Box>
                 ))}
               </Box>
