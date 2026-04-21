@@ -160,7 +160,7 @@ export default function PackageTable({ initialPackages }: PackageTableProps) {
               <tr className="bg-gray-800/50 border-b border-gray-800 text-gray-400 text-sm uppercase tracking-wider">
                 <th className="px-6 py-4 font-medium">รหัสสินค้า</th>
                 <th className="px-6 py-4 font-medium">โปร / Name</th>
-                <th className="px-6 py-4 font-medium">ของแถม</th>
+                <th className="px-6 py-4 font-medium">รับสิทธิ</th>
                 <th className="px-6 py-4 font-medium">Speed</th>
                 <th className="px-6 py-4 font-medium">ราคาบริการ</th>
                 <th className="px-6 py-4 font-medium">รายละเอียด</th>

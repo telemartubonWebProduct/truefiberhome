@@ -10,6 +10,32 @@ export function nullableString(value: unknown): string | null {
 const UNSAFE_SCHEME_RE = /^(javascript|data|vbscript|file):/i;
 const SAFE_LINK_PREFIX_RE = /^(https?:|mailto:|tel:)/i;
 const SAFE_ASSET_PREFIX_RE = /^https?:/i;
+const TEL_LINK_PREFIX_RE = /^tel:/i;
+const RAW_USSD_RE = /^\*[\d*]+#$/;
+const SAFE_TEL_TARGET_RE = /^[0-9+*#(),;pw.-]+$/i;
+
+function encodeTelHash(value: string): string {
+  return value.replace(/#/g, "%23");
+}
+
+function normalizeTelTarget(raw: string): string | null {
+  const decoded = raw.replace(/%23/gi, "#").replace(/%2A/gi, "*");
+  const compact = decoded.replace(/\s+/g, "");
+  if (!compact || !SAFE_TEL_TARGET_RE.test(compact)) {
+    return null;
+  }
+
+  return `tel:${encodeTelHash(compact)}`;
+}
+
+function normalizeRawUssd(raw: string): string | null {
+  const compact = raw.replace(/\s+/g, "");
+  if (!RAW_USSD_RE.test(compact)) {
+    return null;
+  }
+
+  return `tel:${encodeTelHash(compact)}`;
+}
 
 export function safeLink(value: unknown): string | null {
   const normalized = nullableString(value);
@@ -21,8 +47,21 @@ export function safeLink(value: unknown): string | null {
     return null;
   }
 
-  if (normalized.startsWith("/") || normalized.startsWith("#") || SAFE_LINK_PREFIX_RE.test(normalized)) {
+  if (normalized.startsWith("/") || normalized.startsWith("#")) {
     return normalized;
+  }
+
+  if (TEL_LINK_PREFIX_RE.test(normalized)) {
+    return normalizeTelTarget(normalized.slice(4));
+  }
+
+  if (SAFE_LINK_PREFIX_RE.test(normalized)) {
+    return normalized;
+  }
+
+  const ussdLink = normalizeRawUssd(normalized);
+  if (ussdLink) {
+    return ussdLink;
   }
 
   return null;

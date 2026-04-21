@@ -218,7 +218,7 @@ function packageSummaryLine(item: {
 
   const freebies = sanitizeInlineText(normalizeJsonText(item.freebies));
   if (freebies) {
-    segments.push(`ของแถม ${freebies}`);
+    segments.push(`รับสิทธิ ${freebies}`);
   }
 
   const buyLink = sanitizeInlineText(item.buyLink ?? null);

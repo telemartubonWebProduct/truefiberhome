@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createClient } from "@/src/lib/supabase";
 import ChatBubble from "@/src/components/chat/ChatBubble";
 import ChatInput from "@/src/components/chat/ChatInput";
@@ -64,6 +64,9 @@ function isRecoverableSessionStatus(status: number) {
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [visualViewportHeight, setVisualViewportHeight] = useState<number | null>(null);
   const [visitorId, setVisitorId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessageDto[]>([]);
@@ -142,6 +145,33 @@ export default function ChatWidget() {
     },
     [applySession]
   );
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+
+    const syncViewportState = () => {
+      const width = viewport?.width ?? window.innerWidth;
+      const layoutHeight = window.innerHeight;
+      const visibleHeight = viewport?.height ?? layoutHeight;
+      const nextIsMobile = width < 1024;
+      const nextKeyboardOpen = nextIsMobile && visibleHeight < layoutHeight * 0.8;
+
+      setIsMobileViewport(nextIsMobile);
+      setIsKeyboardOpen(nextKeyboardOpen);
+      setVisualViewportHeight(Math.round(visibleHeight));
+    };
+
+    syncViewportState();
+    window.addEventListener("resize", syncViewportState);
+    viewport?.addEventListener("resize", syncViewportState);
+    viewport?.addEventListener("scroll", syncViewportState);
+
+    return () => {
+      window.removeEventListener("resize", syncViewportState);
+      viewport?.removeEventListener("resize", syncViewportState);
+      viewport?.removeEventListener("scroll", syncViewportState);
+    };
+  }, []);
 
   useEffect(() => {
     const storedVisitorId = window.localStorage.getItem(CHAT_VISITOR_STORAGE_KEY);
@@ -451,24 +481,50 @@ export default function ChatWidget() {
     }
   }, [createSession, isRequestingHuman, loadSession, sessionId, visitorId]);
 
+  const chatPanelStyle = useMemo<CSSProperties>(() => {
+    const nextStyle: CSSProperties = {};
+
+    if (isMobileViewport && isKeyboardOpen) {
+      nextStyle.bottom = "max(8px, env(safe-area-inset-bottom, 0px))";
+    }
+
+    if (isMobileViewport && visualViewportHeight) {
+      const reservedTop = 10;
+      const reservedBottom = isKeyboardOpen ? 8 : 132;
+      const minimumHeight = isKeyboardOpen ? 170 : 230;
+      const nextHeight = Math.max(
+        minimumHeight,
+        Math.min(560, Math.floor(visualViewportHeight - reservedTop - reservedBottom))
+      );
+
+      nextStyle.height = `${nextHeight}px`;
+      nextStyle.maxHeight = `${nextHeight}px`;
+    }
+
+    return nextStyle;
+  }, [isKeyboardOpen, isMobileViewport, visualViewportHeight]);
+
+  const hideFloatingToggle = isOpen && isMobileViewport && isKeyboardOpen;
+  const compactMobileLayout = isMobileViewport && isKeyboardOpen;
+
   return (
     <>
       {isOpen && (
         <section
-          className="fixed right-4 z-[9998] w-[min(92vw,410px)] overflow-hidden rounded-2xl border border-[#e3e8f3] bg-[#f5f6fb] shadow-[0_22px_60px_rgba(15,23,42,0.24)]"
-          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 96px)" }}
+          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+132px)] right-3 z-[9998] flex h-[min(72vh,560px)] w-[min(86vw,330px)] flex-col overflow-hidden rounded-2xl border border-[#e3e8f3] bg-[#f5f6fb] shadow-[0_22px_60px_rgba(15,23,42,0.24)] sm:bottom-[calc(env(safe-area-inset-bottom,0px)+124px)] sm:right-4 sm:w-[min(90vw,390px)] lg:bottom-[calc(env(safe-area-inset-bottom,0px)+96px)] lg:w-[min(92vw,410px)]"
+          style={chatPanelStyle}
           aria-label="True Fiber Home chat"
         >
-          <header className="border-b border-slate-200 bg-white px-5 pb-4 pt-4">
+          <header className="border-b border-slate-200 bg-white px-3 pb-3 pt-3 sm:px-4 sm:pb-4 sm:pt-4 lg:px-5">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" aria-hidden />
-                <h2 className="text-[31px] font-semibold leading-none text-slate-900">Chatbot</h2>
+                <h2 className="text-xl font-semibold leading-none text-slate-900 sm:text-2xl lg:text-[31px]">Chatbot</h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-700"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#ef2d63]/35 bg-[#ef2d63] text-white shadow-lg shadow-[#ef2d63]/35 transition hover:bg-[#d41f52] sm:h-8 sm:w-8 sm:border-slate-200 sm:bg-white sm:text-slate-500 sm:shadow-none sm:hover:border-slate-300 sm:hover:bg-slate-100 sm:hover:text-slate-700"
                 aria-label="Close chat"
               >
                 <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
@@ -481,30 +537,34 @@ export default function ChatWidget() {
               </button>
             </div>
 
-            <p className="mt-4 text-[15px] leading-6 text-slate-700">
-              อยากสมัครหรือปรึกษาแพ็กเกจไหน ทักได้เลย เดี๋ยวเราช่วยแนะนำให้ครับ
-            </p>
+            {!compactMobileLayout && (
+              <>
+                <p className="mt-3 text-[13px] leading-5 text-slate-700 sm:mt-4 sm:text-[15px] sm:leading-6">
+                  อยากสมัครหรือปรึกษาแพ็กเกจไหน ทักได้เลย เดี๋ยวเราช่วยแนะนำให้ครับ
+                </p>
 
-            <div className="mt-3 flex flex-wrap gap-2">
-              {QUICK_ACTIONS.map((action) => (
-                <button
-                  key={action.label}
-                  type="button"
-                  onClick={() => handleQuickAction(action.message)}
-                  disabled={isInitializing || isSending || status === "CLOSED"}
-                  className="inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] font-medium text-slate-700 transition hover:border-[#f2b4c8] hover:bg-[#fff3f7] hover:text-[#c71b49] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
+                <div className="mt-2.5 flex flex-wrap gap-1.5 sm:mt-3 sm:gap-2">
+                  {QUICK_ACTIONS.map((action) => (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={() => handleQuickAction(action.message)}
+                      disabled={isInitializing || isSending || status === "CLOSED"}
+                      className="inline-flex rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-[#f2b4c8] hover:bg-[#fff3f7] hover:text-[#c71b49] disabled:cursor-not-allowed disabled:opacity-50 sm:rounded-xl sm:px-3 sm:py-2 sm:text-[13px]"
+                    >
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </header>
 
-          <div className="h-[340px] overflow-y-auto bg-[#eef1f7] px-4 py-5 sm:h-[360px]">
+          <div className="min-h-0 flex-1 overflow-y-auto bg-[#eef1f7] px-3 py-4 sm:px-4 sm:py-5">
             <div className="space-y-4">
               {isInitializing ? (
                 CHAT_DEFAULT_GREETING.map((message, index) => (
-                  <div key={`placeholder-${index}`} className="max-w-[88%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-900 shadow-sm">
+                  <div key={`placeholder-${index}`} className="max-w-[88%] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm sm:px-4 sm:py-3 sm:text-[15px]">
                     {message}
                   </div>
                 ))
@@ -512,7 +572,7 @@ export default function ChatWidget() {
                 messages.map((message) => <ChatBubble key={message.id} message={message} />)
               ) : (
                 CHAT_DEFAULT_GREETING.map((message, index) => (
-                  <div key={`fallback-${index}`} className="max-w-[88%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-900 shadow-sm">
+                  <div key={`fallback-${index}`} className="max-w-[88%] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm sm:px-4 sm:py-3 sm:text-[15px]">
                     {message}
                   </div>
                 ))
@@ -521,8 +581,8 @@ export default function ChatWidget() {
             </div>
           </div>
 
-          <footer className="space-y-3 border-t border-slate-200 bg-white px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
+          <footer className="space-y-2.5 border-t border-slate-200 bg-white px-3 py-2.5 sm:space-y-3 sm:px-4 sm:py-3">
+            <div className="flex items-center justify-between gap-2 sm:gap-3">
               <p className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}>{statusLabel}</p>
               {status === "AI_ACTIVE" && (
                 <HandoffButton
@@ -542,9 +602,11 @@ export default function ChatWidget() {
 
             {error && <p className="text-xs font-medium text-red-600">{error}</p>}
 
-            <p className="text-center text-xs text-slate-500">
-              Powered by <span className="font-semibold text-[#e61c50]">True Fiber Home</span>
-            </p>
+            {!compactMobileLayout && (
+              <p className="text-center text-[11px] text-slate-500 sm:text-xs">
+                Powered by <span className="font-semibold text-[#e61c50]">True Fiber Home</span>
+              </p>
+            )}
           </footer>
         </section>
       )}
@@ -553,10 +615,11 @@ export default function ChatWidget() {
         type="button"
         onClick={() => setIsOpen((open) => !open)}
         aria-label={isOpen ? "Close chat" : "Open chat"}
-        className="fixed right-4 z-[9999] inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#ef2d63] to-[#c81649] text-white shadow-2xl shadow-[#e83467]/45 transition hover:scale-[1.03]"
-        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)" }}
+        className={`fixed bottom-[calc(env(safe-area-inset-bottom,0px)+96px)] right-3 z-[9999] inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#ef2d63] to-[#c81649] text-white shadow-xl shadow-[#e83467]/35 transition-all duration-200 hover:scale-[1.03] sm:bottom-[calc(env(safe-area-inset-bottom,0px)+86px)] sm:right-4 sm:h-14 sm:w-14 lg:bottom-[calc(env(safe-area-inset-bottom,0px)+18px)] lg:h-16 lg:w-16 ${
+          isOpen ? "ring-4 ring-white/90 shadow-2xl shadow-[#e83467]/45" : ""
+        } ${hideFloatingToggle ? "pointer-events-none translate-y-2 opacity-0" : "opacity-100"}`}
       >
-        <svg viewBox="0 0 20 20" fill="currentColor" className="h-7 w-7">
+        <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7">
           {isOpen ? (
             <path
               fillRule="evenodd"

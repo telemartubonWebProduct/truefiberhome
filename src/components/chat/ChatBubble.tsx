@@ -145,8 +145,8 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
 
   return (
     <div className={`flex ${containerClass}`}>
-      <div className="max-w-[88%] space-y-1">
-        <div className={`rounded-2xl px-4 py-3 text-[15px] leading-relaxed shadow-sm ${bubbleClass}`}>
+      <div className="max-w-[90%] space-y-1 sm:max-w-[88%]">
+        <div className={`rounded-2xl px-3 py-2.5 text-sm leading-relaxed shadow-sm sm:px-4 sm:py-3 sm:text-[15px] ${bubbleClass}`}>
           <p className="whitespace-pre-line break-words">{content}</p>
           {links.length > 0 ? (
             <div className="mt-3 flex flex-wrap gap-2">
@@ -156,7 +156,7 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`inline-flex items-center rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${linkButtonClass}`}
+                  className={`inline-flex items-center rounded-md px-2.5 py-1 text-[11px] font-semibold transition-colors sm:px-3 sm:py-1.5 sm:text-xs ${linkButtonClass}`}
                 >
                   {getLinkLabel(link, index)}
                 </a>
@@ -164,7 +164,7 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
             </div>
           ) : null}
         </div>
-        <p className={`text-[11px] ${isVisitor ? "text-right text-slate-500" : "text-slate-500"}`}>
+        <p className={`text-[10px] sm:text-[11px] ${isVisitor ? "text-right text-slate-500" : "text-slate-500"}`}>
           {formatClock(message.createdAt)}
         </p>
       </div>

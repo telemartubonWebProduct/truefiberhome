@@ -1,5 +1,4 @@
 "use client";
-
 import { Box, Typography, Button, IconButton } from "@mui/material";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -425,7 +424,7 @@ function PromotionCard({ pkg }: { pkg: PackageData }) {
                   variant="caption"
                   sx={{ fontWeight: 700, color: "#6b7280", fontSize: "0.7rem" }}
                 >
-                  ของแถม
+                  รับสิทธิทันที!
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>

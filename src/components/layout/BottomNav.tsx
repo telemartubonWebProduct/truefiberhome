@@ -21,7 +21,7 @@ const navItems = [
     icon: <RocketLaunchRoundedIcon className="w-5 h-5" />,
   },
   {
-    name: "สมัครทาง LINE",
+    name: "สมัครทาง LINEสิดต่อ สอบถาม",
     href: lineSupport,
     icon: <ChatBubbleRoundedIcon className="w-5 h-5" />,
   },

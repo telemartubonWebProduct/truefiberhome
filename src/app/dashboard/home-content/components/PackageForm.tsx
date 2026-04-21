@@ -479,7 +479,7 @@ export default function PackageForm({ pkg, onSuccess, onCancel }: PackageFormPro
         {/* Freebies Section */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-300">Freebies (ของแถม)</label>
+            <label className="block text-sm font-medium text-gray-300">Freebies (รับสิทธิ)</label>
             <button
               type="button"
               onClick={handleAddFreebie}

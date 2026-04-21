@@ -11,6 +11,7 @@ import ShieldIcon from "@mui/icons-material/Shield";
 import type { PackageItem } from "@/src/types/package";
 import { topupCategories as CATEGORIES, topupPackages as FALLBACK_PACKAGES } from "@/src/data/topup";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
+import { safeLink } from "@/src/lib/api-normalize";
 
 function renderIcon(icon?: string) {
   const props = { className: "mr-2 h-[18px] w-[18px] text-gray-500" };
@@ -53,6 +54,20 @@ const cardVariants = {
     transition: { duration: 0.35, ease: "easeOut" as const },
   },
 };
+
+function openPurchaseLink(rawUrl: string) {
+  const target = safeLink(rawUrl);
+  if (!target || target === "#") {
+    return;
+  }
+
+  if (/^tel:/i.test(target)) {
+    window.location.href = target;
+    return;
+  }
+
+  window.open(target, "_blank", "noopener,noreferrer");
+}
 
 export default function PackageList({ packages = FALLBACK_PACKAGES }: PackageListProps) {
   const [activeCategoryId, setActiveCategoryId] = useState<number | "all">("all");
@@ -104,7 +119,8 @@ export default function PackageList({ packages = FALLBACK_PACKAGES }: PackageLis
           className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
         >
           {visiblePackages.map((pkg) => {
-            const buyUrl = pkg.buy_link && pkg.buy_link !== "#" ? pkg.buy_link : lineSupportUrl;
+            const normalizedBuyLink = safeLink(pkg.buy_link);
+            const buyUrl = normalizedBuyLink && normalizedBuyLink !== "#" ? normalizedBuyLink : lineSupportUrl;
             return (
               <motion.article
                 key={`${pkg.id}-${pkg.name}`}
@@ -137,7 +153,7 @@ export default function PackageList({ packages = FALLBACK_PACKAGES }: PackageLis
                   </div>
 
                   <button
-                    onClick={() => window.open(buyUrl, "_blank", "noopener,noreferrer")}
+                    onClick={() => openPurchaseLink(buyUrl)}
                     className="rounded-full bg-slate-900 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-slate-700"
                   >
                     ซื้อเลย

@@ -54,7 +54,17 @@ const SPEED_OPTIONS: Record<string, string[]> = {
   solar: ["5kW", "8kW", "10kW", "15kW"],
 };
 const VALIDITY_OPTIONS = ["7 วัน", "15 วัน", "30 วัน", "90 วัน", "12 เดือน", "24 เดือน"];
-const BUY_URL_OPTIONS = [lineSupport, "/service", "/boardband", "/topup", "/monthly", "/wEnergy"];
+const BUY_URL_OPTIONS = [
+  lineSupport,
+  "tel:021234567",
+  "*111*12345#",
+  "tel:*111*12345%23",
+  "/service",
+  "/boardband",
+  "/topup",
+  "/monthly",
+  "/wEnergy",
+];
 
 export default function PromotionForm({ promotion, activeType, lockType = false, onSuccess, onCancel }: PromotionFormProps) {
   const isEditing = !!promotion;
@@ -344,15 +354,16 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
 
         {/* Buy URL */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-300 mb-1">Buy / Apply URL (ลิงก์สมัครบริการเจาะจง)</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Buy / Apply URL หรือรหัสกดโทร (USSD)</label>
           <input
-            type="url"
+            type="text"
             list="promotion-buyurl-options"
             value={buyUrl}
             onChange={(e) => setBuyUrl(e.target.value)}
             className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="e.g. https://lin.ee/xxxxxx (ปล่อยว่างไว้เพื่อใช้ค่าเริ่มต้นเว็บ)"
+            placeholder="e.g. *111*12345# หรือ https://lin.ee/xxxxxx (ปล่อยว่างไว้เพื่อใช้ค่าเริ่มต้นเว็บ)"
           />
+          <p className="mt-1 text-xs text-gray-500">รองรับ https://, /path ภายในเว็บ, tel: และ USSD เช่น *111*12345#</p>
           <datalist id="promotion-buyurl-options">
             {BUY_URL_OPTIONS.map((option) => (
               <option key={option} value={option} />
