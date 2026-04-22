@@ -11,40 +11,7 @@ export const topupBannerMobile: BannerData[] = [
 ];
 
 // ===== Topup Promotions (BannerTop) =====
-export const topupPromotions: PromotionItem[] = [
-  {
-    id: 1,
-    title: "เน็ตไม่อั้น 8Mbps (30GB) FUP 1Mbps 8วัน",
-    validity: "8 วัน",
-    speed: "8 Mbps ใช้ได้ 30GB",
-    price: 88,
-    vat: "ไม่รวม VAT",
-  },
-  {
-    id: 2,
-    title: "เน็ตไม่อั้น 10Mbps (50GB) FUP 2Mbps 15วัน",
-    validity: "15 วัน",
-    speed: "10 Mbps ใช้ได้ 50GB",
-    price: 150,
-    vat: "ไม่รวม VAT",
-  },
-  {
-    id: 3,
-    title: "เน็ตไม่อั้น 5Mbps (15GB) FUP 512Kbps 5วัน",
-    validity: "5 วัน",
-    speed: "5 Mbps ใช้ได้ 15GB",
-    price: 50,
-    vat: "ไม่รวม VAT",
-  },
-  {
-    id: 4,
-    title: "เน็ตไม่อั้น 20Mbps (Unlimited) FUP 5Mbps 30วัน",
-    validity: "30 วัน",
-    speed: "20 Mbps ใช้งานได้ไม่จำกัด",
-    price: 300,
-    vat: "ไม่รวม VAT",
-  },
-];
+
 
 // ===== Topup Categories (PackageList) =====
 export const topupCategories: PackageCategory[] = [

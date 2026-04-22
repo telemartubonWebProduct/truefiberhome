@@ -6,8 +6,16 @@ import PackageList from "./components/PackageList";
 import StoreSearch from "@/src/components/ui/StoreSearch";
 import StorePagination from "@/src/components/ui/StorePagination";
 import { prisma } from "@/src/lib/prisma";
-import { topupCategories, topupPackages } from "@/src/data/topup";
+import { topupCategories } from "@/src/data/topup";
 import type { PackageItem, PerkItem } from "@/src/types/package";
+
+type RecommendedTopupPromotion = {
+  id: string;
+  title: string;
+  validity: string | null;
+  speed: string | null;
+  price: number;
+};
 
 export const metadata: Metadata = {
   title: "แพ็กเกจซิมเติมเงิน",
@@ -15,7 +23,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/topup" },
 };
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 function normalizePerks(value: unknown): PerkItem[] {
   if (!Array.isArray(value)) {
@@ -72,53 +80,80 @@ async function fetchTopupPackages(page: number, limit: number, q: string): Promi
         : {}),
     };
 
-    const [promotions, total, totalByType] = await Promise.all([
+    const [promotions, total] = await Promise.all([
       prisma.promotion.findMany({
         where: whereClause,
-        orderBy: { displayOrder: "asc" },
+        orderBy: [{ displayOrder: "asc" }, { updatedAt: "desc" }],
         skip,
         take: limit,
       }),
       prisma.promotion.count({ where: whereClause }),
-      q ? prisma.promotion.count({ where: typeWhere }) : Promise.resolve(0),
     ]);
 
-    if (total > 0) {
-      const mapped = promotions.map((promo, index) => ({
-        id: index + 1,
-        category_id: mapTopupCategoryId(promo.categoryName),
-        name: promo.name,
-        price: promo.price,
-        price_note: promo.priceNote,
-        speed: promo.speed,
-        perks: normalizePerks(promo.perks),
-        description: null,
-        is_active: promo.status,
-        buy_link: promo.buyUrl,
-        display_order: promo.displayOrder,
-      })) as PackageItem[];
+    const mapped = promotions.map((promo, index) => ({
+      id: skip + index + 1,
+      category_id: mapTopupCategoryId(promo.categoryName),
+      name: promo.name,
+      price: promo.price,
+      price_note: promo.priceNote,
+      speed: promo.speed,
+      perks: normalizePerks(promo.perks),
+      description: null,
+      is_active: promo.status,
+      buy_link: promo.buyUrl,
+      display_order: promo.displayOrder,
+    })) as PackageItem[];
 
-      return {
-        data: mapped,
-        totalPages: Math.max(1, Math.ceil(total / limit)),
-      };
-    }
-
-    if (q && totalByType > 0) {
-      return { data: [], totalPages: 1 };
-    }
+    return {
+      data: mapped,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   } catch (error) {
     console.error("Failed to fetch topup packages from DB:", error);
+    return {
+      data: [],
+      totalPages: 1,
+    };
   }
+}
 
-  const filteredFallback = topupPackages.filter((pkg) =>
-    q ? pkg.name.toLowerCase().includes(q.toLowerCase()) : true
-  );
-
+function toRecommendedPromotion(promo: {
+  id: string;
+  name: string;
+  validity: string | null;
+  speed: string | null;
+  price: number;
+}): RecommendedTopupPromotion {
   return {
-    data: filteredFallback.slice((page - 1) * limit, page * limit),
-    totalPages: Math.max(1, Math.ceil(filteredFallback.length / limit)),
+    id: promo.id,
+    title: promo.name,
+    validity: promo.validity,
+    speed: promo.speed,
+    price: promo.price,
   };
+}
+
+async function fetchTopupRecommendedPromotions(): Promise<RecommendedTopupPromotion[]> {
+  const whereBase: any = { type: "topup", status: true };
+
+  try {
+    const recommended = await prisma.promotion.findMany({
+      where: {
+        ...whereBase,
+        promoBadge: {
+          contains: "แนะนำ",
+          mode: "insensitive",
+        },
+      },
+      orderBy: [{ displayOrder: "asc" }, { updatedAt: "desc" }],
+      take: 4,
+    });
+
+    return recommended.map(toRecommendedPromotion);
+  } catch (error) {
+    console.error("Failed to fetch topup recommended promotions from DB:", error);
+    return [];
+  }
 }
 
 export default async function TopupPage(props: { searchParams: Promise<{ page?: string; q?: string }> }) {
@@ -128,12 +163,15 @@ export default async function TopupPage(props: { searchParams: Promise<{ page?: 
   const limit = 8;
 
   const safePage = Number.isFinite(page) && page > 0 ? page : 1;
-  const { data: packages, totalPages } = await fetchTopupPackages(safePage, limit, q);
+  const [{ data: packages, totalPages }, recommendedPromotions] = await Promise.all([
+    fetchTopupPackages(safePage, limit, q),
+    fetchTopupRecommendedPromotions(),
+  ]);
 
   return (
     <Box className="bg-white pb-20">
       <BannerTop />
-      <PromotionBanner />
+      <PromotionBanner promotions={recommendedPromotions} />
 
       <Box className="mt-7 max-w-6xl mx-auto px-4">
         <StoreSearch placeholder="ค้นหาแพ็กเกจเติมเงิน..." />

@@ -197,6 +197,7 @@ export default async function HomePage() {
   const contactTitle = contactSection?.title || "ติดต่อและสมัครบริการ";
   const contactSubtitle = contactSection?.subtitle || "เลือกช่องทางที่สะดวก ทีมงานพร้อมดูแลทันที";
   const contactVisible = contactSection?.isActive ?? true;
+  const contactSectionId = "home-contact-section";
 
   const displayContactMethods = (contactMethods as any[]).map((item, index) => ({
     id: item.id ?? `contact-${index}`,
@@ -332,12 +333,15 @@ export default async function HomePage() {
             packages={promotionPackages}
             helperText={promotionPresentHelperText}
             isActive={promotionPresentVisible}
+            contactSectionId={contactSectionId}
+            contactMethods={displayContactMethods}
           />
         </Box>
       )}
 
       <SalerService agents={agents as any[]} />
       <ContactSection
+        sectionId={contactSectionId}
         content={{
           title: contactTitle,
           subtitle: contactSubtitle,

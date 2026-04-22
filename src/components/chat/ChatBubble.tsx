@@ -1,13 +1,18 @@
 import type { ChatMessageDto } from "@/src/types/chat";
+import { promotionPackages } from "@/src/data/promotions";
+import type { PackageItem } from "@/src/types/package";
 
 interface ChatBubbleProps {
   message: ChatMessageDto;
+  promotionFlexType?: PromotionFlexType | null;
 }
 
 type BubbleLink = {
   url: string;
   label: string;
 };
+
+export type PromotionFlexType = "home" | "mobile" | "mixed";
 
 function formatClock(value: string) {
   const date = new Date(value);
@@ -118,12 +123,66 @@ function getLinkLabel(link: BubbleLink, index: number) {
   }
 }
 
-export default function ChatBubble({ message }: ChatBubbleProps) {
+function getPromotionCards(promotionFlexType?: PromotionFlexType | null) {
+  const sortedPackages = [...promotionPackages]
+    .filter((pkg) => pkg.is_active)
+    .sort((left, right) => (left.display_order ?? Number.MAX_SAFE_INTEGER) - (right.display_order ?? Number.MAX_SAFE_INTEGER));
+
+  if (promotionFlexType === "home") {
+    const homePackages = sortedPackages.filter((pkg) => pkg.category_id === 1).slice(0, 4);
+    return homePackages.length > 0 ? homePackages : sortedPackages.slice(0, 4);
+  }
+
+  if (promotionFlexType === "mobile") {
+    const mobilePackages = sortedPackages.filter((pkg) => pkg.category_id === 2).slice(0, 4);
+    return mobilePackages.length > 0 ? mobilePackages : sortedPackages.slice(0, 4);
+  }
+
+  if (promotionFlexType === "mixed") {
+    const homePackages = sortedPackages.filter((pkg) => pkg.category_id === 1).slice(0, 2);
+    const mobilePackages = sortedPackages.filter((pkg) => pkg.category_id === 2).slice(0, 2);
+    const mixedPackages = [...homePackages, ...mobilePackages];
+    return mixedPackages.length > 0 ? mixedPackages : sortedPackages.slice(0, 4);
+  }
+
+  return [];
+}
+
+function getPromotionSummaryText(pkg: PackageItem) {
+  if (pkg.download_speed && pkg.upload_speed && pkg.speed_unit) {
+    return `ความเร็ว ${pkg.download_speed}/${pkg.upload_speed} ${pkg.speed_unit}`;
+  }
+
+  if (pkg.description?.trim()) {
+    return pkg.description.trim();
+  }
+
+  if (pkg.perks && pkg.perks.length > 0) {
+    return pkg.perks
+      .slice(0, 2)
+      .map((perk) => perk.text)
+      .join(" • ");
+  }
+
+  return "แพ็กเกจยอดนิยม";
+}
+
+function getPromotionHref(pkg: PackageItem) {
+  const normalizedLink = (pkg.buy_link ?? "").trim();
+  if (normalizedLink && normalizedLink !== "#") {
+    return normalizedLink;
+  }
+
+  return pkg.category_id === 1 ? "/boardband" : "/monthly";
+}
+
+export default function ChatBubble({ message, promotionFlexType = null }: ChatBubbleProps) {
   const isVisitor = message.senderType === "VISITOR";
   const isAdmin = message.senderType === "ADMIN";
   const isSystem = message.senderType === "SYSTEM";
   const links = extractMessageLinks(message.content);
   const content = normalizeMessageText(message.content, links.length > 0);
+  const promotionCards = !isVisitor && !isSystem ? getPromotionCards(promotionFlexType) : [];
 
   const containerClass = isVisitor ? "justify-end" : "justify-start";
 
@@ -148,6 +207,51 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
       <div className="max-w-[90%] space-y-1 sm:max-w-[88%]">
         <div className={`rounded-2xl px-3 py-2.5 text-sm leading-relaxed shadow-sm sm:px-4 sm:py-3 sm:text-[15px] ${bubbleClass}`}>
           <p className="whitespace-pre-line break-words">{content}</p>
+          {promotionCards.length > 0 ? (
+            <div className="mt-3">
+              <p className={`mb-2 text-[11px] font-semibold ${isAdmin ? "text-white/85" : "text-slate-500"}`}>
+                โปรที่แนะนำ
+              </p>
+              <div className="-mx-0.5 flex snap-x snap-mandatory gap-2 overflow-x-auto px-0.5 pb-1">
+                {promotionCards.map((pkg) => {
+                  const href = getPromotionHref(pkg);
+                  const isExternal = /^https?:\/\//i.test(href);
+
+                  return (
+                    <article
+                      key={`promotion-flex-${pkg.id}`}
+                      className="w-[218px] shrink-0 snap-start rounded-xl border border-[#f4bfd0] bg-white p-3 text-slate-900 shadow-sm"
+                    >
+                      {pkg.promo_badge ? (
+                        <p className="mb-1.5 inline-flex rounded-full bg-[#fff1f6] px-2 py-0.5 text-[10px] font-semibold text-[#c71b49]">
+                          {pkg.promo_badge}
+                        </p>
+                      ) : null}
+
+                      <p className="line-clamp-2 text-[13px] font-bold leading-5">{pkg.name}</p>
+                      <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-slate-600">{getPromotionSummaryText(pkg)}</p>
+
+                      <div className="mt-2.5 flex items-end justify-between gap-2 border-t border-slate-100 pt-2.5">
+                        <p className="text-[20px] font-extrabold leading-none text-[#e61c50]">
+                          {pkg.price.toLocaleString("th-TH")}
+                          <span className="ml-1 text-[11px] font-semibold text-slate-600">บาท</span>
+                        </p>
+
+                        <a
+                          href={href}
+                          target={isExternal ? "_blank" : undefined}
+                          rel={isExternal ? "noopener noreferrer" : undefined}
+                          className="inline-flex rounded-full bg-[#e61c50] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#cc1846]"
+                        >
+                          ดูโปร
+                        </a>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
           {links.length > 0 ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {links.map((link, index) => (

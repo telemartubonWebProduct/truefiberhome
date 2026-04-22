@@ -60,7 +60,7 @@ function getTextItems(value: unknown): string[] {
   return items;
 }
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function BroadbandPage() {
   const promotionDelegate = (prisma as any).promotion;

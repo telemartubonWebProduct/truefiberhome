@@ -14,6 +14,7 @@ import HeaderMonthy from "./Header";
 import type { PackageCategory, PackageItem } from "@/src/types/package";
 import { monthlyCategories as CATEGORIES, monthlyPackages as FALLBACK_PACKAGES } from "@/src/data/monthly";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
+import { safeLink } from "@/src/lib/api-normalize";
 
 function renderIcon(icon?: string) {
   const props = { className: "mr-2 h-[18px] w-[18px] text-gray-500" };
@@ -117,7 +118,9 @@ export default function PromotionMonthy({
                 className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
               >
                 {categoryPackages.map((pkg) => {
-                  const buyUrl = pkg.buy_link && pkg.buy_link !== "#" ? pkg.buy_link : lineSupportUrl;
+                  const normalizedBuyLink = safeLink(pkg.buy_link);
+                  const buyUrl = normalizedBuyLink && normalizedBuyLink !== "#" ? normalizedBuyLink : lineSupportUrl;
+                  const openInNewTab = !/^tel:/i.test(buyUrl);
                   return (
                     <motion.article
                       key={`${pkg.id}-${pkg.name}`}
@@ -155,12 +158,14 @@ export default function PromotionMonthy({
                           {pkg.price_note && <p className="mt-1 text-[11px] font-medium text-slate-500">{pkg.price_note}</p>}
                         </div>
 
-                        <button
-                          onClick={() => window.open(buyUrl, "_blank", "noopener,noreferrer")}
+                        <a
+                          href={buyUrl}
+                          target={openInNewTab ? "_blank" : undefined}
+                          rel={openInNewTab ? "noopener noreferrer" : undefined}
                           className="mb-0.5 rounded-full bg-slate-900 px-7 py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-700"
                         >
-                          ซื้อเลย
-                        </button>
+                          กดสมัคร
+                        </a>
                       </div>
                     </motion.article>
                   );

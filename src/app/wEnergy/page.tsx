@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/wEnergy" },
 };
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 type SectionRecord = {
   title: string | null;

@@ -66,6 +66,52 @@ const BUY_URL_OPTIONS = [
   "/wEnergy",
 ];
 
+function hasRecommendedBadge(badge: string | null): boolean {
+  return (badge || "").includes("แนะนำ");
+}
+
+function addRecommendedBadge(badge: string | null): string {
+  const normalized = (badge || "").trim();
+  if (!normalized) {
+    return "แนะนำ";
+  }
+
+  if (hasRecommendedBadge(normalized)) {
+    return normalized;
+  }
+
+  return `${normalized} | แนะนำ`;
+}
+
+function removeRecommendedBadge(badge: string | null): string | null {
+  const normalized = (badge || "").trim();
+  if (!normalized) {
+    return null;
+  }
+
+  const parts = normalized
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => !part.includes("แนะนำ"));
+
+  if (parts.length > 0) {
+    return parts.join(" | ");
+  }
+
+  const stripped = normalized
+    .replace(/แนะนำ/g, "")
+    .replace(/[|,;/]+/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  if (!/[A-Za-z0-9ก-๙]/.test(stripped)) {
+    return null;
+  }
+
+  return stripped;
+}
+
 export default function PromotionForm({ promotion, activeType, lockType = false, onSuccess, onCancel }: PromotionFormProps) {
   const isEditing = !!promotion;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,6 +148,8 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
   const speedOptions = SPEED_OPTIONS[type] || [];
   const categoryListId = `promotion-category-options-${type || "default"}`;
   const speedListId = `promotion-speed-options-${type || "default"}`;
+  const selectedType = lockType ? activeType : type;
+  const isTopupType = selectedType === "topup";
 
   useEffect(() => {
     if (lockType) {
@@ -336,20 +384,43 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">ป้ายกำกับ (Badge)</label>
-          <input
-            type="text"
-            list="promotion-badge-options"
-            value={promoBadge}
-            onChange={(e) => setPromoBadge(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="e.g. แนะนำ🔥"
-          />
-          <datalist id="promotion-badge-options">
-            {BADGE_OPTIONS.map((badge) => (
-              <option key={badge} value={badge} />
-            ))}
-          </datalist>
+          {isTopupType ? (
+            <>
+              <label className="block text-sm font-medium text-gray-300 mb-1">โปรเติมเงินแนะนำ</label>
+              <label className="flex items-center gap-3 rounded-xl border border-gray-700 bg-gray-800/50 px-3 py-2 text-sm text-gray-200">
+                <input
+                  type="checkbox"
+                  checked={hasRecommendedBadge(promoBadge)}
+                  onChange={(e) => {
+                    const next = e.target.checked
+                      ? addRecommendedBadge(promoBadge)
+                      : removeRecommendedBadge(promoBadge) || "";
+                    setPromoBadge(next);
+                  }}
+                  className="h-4 w-4 rounded border-gray-600 bg-gray-900 text-blue-500 focus:ring-blue-500"
+                />
+                <span>โชว์รายการนี้ในกล่องโปรเติมเงินแนะนำหน้า /topup</span>
+              </label>
+              <p className="mt-1 text-[11px] text-gray-500">ต้องเปิดสถานะเป็น "Active (แสดง)" ด้วย รายการถึงจะขึ้นหน้าเว็บ</p>
+            </>
+          ) : (
+            <>
+              <label className="block text-sm font-medium text-gray-300 mb-1">ป้ายกำกับ (Badge)</label>
+              <input
+                type="text"
+                list="promotion-badge-options"
+                value={promoBadge}
+                onChange={(e) => setPromoBadge(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="e.g. แนะนำ🔥"
+              />
+              <datalist id="promotion-badge-options">
+                {BADGE_OPTIONS.map((badge) => (
+                  <option key={badge} value={badge} />
+                ))}
+              </datalist>
+            </>
+          )}
         </div>
 
         {/* Buy URL */}

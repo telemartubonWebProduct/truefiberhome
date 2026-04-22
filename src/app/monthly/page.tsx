@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/monthly" },
 };
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 function normalizePerks(value: unknown): PerkItem[] {
   if (!Array.isArray(value)) {

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createClient } from "@/src/lib/supabase";
-import ChatBubble from "@/src/components/chat/ChatBubble";
+import ChatBubble, { type PromotionFlexType } from "@/src/components/chat/ChatBubble";
 import ChatInput from "@/src/components/chat/ChatInput";
 import HandoffButton from "@/src/components/chat/HandoffButton";
 import {
@@ -57,6 +57,59 @@ const QUICK_ACTIONS = [
     message: "ขอข้อมูลบริการโซลาร์เซลล์ W&W Energy หน่อยครับ",
   },
 ] as const;
+
+const PROMOTION_QUERY_REGEX = /(โปร|โปรโมชั่น|โปรโมชัน|promotion|promo|แพ็กเกจ|package)/i;
+const HOME_PROMOTION_REGEX = /(เน็ตบ้าน|บ้าน|ไฟเบอร์|fiber|wifi|broadband)/i;
+const MOBILE_PROMOTION_REGEX = /(มือถือ|mobile|5g|4g|ซิม|รายเดือน|เติมเงิน)/i;
+
+function classifyPromotionFlexType(content: string): PromotionFlexType {
+  if (HOME_PROMOTION_REGEX.test(content)) {
+    return "home";
+  }
+
+  if (MOBILE_PROMOTION_REGEX.test(content)) {
+    return "mobile";
+  }
+
+  return "mixed";
+}
+
+function getPromotionFlexTypeForMessage(messages: ChatMessageDto[], messageIndex: number): PromotionFlexType | null {
+  const currentMessage = messages[messageIndex];
+  if (!currentMessage) {
+    return null;
+  }
+
+  const isSupportReply = currentMessage.senderType === "AI" || currentMessage.senderType === "ADMIN";
+  if (!isSupportReply) {
+    return null;
+  }
+
+  let visitorQuestion: ChatMessageDto | null = null;
+
+  for (let index = messageIndex - 1; index >= 0; index -= 1) {
+    const previousMessage = messages[index];
+
+    if (previousMessage.senderType === "VISITOR") {
+      visitorQuestion = previousMessage;
+      break;
+    }
+
+    if (previousMessage.senderType === "AI" || previousMessage.senderType === "ADMIN") {
+      return null;
+    }
+  }
+
+  if (visitorQuestion && PROMOTION_QUERY_REGEX.test(visitorQuestion.content)) {
+    return classifyPromotionFlexType(visitorQuestion.content);
+  }
+
+  if (PROMOTION_QUERY_REGEX.test(currentMessage.content)) {
+    return classifyPromotionFlexType(currentMessage.content);
+  }
+
+  return null;
+}
 
 function isRecoverableSessionStatus(status: number) {
   return status === 403 || status === 404;
@@ -489,12 +542,12 @@ export default function ChatWidget() {
     }
 
     if (isMobileViewport && visualViewportHeight) {
-      const reservedTop = 10;
-      const reservedBottom = isKeyboardOpen ? 8 : 132;
-      const minimumHeight = isKeyboardOpen ? 170 : 230;
+      const reservedTop = 12;
+      const reservedBottom = isKeyboardOpen ? 8 : 92;
+      const minimumHeight = isKeyboardOpen ? 180 : 290;
       const nextHeight = Math.max(
         minimumHeight,
-        Math.min(560, Math.floor(visualViewportHeight - reservedTop - reservedBottom))
+        Math.min(700, Math.floor(visualViewportHeight - reservedTop - reservedBottom))
       );
 
       nextStyle.height = `${nextHeight}px`;
@@ -504,27 +557,32 @@ export default function ChatWidget() {
     return nextStyle;
   }, [isKeyboardOpen, isMobileViewport, visualViewportHeight]);
 
-  const hideFloatingToggle = isOpen && isMobileViewport && isKeyboardOpen;
+  const hideFloatingToggle = isOpen || (isMobileViewport && isKeyboardOpen);
   const compactMobileLayout = isMobileViewport && isKeyboardOpen;
+  const shouldShowHeaderIntro = !compactMobileLayout && messages.length < 2;
+  const shouldShowQuickActions = shouldShowHeaderIntro;
+  const headerClassName = shouldShowHeaderIntro
+    ? "border-b border-slate-200 bg-white px-3 py-2.5 sm:px-4 sm:py-3 lg:px-4"
+    : "border-b border-slate-200 bg-white px-3 py-2 sm:px-4 sm:py-2.5 lg:px-4";
 
   return (
     <>
       {isOpen && (
         <section
-          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+132px)] right-3 z-[9998] flex h-[min(72vh,560px)] w-[min(86vw,330px)] flex-col overflow-hidden rounded-2xl border border-[#e3e8f3] bg-[#f5f6fb] shadow-[0_22px_60px_rgba(15,23,42,0.24)] sm:bottom-[calc(env(safe-area-inset-bottom,0px)+124px)] sm:right-4 sm:w-[min(90vw,390px)] lg:bottom-[calc(env(safe-area-inset-bottom,0px)+96px)] lg:w-[min(92vw,410px)]"
+          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+86px)] right-2 z-[9998] flex h-[min(82vh,680px)] w-[min(95vw,420px)] flex-col overflow-hidden rounded-2xl border border-[#e3e8f3] bg-[#f5f6fb] shadow-[0_22px_60px_rgba(15,23,42,0.24)] sm:bottom-[calc(env(safe-area-inset-bottom,0px)+88px)] sm:right-4 sm:w-[min(92vw,430px)] lg:bottom-[calc(env(safe-area-inset-bottom,0px)+18px)] lg:right-5 lg:w-[min(90vw,440px)]"
           style={chatPanelStyle}
           aria-label="True Fiber Home chat"
         >
-          <header className="border-b border-slate-200 bg-white px-3 pb-3 pt-3 sm:px-4 sm:pb-4 sm:pt-4 lg:px-5">
+          <header className={headerClassName}>
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" aria-hidden />
-                <h2 className="text-xl font-semibold leading-none text-slate-900 sm:text-2xl lg:text-[31px]">Chatbot</h2>
+                <h2 className="text-[21px] font-semibold leading-none text-slate-900 sm:text-[24px]">Chatbot</h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#ef2d63]/35 bg-[#ef2d63] text-white shadow-lg shadow-[#ef2d63]/35 transition hover:bg-[#d41f52] sm:h-8 sm:w-8 sm:border-slate-200 sm:bg-white sm:text-slate-500 sm:shadow-none sm:hover:border-slate-300 sm:hover:bg-slate-100 sm:hover:text-slate-700"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Close chat"
               >
                 <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
@@ -537,26 +595,26 @@ export default function ChatWidget() {
               </button>
             </div>
 
-            {!compactMobileLayout && (
-              <>
-                <p className="mt-3 text-[13px] leading-5 text-slate-700 sm:mt-4 sm:text-[15px] sm:leading-6">
-                  อยากสมัครหรือปรึกษาแพ็กเกจไหน ทักได้เลย เดี๋ยวเราช่วยแนะนำให้ครับ
-                </p>
+            {shouldShowHeaderIntro && (
+              <p className="mt-1 text-[12px] leading-5 text-slate-600 sm:text-[13px]">
+                ถามหาโปรหรือแพ็กเกจได้เลย เดี๋ยวเราช่วยสรุปให้แบบเข้าใจง่าย
+              </p>
+            )}
 
-                <div className="mt-2.5 flex flex-wrap gap-1.5 sm:mt-3 sm:gap-2">
-                  {QUICK_ACTIONS.map((action) => (
-                    <button
-                      key={action.label}
-                      type="button"
-                      onClick={() => handleQuickAction(action.message)}
-                      disabled={isInitializing || isSending || status === "CLOSED"}
-                      className="inline-flex rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-[#f2b4c8] hover:bg-[#fff3f7] hover:text-[#c71b49] disabled:cursor-not-allowed disabled:opacity-50 sm:rounded-xl sm:px-3 sm:py-2 sm:text-[13px]"
-                    >
-                      {action.label}
-                    </button>
-                  ))}
-                </div>
-              </>
+            {shouldShowQuickActions && (
+              <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1 sm:gap-2">
+                {QUICK_ACTIONS.map((action) => (
+                  <button
+                    key={action.label}
+                    type="button"
+                    onClick={() => handleQuickAction(action.message)}
+                    disabled={isInitializing || isSending || status === "CLOSED"}
+                    className="inline-flex shrink-0 whitespace-nowrap rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 transition hover:border-[#f2b4c8] hover:bg-[#fff3f7] hover:text-[#c71b49] disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:py-1.5 sm:text-xs"
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
             )}
           </header>
 
@@ -569,7 +627,13 @@ export default function ChatWidget() {
                   </div>
                 ))
               ) : messages.length > 0 ? (
-                messages.map((message) => <ChatBubble key={message.id} message={message} />)
+                messages.map((message, index) => (
+                  <ChatBubble
+                    key={message.id}
+                    message={message}
+                    promotionFlexType={getPromotionFlexTypeForMessage(messages, index)}
+                  />
+                ))
               ) : (
                 CHAT_DEFAULT_GREETING.map((message, index) => (
                   <div key={`fallback-${index}`} className="max-w-[88%] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm sm:px-4 sm:py-3 sm:text-[15px]">
@@ -581,7 +645,7 @@ export default function ChatWidget() {
             </div>
           </div>
 
-          <footer className="space-y-2.5 border-t border-slate-200 bg-white px-3 py-2.5 sm:space-y-3 sm:px-4 sm:py-3">
+          <footer className="space-y-2 border-t border-slate-200 bg-white px-3 py-2 sm:space-y-2.5 sm:px-4 sm:py-2.5">
             <div className="flex items-center justify-between gap-2 sm:gap-3">
               <p className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}>{statusLabel}</p>
               {status === "AI_ACTIVE" && (
@@ -603,9 +667,14 @@ export default function ChatWidget() {
             {error && <p className="text-xs font-medium text-red-600">{error}</p>}
 
             {!compactMobileLayout && (
+              <>
               <p className="text-center text-[11px] text-slate-500 sm:text-xs">
                 Powered by <span className="font-semibold text-[#e61c50]">True Fiber Home</span>
               </p>
+              <p className="text-center text-[11px] text-slate-500 sm:text-xs">
+                ***ระบบChatAiอาจมีข้อผิดพลาดในการให้บริการแก่ท่าน กรุณาติดต่อเจ้าหน้าที่ดูแลเมื่อท่านพบปัญหา***
+              </p>
+              </>
             )}
           </footer>
         </section>

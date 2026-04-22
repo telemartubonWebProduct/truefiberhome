@@ -12,6 +12,7 @@ import StoreSearch from "@/src/components/ui/StoreSearch";
 import StorePagination from "@/src/components/ui/StorePagination";
 import { lineSupport } from "@/src/context/line-path";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
+import { safeLink } from "@/src/lib/api-normalize";
 import {
   installationSteps,
   knowledgeArticles,
@@ -105,7 +106,7 @@ function SafeFillImage({
 export default function WEnergyClient({ plans, currentPage, totalPages, content }: WEnergyClientProps) {
   const { lineSupportUrl } = useSiteSettings();
   const heroImage = content?.heroImageUrl || solarBanner[0]?.image || null;
-  const primaryContactUrl = content?.heroPrimaryCtaUrl || lineSupportUrl || lineSupport;
+  const primaryContactUrl = safeLink(content?.heroPrimaryCtaUrl) || safeLink(lineSupportUrl) || lineSupport;
 
   const heroTagline = content?.heroTagline || "W&W Energy";
   const heroTitle = content?.heroTitle || "ติดตั้งโซล่าเซลล์ครบวงจร";
@@ -274,13 +275,18 @@ export default function WEnergyClient({ plans, currentPage, totalPages, content 
               viewport={{ once: true, margin: "-60px" }}
               className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
             >
-              {plans.map((plan) => (
-                <motion.article
-                  key={plan.id}
-                  variants={cardVariants}
-                  whileHover={{ y: -4 }}
-                  className="flex min-h-[345px] flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-                >
+              {plans.map((plan) => {
+                const normalizedPlanBuyUrl = safeLink(plan.buyUrl);
+                const contactUrl = normalizedPlanBuyUrl && normalizedPlanBuyUrl !== "#" ? normalizedPlanBuyUrl : primaryContactUrl;
+                const openInNewTab = !/^tel:/i.test(contactUrl);
+
+                return (
+                  <motion.article
+                    key={plan.id}
+                    variants={cardVariants}
+                    whileHover={{ y: -4 }}
+                    className="flex min-h-[345px] flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                  >
                   <div className="flex items-center justify-between gap-3">
                     <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">{plan.packageLabel}</span>
                     {plan.oldPrice && plan.oldPrice > plan.price && (
@@ -306,16 +312,19 @@ export default function WEnergyClient({ plans, currentPage, totalPages, content 
                       <p className="text-3xl font-semibold leading-none tracking-tight text-slate-900">
                         ฿{formatPrice(plan.price)}
                       </p>
-                      <button
-                        onClick={() => window.open(plan.buyUrl && plan.buyUrl !== "#" ? plan.buyUrl : primaryContactUrl, "_blank", "noopener,noreferrer")}
+                      <a
+                        href={contactUrl}
+                        target={openInNewTab ? "_blank" : undefined}
+                        rel={openInNewTab ? "noopener noreferrer" : undefined}
                         className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700"
                       >
                         สอบถามแพ็กนี้
-                      </button>
+                      </a>
                     </div>
                   </div>
-                </motion.article>
-              ))}
+                  </motion.article>
+                );
+              })}
             </motion.div>
           )}
 

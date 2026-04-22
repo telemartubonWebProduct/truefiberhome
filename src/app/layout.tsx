@@ -11,7 +11,6 @@ import BottomNav from "@/src/components/layout/BottomNav";
 import { ToastContainer } from "react-toastify";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 
-
 // 1) เรียกใช้ฟอนต์ Prompt จาก next/font/google
 const prompt = Prompt({
   subsets: ["thai"],
@@ -21,8 +20,6 @@ const prompt = Prompt({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://truefiberhome.com";
-
-
 
 export const metadata: Metadata = {
   title: {
@@ -71,7 +68,14 @@ export const metadata: Metadata = {
     description:
       "สมัครเน็ตบ้านทรูออนไลน์ แพ็กเกจมือถือ และบริการติดตั้งครบวงจร โดยทีมผู้เชี่ยวชาญ พร้อมช่องทางติดต่อที่ตรวจสอบได้",
     url: `${siteUrl}/home`,
-    images: [{ url: "/assets/Trueonline-logo.svg.png", width: 512, height: 512, alt: "True Fiber Home" }],
+    images: [
+      {
+        url: "/assets/Trueonline-logo.svg.png",
+        width: 512,
+        height: 512,
+        alt: "True Fiber Home",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -109,7 +113,11 @@ export default async function RootLayout({
     footerLinkDelegate
       ? footerLinkDelegate.findMany({
           where: { isActive: true },
-          orderBy: [{ section: "asc" }, { displayOrder: "asc" }, { createdAt: "asc" }],
+          orderBy: [
+            { section: "asc" },
+            { displayOrder: "asc" },
+            { createdAt: "asc" },
+          ],
         })
       : [],
   ]);
@@ -118,15 +126,11 @@ export default async function RootLayout({
     // 2) เพิ่ม className จากตัวแปร prompt.className ตรงแท็ก html หรือ body
     <html lang="th" className={prompt.className} suppressHydrationWarning>
       <head>
-        
-
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=AW-18007307609"
           strategy="afterInteractive"
         />
-       
-
 
         <Script
           id="structured-data-organization"
@@ -182,9 +186,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PGGH95T3');`,
           }}
         />
+
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-0X5TY75CH1"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="gtag-init-2"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-0X5TY75CH1', { anonymize_ip: true });
+    `,
+          }}
+        />
       </head>
       <body>
-
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-PGGH95T3"
@@ -194,18 +215,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
 
-        <SiteSettingsProvider settings={{ lineSupportUrl: siteSettings?.lineSupportUrl || undefined }}>
+        <SiteSettingsProvider
+          settings={{
+            lineSupportUrl: siteSettings?.lineSupportUrl || undefined,
+          }}
+        >
           <AppRouterCacheProvider>
             <CookieConsent />
             <ThemeProvider theme={theme}>
               <div className="min-h-screen flex flex-col">
-                <Navbar siteSettings={siteSettings} navigationItems={navigationItems} />
+                <Navbar
+                  siteSettings={siteSettings}
+                  navigationItems={navigationItems}
+                />
                 <ScrollToTop />
                 <main className="flex-1 pb-[65px] lg:pb-0">{children}</main>
                 <Footer siteSettings={siteSettings} footerLinks={footerLinks} />
                 <BottomNav />
               </div>
-              <ToastContainer position="bottom-right" theme="dark"  />
+              <ToastContainer position="bottom-right" theme="dark" />
               <ChatWidgetVisibility />
             </ThemeProvider>
           </AppRouterCacheProvider>

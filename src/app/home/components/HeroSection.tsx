@@ -53,6 +53,11 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
   const ctaSecondaryHref = heroData?.ctaSecondaryHref ?? defaultHero.ctaSecondary.href;
   const backgroundImage = heroData?.backgroundImageUrl ?? defaultHero.backgroundImage;
 
+  const primaryHref = (!ctaPrimaryHref || ctaPrimaryHref === "#") ? lineSupportUrl : ctaPrimaryHref;
+  const secondaryHref = (!ctaSecondaryHref || ctaSecondaryHref === "#") ? lineSupportUrl : ctaSecondaryHref;
+  const primaryOpenInNewTab = isExternalLink(primaryHref);
+  const secondaryOpenInNewTab = isExternalLink(secondaryHref);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -150,7 +155,7 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
 
           <Box component={motion.div} variants={childVariants} className="mt-6 flex flex-wrap items-center gap-4">
             <Button
-              component={motion.button}
+              component={motion.a}
               animate={{
                 boxShadow: [
                   "0 18px 45px rgba(239,68,68,0.55)",
@@ -163,13 +168,9 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.97 }}
               variant="contained"
-              onClick={() => {
-                const finalHref = (!ctaPrimaryHref || ctaPrimaryHref === "#") ? lineSupportUrl : ctaPrimaryHref;
-                if (finalHref) {
-                  if (isExternalLink(finalHref)) window.open(finalHref, "_blank", "noopener,noreferrer");
-                  else window.location.href = finalHref;
-                }
-              }}
+              href={primaryHref || undefined}
+              target={primaryOpenInNewTab ? "_blank" : undefined}
+              rel={primaryOpenInNewTab ? "noopener noreferrer" : undefined}
               className="rounded-full px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-lg shadow-red-500/40"
               sx={{
                 backgroundImage: "linear-gradient(90deg, #f97316, #ef4444, #fb923c)",
@@ -180,17 +181,13 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
             </Button>
             <Box>
               <Button
-                component={motion.button}
+                component={motion.a}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
                 variant="outlined"
-                onClick={() => {
-                  const finalHref = (!ctaSecondaryHref || ctaSecondaryHref === "#") ? lineSupportUrl : ctaSecondaryHref;
-                  if (finalHref) {
-                    if (isExternalLink(finalHref)) window.open(finalHref, "_blank", "noopener,noreferrer");
-                    else window.location.href = finalHref;
-                  }
-                }}
+                href={secondaryHref || undefined}
+                target={secondaryOpenInNewTab ? "_blank" : undefined}
+                rel={secondaryOpenInNewTab ? "noopener noreferrer" : undefined}
                 className="rounded-full px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-md"
                 sx={{
                   borderColor: "rgba(255,255,255,0.6)",

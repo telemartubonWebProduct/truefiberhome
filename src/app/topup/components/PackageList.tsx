@@ -9,7 +9,7 @@ import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import TvIcon from "@mui/icons-material/Tv";
 import ShieldIcon from "@mui/icons-material/Shield";
 import type { PackageItem } from "@/src/types/package";
-import { topupCategories as CATEGORIES, topupPackages as FALLBACK_PACKAGES } from "@/src/data/topup";
+import { topupCategories as CATEGORIES } from "@/src/data/topup";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
 import { safeLink } from "@/src/lib/api-normalize";
 
@@ -55,21 +55,7 @@ const cardVariants = {
   },
 };
 
-function openPurchaseLink(rawUrl: string) {
-  const target = safeLink(rawUrl);
-  if (!target || target === "#") {
-    return;
-  }
-
-  if (/^tel:/i.test(target)) {
-    window.location.href = target;
-    return;
-  }
-
-  window.open(target, "_blank", "noopener,noreferrer");
-}
-
-export default function PackageList({ packages = FALLBACK_PACKAGES }: PackageListProps) {
+export default function PackageList({ packages = [] }: PackageListProps) {
   const [activeCategoryId, setActiveCategoryId] = useState<number | "all">("all");
   const { lineSupportUrl } = useSiteSettings();
 
@@ -121,6 +107,7 @@ export default function PackageList({ packages = FALLBACK_PACKAGES }: PackageLis
           {visiblePackages.map((pkg) => {
             const normalizedBuyLink = safeLink(pkg.buy_link);
             const buyUrl = normalizedBuyLink && normalizedBuyLink !== "#" ? normalizedBuyLink : lineSupportUrl;
+            const openInNewTab = !/^tel:/i.test(buyUrl);
             return (
               <motion.article
                 key={`${pkg.id}-${pkg.name}`}
@@ -152,12 +139,14 @@ export default function PackageList({ packages = FALLBACK_PACKAGES }: PackageLis
                     {pkg.price_note && <p className="mt-1 text-[11px] font-semibold text-slate-500">{pkg.price_note}</p>}
                   </div>
 
-                  <button
-                    onClick={() => openPurchaseLink(buyUrl)}
+                  <a
+                    href={buyUrl}
+                    target={openInNewTab ? "_blank" : undefined}
+                    rel={openInNewTab ? "noopener noreferrer" : undefined}
                     className="rounded-full bg-slate-900 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-slate-700"
                   >
-                    ซื้อเลย
-                  </button>
+                    กดสมัคร
+                  </a>
                 </div>
               </motion.article>
             );

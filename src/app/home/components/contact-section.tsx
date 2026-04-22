@@ -24,6 +24,7 @@ interface ContactSectionProps {
     isActive?: boolean;
   };
   methods?: ContactMethodItem[];
+  sectionId?: string;
 }
 
 const fallbackMethods: ContactMethodItem[] = [
@@ -114,7 +115,7 @@ function ContactIcon({ method }: { method: ContactMethodItem }) {
   );
 }
 
-export default function ContactSection({ content, methods }: ContactSectionProps) {
+export default function ContactSection({ content, methods, sectionId = "home-contact-section" }: ContactSectionProps) {
   const sectionTitle = content?.title || "ติดต่อและสมัครบริการ";
   const sectionSubtitle = content?.subtitle || "เลือกช่องทางที่สะดวก ทีมงานพร้อมดูแลทันที";
   const sectionVisible = content?.isActive ?? true;
@@ -126,7 +127,7 @@ export default function ContactSection({ content, methods }: ContactSectionProps
   const displayMethods = methods && methods.length > 0 ? methods : fallbackMethods;
 
   return (
-    <section className="py-20 bg-slate-50 font-prompt w-full overflow-hidden relative">
+    <section id={sectionId} className="py-20 bg-slate-50 font-prompt w-full overflow-hidden relative scroll-mt-24">
       {/* Background Graphic Effects */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -right-[5%] w-96 h-96 rounded-full bg-blue-100 opacity-40 blur-3xl mix-blend-multiply"></div>

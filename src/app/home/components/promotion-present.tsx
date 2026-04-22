@@ -1,5 +1,6 @@
 "use client";
-import { Box, Typography, Button, IconButton } from "@mui/material";
+import { Box, Typography, Button, IconButton, Dialog, DialogContent, DialogTitle, useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import gigatexRouter from "@/src/assets/GigaTex_router.webp";
@@ -7,7 +8,12 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { useRef, useState, useEffect, useCallback } from "react";
+import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
+import LocalPhoneRoundedIcon from "@mui/icons-material/LocalPhoneRounded";
+import FacebookRoundedIcon from "@mui/icons-material/FacebookRounded";
+import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { lineSupport } from "@/src/context/line-path";
 
 interface GiftItem {
@@ -24,6 +30,14 @@ interface PackageData {
   freebies: string[];
   gifts: GiftItem[];
   buyUrl?: string;
+}
+
+interface ContactMethodItem {
+  id: string;
+  key?: string;
+  title: string;
+  desc?: string;
+  href: string;
 }
 
 const mockPackages: PackageData[] = [
@@ -77,20 +91,61 @@ const mockPackages: PackageData[] = [
   },
 ];
 
+const fallbackContactMethods: ContactMethodItem[] = [
+  {
+    id: "line",
+    key: "line",
+    title: "สมัครทางไลน์",
+    desc: "สะดวกรวดเร็ว แอดมินตอบไว",
+    href: lineSupport,
+  },
+  {
+    id: "phone",
+    key: "phone",
+    title: "โทรสมัคร",
+    desc: "ติดต่อเจ้าหน้าที่ได้ทันที",
+    href: "tel:021234567",
+  },
+];
+
+const normalizeHref = (value?: string) => {
+  const normalized = value?.trim();
+  if (!normalized || normalized === "/service" || normalized === "#") {
+    return lineSupport;
+  }
+
+  return normalized;
+};
+
 interface PromotionPresentProps {
   packages?: PackageData[];
   helperText?: string;
   isActive?: boolean;
+  contactMethods?: ContactMethodItem[];
+  contactSectionId?: string;
 }
 
 export default function PromotionPresent({
   packages = [],
   helperText = "เลื่อนเพื่อดูโปรโมชันทั้งหมด",
   isActive = true,
+  contactMethods = [],
+  contactSectionId = "home-contact-section",
 }: PromotionPresentProps) {
   const displayPackages = packages.length > 0 ? packages : mockPackages;
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
+
+  const availableContactMethods = useMemo(
+    () => (contactMethods.length > 0 ? contactMethods : fallbackContactMethods).map((method) => ({
+      ...method,
+      href: normalizeHref(method.href),
+    })),
+    [contactMethods]
+  );
 
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return;
@@ -122,6 +177,21 @@ export default function PromotionPresent({
     }, 5000);
     return () => clearInterval(interval);
   }, [displayPackages.length, scrollToIndex]);
+
+  const handleInterestClick = useCallback((fallbackUrl?: string) => {
+    if (isSmallScreen) {
+      setIsContactModalOpen(true);
+      return;
+    }
+
+    const target = document.getElementById(contactSectionId);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    window.location.href = normalizeHref(fallbackUrl);
+  }, [contactSectionId, isSmallScreen]);
 
   if (!isActive) {
     return null;
@@ -204,7 +274,7 @@ export default function PromotionPresent({
                 flexShrink: 0,
               }}
             >
-              <PromotionCard pkg={pkg} />
+              <PromotionCard pkg={pkg} onInterestClick={handleInterestClick} />
             </Box>
           ))}
         </Box>
@@ -266,12 +336,111 @@ export default function PromotionPresent({
           </IconButton>
         </Box>
       </Box>
+
+      <Dialog
+        open={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        fullWidth
+        maxWidth="xs"
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: "20px",
+              p: 0.5,
+            },
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+            <Box>
+              <Typography sx={{ fontWeight: 900, color: "#0f172a", fontSize: "1.1rem" }}>
+                เลือกช่องทางสมัครบริการ
+              </Typography>
+              <Typography sx={{ color: "#64748b", fontSize: "0.85rem", mt: 0.3 }}>
+                กดเลือกช่องทางที่สะดวกได้เลย
+              </Typography>
+            </Box>
+            <IconButton onClick={() => setIsContactModalOpen(false)} size="small" aria-label="ปิดหน้าต่าง">
+              <CloseRoundedIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+
+        <DialogContent sx={{ pt: 0.5, pb: 2 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+            {availableContactMethods.map((method) => {
+              const key = (method.key || method.title || "").toLowerCase();
+
+              return (
+                <Button
+                  key={method.id}
+                  component="a"
+                  href={method.href}
+                  onClick={() => setIsContactModalOpen(false)}
+                  sx={{
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    textTransform: "none",
+                    borderRadius: "14px",
+                    px: 1.5,
+                    py: 1.4,
+                    border: "1px solid #e2e8f0",
+                    bgcolor: "#ffffff",
+                    color: "#0f172a",
+                    "&:hover": {
+                      bgcolor: "#f8fafc",
+                      borderColor: "#cbd5e1",
+                    },
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.3 }}>
+                    <Box
+                      sx={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: "12px",
+                        display: "grid",
+                        placeItems: "center",
+                        color: "#ffffff",
+                        background:
+                          key.includes("line")
+                            ? "#06c755"
+                            : key.includes("facebook")
+                            ? "#1877f2"
+                            : "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)",
+                      }}
+                    >
+                      {key.includes("line") ? (
+                        <ChatBubbleRoundedIcon sx={{ fontSize: 20 }} />
+                      ) : key.includes("facebook") ? (
+                        <FacebookRoundedIcon sx={{ fontSize: 20 }} />
+                      ) : (
+                        <LocalPhoneRoundedIcon sx={{ fontSize: 20 }} />
+                      )}
+                    </Box>
+                    <Box sx={{ textAlign: "left" }}>
+                      <Typography sx={{ fontWeight: 800, fontSize: "0.95rem", lineHeight: 1.2 }}>{method.title}</Typography>
+                      {method.desc ? (
+                        <Typography sx={{ fontSize: "0.76rem", color: "#64748b", mt: 0.3, lineHeight: 1.3 }}>
+                          {method.desc}
+                        </Typography>
+                      ) : null}
+                    </Box>
+                  </Box>
+                  <OpenInNewRoundedIcon sx={{ color: "#64748b", fontSize: 19 }} />
+                </Button>
+              );
+            })}
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
 
 /* ─────────── Clean Promotion Card ─────────── */
-function PromotionCard({ pkg }: { pkg: PackageData }) {
+function PromotionCard({ pkg, onInterestClick }: { pkg: PackageData; onInterestClick: (fallbackUrl?: string) => void }) {
   const normalizedBuyUrl = pkg.buyUrl?.trim();
   const buyUrl = normalizedBuyUrl && normalizedBuyUrl !== "/service" && normalizedBuyUrl !== "#" ? normalizedBuyUrl : lineSupport;
 
@@ -495,10 +664,9 @@ function PromotionCard({ pkg }: { pkg: PackageData }) {
 
           {/* CTA Button */}
           <Button
-            component="a"
-            href={buyUrl}
             variant="contained"
             fullWidth
+            onClick={() => onInterestClick(buyUrl)}
             sx={{
               mt: 2.5,
               bgcolor: "#3466F6",

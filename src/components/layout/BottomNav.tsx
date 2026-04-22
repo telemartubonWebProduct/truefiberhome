@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import RocketLaunchRoundedIcon from "@mui/icons-material/RocketLaunchRounded";
@@ -12,7 +13,7 @@ import { lineSupport } from "@/src/context/line-path";
 const navItems = [
   {
     name: "หน้าแรก",
-    href: "/",
+    href: "/home",
     icon: <HomeRoundedIcon className="w-5 h-5" />,
   },
   {
@@ -21,7 +22,7 @@ const navItems = [
     icon: <RocketLaunchRoundedIcon className="w-5 h-5" />,
   },
   {
-    name: "สมัครทาง LINEสิดต่อ สอบถาม",
+    name: "สมัครทาง LINE",
     href: lineSupport,
     icon: <ChatBubbleRoundedIcon className="w-5 h-5" />,
   },
@@ -39,6 +40,15 @@ const navItems = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    navItems.forEach((item) => {
+      if (item.href.startsWith("/")) {
+        router.prefetch(item.href);
+      }
+    });
+  }, [router]);
 
   // ซ่อน Bottom Bar หากอยู่ใน Dashboard / Backend
   const isHiddenRoute = pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend");
@@ -51,14 +61,27 @@ export default function BottomNav() {
           const isInternalRoute = item.href.startsWith("/");
           const isActive =
             isInternalRoute &&
-            (item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href));
+            (item.href === "/home"
+              ? pathname === "/" || pathname === "/home"
+              : pathname?.startsWith(item.href));
 
           return (
             <Link
               key={idx}
               href={item.href}
+              prefetch={isInternalRoute ? true : undefined}
               target={isInternalRoute ? undefined : "_blank"}
               rel={isInternalRoute ? undefined : "noopener noreferrer"}
+              onTouchStart={() => {
+                if (isInternalRoute) {
+                  router.prefetch(item.href);
+                }
+              }}
+              onMouseEnter={() => {
+                if (isInternalRoute) {
+                  router.prefetch(item.href);
+                }
+              }}
               className={`group relative flex flex-1 flex-col items-center justify-center rounded-xl px-0.5 py-1.5 transition-all duration-200 ${
                 isActive ? "bg-black/[0.04]" : "hover:bg-black/[0.03]"
               }`}

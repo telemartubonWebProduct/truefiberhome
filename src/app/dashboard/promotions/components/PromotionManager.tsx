@@ -38,6 +38,52 @@ const TABS = [
   { id: "solar", label: "โซล่าเซลล์ (wEnergy)" }
 ];
 
+function hasRecommendedBadge(badge: string | null): boolean {
+  return (badge || "").includes("แนะนำ");
+}
+
+function addRecommendedBadge(badge: string | null): string {
+  const normalized = (badge || "").trim();
+  if (!normalized) {
+    return "แนะนำ";
+  }
+
+  if (hasRecommendedBadge(normalized)) {
+    return normalized;
+  }
+
+  return `${normalized} | แนะนำ`;
+}
+
+function removeRecommendedBadge(badge: string | null): string | null {
+  const normalized = (badge || "").trim();
+  if (!normalized) {
+    return null;
+  }
+
+  const parts = normalized
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => !part.includes("แนะนำ"));
+
+  if (parts.length > 0) {
+    return parts.join(" | ");
+  }
+
+  const stripped = normalized
+    .replace(/แนะนำ/g, "")
+    .replace(/[|,;/]+/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  if (!/[A-Za-z0-9ก-๙]/.test(stripped)) {
+    return null;
+  }
+
+  return stripped;
+}
+
 export default function PromotionManager({
   initialPromotions,
   initialType,
@@ -54,6 +100,8 @@ export default function PromotionManager({
   const [showForm, setShowForm] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [togglingRecommendedId, setTogglingRecommendedId] = useState<string | null>(null);
+  const showRecommendedColumn = activeTab === "topup";
 
   // Sync state when props change (after router.refresh())
   useEffect(() => {
@@ -137,6 +185,40 @@ export default function PromotionManager({
     }
   };
 
+  const handleToggleTopupRecommended = async (promo: Promotion) => {
+    if (promo.type !== "topup") return;
+
+    const isRecommended = hasRecommendedBadge(promo.promoBadge);
+    const nextBadge = isRecommended
+      ? removeRecommendedBadge(promo.promoBadge)
+      : addRecommendedBadge(promo.promoBadge);
+
+    setTogglingRecommendedId(promo.id);
+    try {
+      const payload: { promoBadge: string | null; status?: boolean } = {
+        promoBadge: nextBadge,
+      };
+
+      if (!isRecommended && !promo.status) {
+        payload.status = true;
+      }
+
+      const res = await fetch(`/api/promotions/${promo.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Failed to toggle topup recommended");
+      router.refresh();
+    } catch (error) {
+      console.error("Toggle topup recommended failed:", error);
+      alert("Failed to toggle topup recommended");
+    } finally {
+      setTogglingRecommendedId(null);
+    }
+  };
+
   return (
     <div>
       {/* Search and Add Button Area */}
@@ -215,18 +297,22 @@ export default function PromotionManager({
                 <th className="px-6 py-4 font-medium">ข้อมูลหลัก</th>
                 <th className="px-6 py-4 font-medium">ราคา</th>
                 <th className="px-6 py-4 font-medium">สถานะ</th>
+                {showRecommendedColumn && <th className="px-6 py-4 font-medium">โปรเติมเงินแนะนำ</th>}
                 <th className="px-6 py-4 font-medium text-center">จัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
               {filteredPromotions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 text-sm">
+                  <td colSpan={showRecommendedColumn ? 7 : 6} className="px-6 py-12 text-center text-gray-500 text-sm">
                     ไม่มีข้อมูลโปรโมชันในหมวดหมู่นี้
                   </td>
                 </tr>
               ) : (
-                filteredPromotions.map(promo => (
+                filteredPromotions.map(promo => {
+                  const isRecommended = hasRecommendedBadge(promo.promoBadge);
+
+                  return (
                   <tr key={promo.id} className="hover:bg-gray-800/20 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -283,6 +369,29 @@ export default function PromotionManager({
                         {togglingId === promo.id ? "กำลังสลับ..." : promo.status ? "แสดงผล" : "ซ่อน"}
                       </button>
                     </td>
+                    {showRecommendedColumn && (
+                      <td className="px-6 py-4 text-left">
+                        <button
+                          onClick={() => handleToggleTopupRecommended(promo)}
+                          disabled={togglingRecommendedId === promo.id}
+                          className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                            isRecommended && promo.status
+                              ? "bg-blue-500/10 border-blue-500/30 text-blue-300 hover:bg-blue-500/20"
+                              : isRecommended
+                                ? "bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20"
+                                : "bg-gray-800/50 border-gray-700 text-gray-400 hover:bg-gray-800"
+                          }`}
+                        >
+                          {togglingRecommendedId === promo.id
+                            ? "กำลังอัปเดต..."
+                            : isRecommended && promo.status
+                              ? "แสดงในแนะนำ"
+                              : isRecommended
+                                ? "แนะนำ (แต่ซ่อนอยู่)"
+                                : "ไม่แสดง"}
+                        </button>
+                      </td>
+                    )}
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
@@ -307,7 +416,7 @@ export default function PromotionManager({
                       </div>
                     </td>
                   </tr>
-                ))
+                )})
               )}
             </tbody>
           </table>
