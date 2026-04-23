@@ -1,33 +1,38 @@
 import { broadbandPackageData } from "@/src/data/boardband";
-import { contactInfo } from "@/src/data/contact";
 import { monthlyPackages } from "@/src/data/monthly";
 import { promotionPackages } from "@/src/data/promotions";
 import { topupPackages } from "@/src/data/topup";
 import { prisma } from "@/src/lib/prisma";
 
-type RecommendationCandidate = {
+type PackageSegment = "home" | "mobile" | "other";
+
+type Candidate = {
   key: string;
   name: string;
   price: number;
+  segment: PackageSegment;
   speedText: string | null;
   downloadSpeedMbps: number | null;
-  uploadSpeedMbps: number | null;
   contractMonths: number | null;
-  quotaGb: number | null;
   unlimited: boolean;
-  features: string[];
+  quotaGb: number | null;
+  benefits: string[];
 };
 
-type PackageRequirements = {
+type Requirements = {
+  budget: number;
+  requestedSegment: PackageSegment | null;
   minSpeedMbps: number | null;
   minQuotaGb: number | null;
   requireUnlimited: boolean;
   maxContractMonths: number | null;
-  exactContractMonths: number | null;
 };
 
 const PACKAGE_INTENT_PATTERN =
-  /(แพ็กเกจ|แพคเกจ|โปรโมชั่น|โปรโมชัน|โปร|package|promotion|recommend|แนะนำ|งบ|budget|เน็ตบ้าน|ไฟเบอร์|fiber|wifi|ความเร็ว|mbps|gbps|รายเดือน|เติมเงิน|topup)/i;
+  /(แพ็กเกจ|แพคเกจ|โปรโมชั่น|โปรโมชัน|โปร|package|promotion|recommend|แนะนำ|งบ|budget|เน็ตบ้าน|ไฟเบอร์|fiber|wifi|broadband|มือถือ|topup|เติมเงิน|รายเดือน|5g|4g)/i;
+
+const HOME_SEGMENT_PATTERN = /(เน็ตบ้าน|ไฟเบอร์|fiber|wifi|broadband|home\s*internet)/i;
+const MOBILE_SEGMENT_PATTERN = /(มือถือ|mobile|ซิม|sim|เติมเงิน|topup|รายเดือน|monthly|5g|4g)/i;
 
 const BUDGET_PATTERNS = [
   /(?:ไม่เกิน|งบ(?:ประมาณ)?|budget|under|ราคา(?:\s*ไม่เกิน)?|<=)\s*[:=]?\s*(?:บาท|฿)?\s*([0-9,]+(?:\.[0-9]+)?)/i,
@@ -36,12 +41,6 @@ const BUDGET_PATTERNS = [
   /฿\s*([0-9,]+(?:\.[0-9]+)?)/i,
 ];
 
-const SPEED_REGEX = /(\d+(?:\.\d+)?)\s*(gbps|mbps|g|m)\b/gi;
-const SPEED_PAIR_REGEX = /(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*(gbps|mbps|g|m)/gi;
-const QUOTA_REGEX = /(\d+(?:\.\d+)?)\s*gb\b/gi;
-const CONTRACT_REGEX = /(\d{1,2})\s*เดือน/g;
-const UNLIMITED_REGEX = /(ไม่อั้น|ไม่จำกัด|unlimited)/i;
-
 function toArabicDigits(value: string) {
   const thaiDigits = "๐๑๒๓๔๕๖๗๘๙";
 
@@ -49,53 +48,6 @@ function toArabicDigits(value: string) {
     const index = thaiDigits.indexOf(digit);
     return index >= 0 ? String(index) : digit;
   });
-}
-
-function compactText(value: string | null | undefined, maxLength = 220) {
-  if (!value) {
-    return null;
-  }
-
-  const compacted = value.replace(/\s+/g, " ").trim();
-  if (!compacted) {
-    return null;
-  }
-
-  return compacted.length <= maxLength ? compacted : `${compacted.slice(0, maxLength - 1)}…`;
-}
-
-function normalizeJsonText(value: unknown): string {
-  if (value === null || typeof value === "undefined") {
-    return "";
-  }
-
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return String(value);
-  }
-
-  if (Array.isArray(value)) {
-    return value
-      .map((entry) => normalizeJsonText(entry))
-      .map((entry) => entry.trim())
-      .filter((entry) => entry.length > 0)
-      .join(" | ");
-  }
-
-  if (typeof value === "object") {
-    return Object.entries(value as Record<string, unknown>)
-      .map(([key, entry]) => {
-        const text = normalizeJsonText(entry).trim();
-        if (!text) {
-          return "";
-        }
-
-        return `${key}: ${text}`;
-      })
-      .filter((entry) => entry.length > 0)
-      .join(" | ");
-  }
-
-  return "";
 }
 
 function parseNumber(value: string) {
@@ -109,12 +61,12 @@ function parseBudget(question: string) {
 
   for (const pattern of BUDGET_PATTERNS) {
     const match = normalizedQuestion.match(pattern);
-    if (!match || !match[1]) {
+    if (!match?.[1]) {
       continue;
     }
 
     const parsed = parseNumber(match[1]);
-    if (parsed && parsed > 0) {
+    if (parsed !== null && parsed > 0) {
       return Math.floor(parsed);
     }
   }
@@ -123,257 +75,288 @@ function parseBudget(question: string) {
 }
 
 function toMbps(value: number, unit: string) {
-  const lowered = unit.toLowerCase();
-  if (lowered.startsWith("g")) {
-    return value * 1000;
-  }
-
-  return value;
+  return unit.toLowerCase().startsWith("g") ? value * 1000 : value;
 }
 
-function extractSpeedFromTexts(texts: string[]) {
-  let bestDownload: number | null = null;
-  let bestUpload: number | null = null;
-  let speedText: string | null = null;
-
-  for (const text of texts) {
-    let pairMatch = SPEED_PAIR_REGEX.exec(text);
-    while (pairMatch) {
-      const download = parseNumber(pairMatch[1]);
-      const upload = parseNumber(pairMatch[2]);
-      const unit = pairMatch[3]?.toLowerCase() || "mbps";
-
-      if (download && upload) {
-        const downloadMbps = toMbps(download, unit);
-        const uploadMbps = toMbps(upload, unit);
-
-        if (!bestDownload || downloadMbps > bestDownload) {
-          bestDownload = downloadMbps;
-          bestUpload = uploadMbps;
-          speedText = `${download}/${upload} ${unit.toUpperCase()}`;
-        }
-      }
-
-      pairMatch = SPEED_PAIR_REGEX.exec(text);
-    }
-
-    let singleMatch = SPEED_REGEX.exec(text);
-    while (singleMatch) {
-      const value = parseNumber(singleMatch[1]);
-      const unit = singleMatch[2]?.toLowerCase() || "mbps";
-
-      if (value) {
-        const speedMbps = toMbps(value, unit);
-        if (!bestDownload || speedMbps > bestDownload) {
-          bestDownload = speedMbps;
-          bestUpload = bestUpload ?? null;
-          speedText = `${value} ${unit.toUpperCase()}`;
-        }
-      }
-
-      singleMatch = SPEED_REGEX.exec(text);
-    }
-  }
-
-  return {
-    downloadSpeedMbps: bestDownload,
-    uploadSpeedMbps: bestUpload,
-    speedText,
-  };
+function formatMoney(value: number) {
+  return new Intl.NumberFormat("th-TH", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
 }
 
-function extractQuotaFromTexts(texts: string[]) {
-  let quotaGb: number | null = null;
-  let unlimited = false;
-
-  for (const text of texts) {
-    if (UNLIMITED_REGEX.test(text)) {
-      unlimited = true;
-    }
-
-    let match = QUOTA_REGEX.exec(text);
-    while (match) {
-      const quota = parseNumber(match[1]);
-      if (quota && (!quotaGb || quota > quotaGb)) {
-        quotaGb = quota;
-      }
-      match = QUOTA_REGEX.exec(text);
-    }
+function compactText(value: string | null | undefined, maxLength = 180) {
+  if (!value) {
+    return null;
   }
 
-  return {
-    quotaGb,
-    unlimited,
-  };
+  const compacted = value
+    .replace(/https?:\/\/[^\s)]+/gi, "")
+    .replace(/\s+/g, " ")
+    .replace(/[|]+/g, ", ")
+    .trim();
+
+  if (!compacted) {
+    return null;
+  }
+
+  return compacted.length <= maxLength ? compacted : `${compacted.slice(0, maxLength - 1)}…`;
 }
 
-function extractContractMonthsFromTexts(texts: string[]) {
-  let months: number | null = null;
+function inferSegment(texts: Array<string | null | undefined>, fallback: PackageSegment = "other") {
+  const joined = texts
+    .map((text) => compactText(text, 220))
+    .filter((text): text is string => Boolean(text))
+    .join(" ");
 
-  for (const text of texts) {
-    let match = CONTRACT_REGEX.exec(text);
-    while (match) {
-      const parsed = Number.parseInt(match[1], 10);
-      if (Number.isFinite(parsed) && parsed > 0 && (!months || parsed > months)) {
-        months = parsed;
-      }
-      match = CONTRACT_REGEX.exec(text);
+  if (HOME_SEGMENT_PATTERN.test(joined)) {
+    return "home";
+  }
+
+  if (MOBILE_SEGMENT_PATTERN.test(joined)) {
+    return "mobile";
+  }
+
+  return fallback;
+}
+
+function detectRequestedSegment(question: string): PackageSegment | null {
+  const hasHome = HOME_SEGMENT_PATTERN.test(question);
+  const hasMobile = MOBILE_SEGMENT_PATTERN.test(question);
+
+  if (hasHome && !hasMobile) {
+    return "home";
+  }
+
+  if (hasMobile && !hasHome) {
+    return "mobile";
+  }
+
+  return null;
+}
+
+function normalizeJsonText(value: unknown): string {
+  if (value === null || typeof value === "undefined") {
+    return "";
+  }
+
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => normalizeJsonText(entry).trim())
+      .filter((entry) => entry.length > 0)
+      .join(" | ");
+  }
+
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const preferredKeys = ["text", "label", "title", "name", "description", "detail", "speed", "validity"];
+
+    const preferredValues = preferredKeys
+      .map((key) => normalizeJsonText(record[key]).trim())
+      .filter((entry) => entry.length > 0);
+
+    if (preferredValues.length > 0) {
+      return preferredValues.join(" | ");
+    }
+
+    return Object.values(record)
+      .map((entry) => normalizeJsonText(entry).trim())
+      .filter((entry) => entry.length > 0)
+      .join(" | ");
+  }
+
+  return "";
+}
+
+function extractBenefits(values: Array<string | null | undefined>) {
+  const benefits: string[] = [];
+
+  for (const value of values) {
+    const compacted = compactText(value, 160);
+    if (!compacted) {
+      continue;
+    }
+
+    const lowered = compacted.toLowerCase();
+    if (/(https?:\/\/|\.supabase\.co|image|icon|label:|text:|buy|link|ลิงก์|url)/i.test(lowered)) {
+      continue;
+    }
+
+    if (/(^|\s)(บาท|ราคา)(\s|$)/i.test(lowered)) {
+      continue;
+    }
+
+    if (!benefits.includes(compacted)) {
+      benefits.push(compacted);
+    }
+
+    if (benefits.length >= 4) {
+      break;
     }
   }
 
-  return months;
+  return benefits;
 }
 
 function buildCandidate(input: {
   key: string;
   name: string;
   price: number;
+  segment: PackageSegment;
   speedText?: string | null;
   downloadSpeedMbps?: number | null;
-  uploadSpeedMbps?: number | null;
   contractMonths?: number | null;
-  features?: Array<string | null | undefined>;
+  benefits?: Array<string | null | undefined>;
 }) {
-  const normalizedFeatures = (input.features ?? [])
-    .map((feature) => compactText(feature ?? null))
-    .filter((feature): feature is string => Boolean(feature));
+  const name = compactText(input.name, 120);
+  if (!name) {
+    return null;
+  }
 
-  const speedInfoFromFeatures = extractSpeedFromTexts(normalizedFeatures);
-  const speedText = compactText(input.speedText ?? speedInfoFromFeatures.speedText);
+  const price = Number(input.price);
+  if (!Number.isFinite(price) || price <= 0) {
+    return null;
+  }
 
-  const downloadSpeedMbps =
-    input.downloadSpeedMbps ?? speedInfoFromFeatures.downloadSpeedMbps ?? null;
-  const uploadSpeedMbps = input.uploadSpeedMbps ?? speedInfoFromFeatures.uploadSpeedMbps ?? null;
+  const speedText = compactText(input.speedText, 60);
+  const rawBenefits = extractBenefits(input.benefits ?? []);
 
-  const contractMonths =
-    typeof input.contractMonths === "number" && input.contractMonths > 0
-      ? input.contractMonths
-      : extractContractMonthsFromTexts(normalizedFeatures);
+  let quotaGb: number | null = null;
+  let unlimited = false;
 
-  const quotaInfo = extractQuotaFromTexts(normalizedFeatures);
+  for (const benefit of rawBenefits) {
+    if (/(ไม่อั้น|ไม่จำกัด|unlimited)/i.test(benefit)) {
+      unlimited = true;
+    }
+
+    const quotaMatch = benefit.match(/(\d+(?:\.\d+)?)\s*gb\b/i);
+    if (quotaMatch?.[1]) {
+      const quota = parseNumber(quotaMatch[1]);
+      if (quota !== null && (quotaGb === null || quota > quotaGb)) {
+        quotaGb = quota;
+      }
+    }
+  }
 
   return {
     key: input.key,
-    name: compactText(input.name, 160) || input.name,
-    price: Number(input.price),
+    name,
+    price,
+    segment: input.segment,
     speedText,
-    downloadSpeedMbps,
-    uploadSpeedMbps,
-    contractMonths,
-    quotaGb: quotaInfo.quotaGb,
-    unlimited: quotaInfo.unlimited,
-    features: normalizedFeatures,
-  } satisfies RecommendationCandidate;
+    downloadSpeedMbps: input.downloadSpeedMbps ?? null,
+    contractMonths:
+      typeof input.contractMonths === "number" && input.contractMonths > 0
+        ? input.contractMonths
+        : null,
+    unlimited,
+    quotaGb,
+    benefits: rawBenefits,
+  } satisfies Candidate;
 }
 
-function mergeCandidates(candidates: RecommendationCandidate[]) {
-  const map = new Map<string, RecommendationCandidate>();
+function dedupeCandidates(candidates: Candidate[]) {
+  const map = new Map<string, Candidate>();
 
   for (const candidate of candidates) {
-    if (!candidate.name || !Number.isFinite(candidate.price) || candidate.price <= 0) {
-      continue;
-    }
-
-    const dedupeKey = `${candidate.name.toLowerCase().trim()}|${candidate.price.toFixed(2)}`;
-    const existing = map.get(dedupeKey);
+    const key = `${candidate.name.toLowerCase()}|${candidate.price.toFixed(2)}|${candidate.segment}`;
+    const existing = map.get(key);
 
     if (!existing) {
-      map.set(dedupeKey, candidate);
+      map.set(key, candidate);
       continue;
     }
 
-    const mergedFeatures = Array.from(new Set([...existing.features, ...candidate.features])).slice(0, 8);
-    const merged = {
+    map.set(key, {
       ...existing,
-      key: existing.key,
       speedText: existing.speedText ?? candidate.speedText,
       downloadSpeedMbps: existing.downloadSpeedMbps ?? candidate.downloadSpeedMbps,
-      uploadSpeedMbps: existing.uploadSpeedMbps ?? candidate.uploadSpeedMbps,
       contractMonths: existing.contractMonths ?? candidate.contractMonths,
-      quotaGb: existing.quotaGb ?? candidate.quotaGb,
       unlimited: existing.unlimited || candidate.unlimited,
-      features: mergedFeatures,
-    } satisfies RecommendationCandidate;
-
-    map.set(dedupeKey, merged);
+      quotaGb: existing.quotaGb ?? candidate.quotaGb,
+      benefits: Array.from(new Set([...existing.benefits, ...candidate.benefits])).slice(0, 4),
+    });
   }
 
   return Array.from(map.values());
 }
 
-function parseRequirements(question: string): PackageRequirements {
-  const normalized = toArabicDigits(question).toLowerCase();
-  const requirements: PackageRequirements = {
-    minSpeedMbps: null,
-    minQuotaGb: null,
-    requireUnlimited: false,
-    maxContractMonths: null,
-    exactContractMonths: null,
-  };
-
-  if (UNLIMITED_REGEX.test(normalized)) {
-    requirements.requireUnlimited = true;
+function parseRequirements(question: string): Requirements | null {
+  const budget = parseBudget(question);
+  if (budget === null) {
+    return null;
   }
+
+  const normalized = toArabicDigits(question).toLowerCase();
+  let minSpeedMbps: number | null = null;
+  let minQuotaGb: number | null = null;
 
   const speedMatches = Array.from(normalized.matchAll(/(\d+(?:\.\d+)?)\s*(gbps|mbps|g|m)\b/gi));
   for (const match of speedMatches) {
     const value = parseNumber(match[1] ?? "");
     const unit = match[2] ?? "mbps";
-    if (!value) {
+
+    if (value === null) {
       continue;
     }
 
     const speedMbps = toMbps(value, unit);
-    if (!requirements.minSpeedMbps || speedMbps > requirements.minSpeedMbps) {
-      requirements.minSpeedMbps = speedMbps;
+    if (minSpeedMbps === null || speedMbps > minSpeedMbps) {
+      minSpeedMbps = speedMbps;
     }
   }
 
   const quotaMatches = Array.from(normalized.matchAll(/(\d+(?:\.\d+)?)\s*gb\b/gi));
   for (const match of quotaMatches) {
     const value = parseNumber(match[1] ?? "");
-    if (!value) {
+    if (value === null) {
       continue;
     }
 
-    if (!requirements.minQuotaGb || value > requirements.minQuotaGb) {
-      requirements.minQuotaGb = value;
+    if (minQuotaGb === null || value > minQuotaGb) {
+      minQuotaGb = value;
     }
   }
 
+  let maxContractMonths: number | null = null;
   if (/(ไม่ติดสัญญา|ไม่มีสัญญา|no contract)/i.test(normalized)) {
-    requirements.maxContractMonths = 0;
+    maxContractMonths = 0;
   } else {
-    const maxContractMatch = normalized.match(
-      /(?:สัญญา|contract|ติดสัญญา)[^\d]{0,16}(?:ไม่เกิน|สูงสุด|ไม่เกินที่)?\s*(\d{1,2})\s*เดือน/
-    );
-
-    if (maxContractMatch?.[1]) {
-      const value = Number.parseInt(maxContractMatch[1], 10);
-      if (Number.isFinite(value) && value >= 0) {
-        requirements.maxContractMonths = value;
-      }
-    }
-
-    const exactContractMatch = normalized.match(/(?:สัญญา|contract)\s*(\d{1,2})\s*เดือน/);
-    if (exactContractMatch?.[1]) {
-      const value = Number.parseInt(exactContractMatch[1], 10);
-      if (Number.isFinite(value) && value > 0) {
-        requirements.exactContractMonths = value;
+    const contractMatch = normalized.match(/(?:สัญญา|contract|ติดสัญญา)[^\d]{0,16}(\d{1,2})\s*เดือน/i);
+    if (contractMatch?.[1]) {
+      const parsed = Number.parseInt(contractMatch[1], 10);
+      if (Number.isFinite(parsed) && parsed >= 0) {
+        maxContractMonths = parsed;
       }
     }
   }
 
-  return requirements;
+  return {
+    budget,
+    requestedSegment: detectRequestedSegment(question),
+    minSpeedMbps,
+    minQuotaGb,
+    requireUnlimited: /(ไม่อั้น|ไม่จำกัด|unlimited)/i.test(normalized),
+    maxContractMonths,
+  };
 }
 
-function filterByRequirements(
-  candidates: RecommendationCandidate[],
-  requirements: PackageRequirements
-): RecommendationCandidate[] {
+function filterCandidates(candidates: Candidate[], requirements: Requirements) {
   return candidates.filter((candidate) => {
+    if (candidate.price > requirements.budget) {
+      return false;
+    }
+
+    if (requirements.requestedSegment && candidate.segment !== requirements.requestedSegment) {
+      return false;
+    }
+
     if (requirements.minSpeedMbps !== null) {
-      if (!candidate.downloadSpeedMbps || candidate.downloadSpeedMbps < requirements.minSpeedMbps) {
+      if (candidate.downloadSpeedMbps === null || candidate.downloadSpeedMbps < requirements.minSpeedMbps) {
         return false;
       }
     }
@@ -383,8 +366,8 @@ function filterByRequirements(
     }
 
     if (requirements.minQuotaGb !== null) {
-      const hasEnoughQuota = candidate.unlimited || (candidate.quotaGb !== null && candidate.quotaGb >= requirements.minQuotaGb);
-      if (!hasEnoughQuota) {
+      const quotaPass = candidate.unlimited || (candidate.quotaGb !== null && candidate.quotaGb >= requirements.minQuotaGb);
+      if (!quotaPass) {
         return false;
       }
     }
@@ -395,41 +378,32 @@ function filterByRequirements(
       }
     }
 
-    if (requirements.exactContractMonths !== null) {
-      if (candidate.contractMonths === null || candidate.contractMonths !== requirements.exactContractMonths) {
-        return false;
-      }
-    }
-
     return true;
   });
 }
 
-function valueScore(candidate: RecommendationCandidate) {
+function valueScore(candidate: Candidate) {
   let score = 0;
 
   if (candidate.downloadSpeedMbps && candidate.downloadSpeedMbps > 0) {
-    score += (candidate.downloadSpeedMbps / candidate.price) * 3;
+    score += candidate.downloadSpeedMbps / candidate.price;
   }
 
   if (candidate.quotaGb && candidate.quotaGb > 0) {
-    score += candidate.quotaGb / candidate.price;
+    score += candidate.quotaGb / Math.max(candidate.price, 1);
   }
 
   if (candidate.unlimited) {
-    score += 1.2;
-  }
-
-  if (candidate.features.length > 0) {
-    score += Math.min(candidate.features.length, 4) * 0.25;
+    score += 0.8;
   }
 
   score += Math.max(0, 1 - candidate.price / 1000);
+  score += Math.min(candidate.benefits.length, 2) * 0.2;
 
   return score;
 }
 
-function rankCandidates(candidates: RecommendationCandidate[]) {
+function rankCandidates(candidates: Candidate[]) {
   return candidates.slice().sort((left, right) => {
     const scoreDiff = valueScore(right) - valueScore(left);
     if (scoreDiff !== 0) {
@@ -444,68 +418,51 @@ function rankCandidates(candidates: RecommendationCandidate[]) {
   });
 }
 
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("th-TH", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function buildBenefitText(candidate: RecommendationCandidate) {
-  const parts: string[] = [];
+function formatCandidateLine(candidate: Candidate, index: number) {
+  const details: string[] = [];
 
   if (candidate.speedText) {
-    parts.push(`ความเร็ว ${candidate.speedText}`);
+    details.push(`ความเร็ว ${candidate.speedText}`);
   }
 
-  if (candidate.quotaGb) {
-    parts.push(`โควตา ${formatMoney(candidate.quotaGb)} GB`);
-  } else if (candidate.unlimited) {
-    parts.push("อินเทอร์เน็ตไม่จำกัด");
+  if (candidate.unlimited) {
+    details.push("เน็ตไม่จำกัด");
+  } else if (candidate.quotaGb !== null) {
+    details.push(`โควตา ${formatMoney(candidate.quotaGb)}GB`);
   }
 
   if (candidate.contractMonths !== null) {
-    parts.push(`สัญญา ${candidate.contractMonths} เดือน`);
+    details.push(`สัญญา ${candidate.contractMonths} เดือน`);
   }
 
-  for (const feature of candidate.features) {
-    const lowered = feature.toLowerCase();
-    if (parts.length >= 4) {
+  for (const benefit of candidate.benefits) {
+    if (details.length >= 3) {
       break;
     }
 
-    if (/(ราคา|บาท|ลิงก์|link|buy)/i.test(lowered)) {
-      continue;
+    if (!details.includes(benefit)) {
+      details.push(benefit);
     }
-
-    if (parts.some((part) => part.includes(feature))) {
-      continue;
-    }
-
-    parts.push(feature);
   }
 
-  if (parts.length === 0) {
-    return "รายละเอียดตามข้อมูลในระบบ";
-  }
-
-  return parts.slice(0, 4).join(" | ");
+  const summary = details.length > 0 ? details.join(" | ") : "รายละเอียดตามข้อมูลในระบบ";
+  return `${index + 1}. ${candidate.name} - ${formatMoney(candidate.price)} บาท (${summary})`;
 }
 
-function formatRecommendationTable(budget: number, candidates: RecommendationCandidate[]) {
-  const rows = candidates.slice(0, 3).map((candidate, index) => {
-    return `| ${index + 1} | ${candidate.name} | ${formatMoney(candidate.price)} บาท | ${buildBenefitText(candidate)} |`;
-  });
+function formatRecommendationReply(requirements: Requirements, candidates: Candidate[]) {
+  const segmentText =
+    requirements.requestedSegment === "home"
+      ? " เน็ตบ้าน"
+      : requirements.requestedSegment === "mobile"
+        ? " เน็ตมือถือ"
+        : "";
 
-  return [
-    `**แพ็กเกจที่แนะนำสำหรับงบ ${formatMoney(budget)} บาท:**`,
-    "",
-    "| # | ชื่อแพ็กเกจ | ราคา | สิ่งที่ได้ |",
-    "|---|---|---|---|",
-    ...rows,
-    "",
-    "📌 หมายเหตุ: คัดเฉพาะแพ็กเกจที่ราคาไม่เกินงบและข้อมูลมาจากแพ็กเกจในระบบเท่านั้น",
-  ].join("\n");
+  const lines = [
+    `งบไม่เกิน ${formatMoney(requirements.budget)} บาท${segmentText}`,
+    ...candidates.slice(0, 3).map((candidate, index) => formatCandidateLine(candidate, index)),
+  ];
+
+  return lines.join("\n");
 }
 
 function getNoBudgetMatchReply(budget: number) {
@@ -513,8 +470,7 @@ function getNoBudgetMatchReply(budget: number) {
 }
 
 function getNoDataReply() {
-  const contact = contactInfo.socialLinks[0]?.href || contactInfo.phone;
-  return `ขออภัย ไม่พบข้อมูลในระบบ กรุณาติดต่อเจ้าหน้าที่ที่ ${contact}`;
+  return "ขออภัย ไม่พบข้อมูลในระบบ กรุณาติดต่อเจ้าหน้าที่ที่ [contact]";
 }
 
 function isPackageRecommendationIntent(question: string) {
@@ -530,8 +486,8 @@ function isPackageRecommendationIntent(question: string) {
   return parseBudget(normalized) !== null;
 }
 
-async function loadRecommendationCandidates() {
-  const candidates: RecommendationCandidate[] = [];
+async function loadCandidates() {
+  const candidates: Candidate[] = [];
 
   try {
     const [categories, packages, promotions] = await Promise.all([
@@ -562,106 +518,177 @@ async function loadRecommendationCandidates() {
             ? `${item.downloadSpeed}/${item.uploadSpeed} ${item.speedUnit}`
             : typeof item.downloadSpeed === "number"
               ? `${item.downloadSpeed} ${item.speedUnit}`
-              : typeof item.uploadSpeed === "number"
-                ? `${item.uploadSpeed} ${item.speedUnit}`
-                : null;
+              : null;
 
-        candidates.push(
-          buildCandidate({
-            key: `db-item-${item.id}`,
-            name: item.name,
-            price: item.price,
-            speedText,
-            downloadSpeedMbps: item.downloadSpeed,
-            uploadSpeedMbps: item.uploadSpeed,
-            contractMonths: item.contractMonths,
-            features: [
-              category.name,
-              item.priceNote,
-              item.description,
-              item.promoBadge,
-              normalizeJsonText(item.perks),
-              normalizeJsonText(item.freebies),
-            ],
-          })
-        );
+        const segment = inferSegment([category.name, category.slug, item.name], "other");
+
+        const candidate = buildCandidate({
+          key: `db-item-${item.id}`,
+          name: item.name,
+          price: item.price,
+          segment,
+          speedText,
+          downloadSpeedMbps: item.downloadSpeed,
+          contractMonths: item.contractMonths,
+          benefits: [
+            item.description,
+            item.priceNote,
+            item.promoBadge,
+            normalizeJsonText(item.perks),
+            normalizeJsonText(item.freebies),
+          ],
+        });
+
+        if (candidate) {
+          candidates.push(candidate);
+        }
       }
     }
 
     for (const item of packages) {
-      candidates.push(
-        buildCandidate({
-          key: `db-package-${item.id}`,
-          name: item.name,
-          price: item.price,
-          speedText: item.speed,
-          features: [item.type, item.speed, normalizeJsonText(item.details), normalizeJsonText(item.freebie)],
-        })
-      );
+      const segment = inferSegment([item.type, item.name, item.speed], "other");
+      const candidate = buildCandidate({
+        key: `db-package-${item.id}`,
+        name: item.name,
+        price: item.price,
+        segment,
+        speedText: item.speed,
+        benefits: [item.type, normalizeJsonText(item.details), normalizeJsonText(item.freebie)],
+      });
+
+      if (candidate) {
+        candidates.push(candidate);
+      }
     }
 
     for (const item of promotions) {
-      candidates.push(
-        buildCandidate({
-          key: `db-promo-${item.id}`,
-          name: item.name,
-          price: item.price,
-          speedText: item.speed,
-          features: [
-            item.type,
-            item.categoryName,
-            item.priceNote,
-            item.speed,
-            item.validity,
-            item.promoBadge,
-            normalizeJsonText(item.details),
-            normalizeJsonText(item.perks),
-          ],
-        })
-      );
+      const segment = inferSegment([item.type, item.categoryName, item.name, item.speed], "other");
+      const candidate = buildCandidate({
+        key: `db-promotion-${item.id}`,
+        name: item.name,
+        price: item.price,
+        segment,
+        speedText: item.speed,
+        benefits: [
+          item.priceNote,
+          item.validity,
+          item.promoBadge,
+          normalizeJsonText(item.details),
+          normalizeJsonText(item.perks),
+        ],
+      });
+
+      if (candidate) {
+        candidates.push(candidate);
+      }
     }
   } catch (error) {
     console.error("Failed to load package data from database:", error);
   }
 
-  const staticPackages = [
-    ...broadbandPackageData,
-    ...promotionPackages,
-    ...monthlyPackages,
-    ...topupPackages,
-  ].filter((item) => item.is_active !== false);
-
-  for (const item of staticPackages) {
+  for (const item of broadbandPackageData.filter((pkg) => pkg.is_active !== false)) {
     const speedText =
       typeof item.download_speed === "number" && typeof item.upload_speed === "number"
         ? `${item.download_speed}/${item.upload_speed} ${item.speed_unit || "Mbps"}`
-        : typeof item.download_speed === "number"
-          ? `${item.download_speed} ${item.speed_unit || "Mbps"}`
-          : typeof item.upload_speed === "number"
-            ? `${item.upload_speed} ${item.speed_unit || "Mbps"}`
-            : item.speed || null;
+        : null;
 
-    candidates.push(
-      buildCandidate({
-        key: `static-${item.id}-${item.name}`,
-        name: item.name,
-        price: item.price,
-        speedText,
-        downloadSpeedMbps: item.download_speed ?? null,
-        uploadSpeedMbps: item.upload_speed ?? null,
-        contractMonths: item.contract_months ?? null,
-        features: [
-          item.price_note,
-          item.description,
-          item.promo_badge,
-          normalizeJsonText(item.perks),
-          normalizeJsonText(item.freebies),
-        ],
-      })
-    );
+    const candidate = buildCandidate({
+      key: `static-broadband-${item.id}`,
+      name: item.name,
+      price: item.price,
+      segment: "home",
+      speedText,
+      downloadSpeedMbps: item.download_speed ?? null,
+      contractMonths: item.contract_months ?? null,
+      benefits: [
+        item.description,
+        item.price_note,
+        item.promo_badge,
+        normalizeJsonText(item.perks),
+        normalizeJsonText(item.freebies),
+      ],
+    });
+
+    if (candidate) {
+      candidates.push(candidate);
+    }
   }
 
-  return mergeCandidates(candidates);
+  for (const item of promotionPackages.filter((pkg) => pkg.is_active !== false)) {
+    const speedText =
+      typeof item.download_speed === "number" && typeof item.upload_speed === "number"
+        ? `${item.download_speed}/${item.upload_speed} ${item.speed_unit || "Mbps"}`
+        : item.speed || null;
+
+    const candidate = buildCandidate({
+      key: `static-promotion-${item.id}`,
+      name: item.name,
+      price: item.price,
+      segment: item.category_id === 1 ? "home" : "mobile",
+      speedText,
+      downloadSpeedMbps: item.download_speed ?? null,
+      contractMonths: item.contract_months ?? null,
+      benefits: [
+        item.description,
+        item.price_note,
+        item.promo_badge,
+        normalizeJsonText(item.perks),
+        normalizeJsonText(item.freebies),
+      ],
+    });
+
+    if (candidate) {
+      candidates.push(candidate);
+    }
+  }
+
+  for (const item of monthlyPackages.filter((pkg) => pkg.is_active !== false)) {
+    const candidate = buildCandidate({
+      key: `static-monthly-${item.id}`,
+      name: item.name,
+      price: item.price,
+      segment: "mobile",
+      speedText: item.speed || null,
+      downloadSpeedMbps: item.download_speed ?? null,
+      contractMonths: item.contract_months ?? null,
+      benefits: [
+        item.description,
+        item.price_note,
+        item.promo_badge,
+        normalizeJsonText(item.perks),
+        normalizeJsonText(item.freebies),
+      ],
+    });
+
+    if (candidate) {
+      candidates.push(candidate);
+    }
+  }
+
+  for (const item of topupPackages.filter((pkg) => pkg.is_active !== false)) {
+    const candidate = buildCandidate({
+      key: `static-topup-${item.id}`,
+      name: item.name,
+      price: item.price,
+      segment: "mobile",
+      speedText: item.speed || null,
+      downloadSpeedMbps: item.download_speed ?? null,
+      contractMonths: item.contract_months ?? null,
+      benefits: [
+        item.description,
+        item.price_note,
+        item.promo_badge,
+        normalizeJsonText(item.perks),
+        normalizeJsonText(item.freebies),
+      ],
+    });
+
+    if (candidate) {
+      candidates.push(candidate);
+    }
+  }
+
+  return dedupeCandidates(candidates);
 }
 
 export async function tryGeneratePackageRecommendationReply(question: string) {
@@ -669,32 +696,25 @@ export async function tryGeneratePackageRecommendationReply(question: string) {
     return null;
   }
 
-  const budget = parseBudget(question);
-  if (budget === null) {
+  const requirements = parseRequirements(question);
+  if (!requirements) {
     return "กรุณาระบุงบประมาณ เช่น ไม่เกิน 500 บาท เพื่อให้แนะนำแพ็กเกจได้ตรงความต้องการครับ";
   }
 
-  const allCandidates = await loadRecommendationCandidates();
+  const allCandidates = await loadCandidates();
   if (allCandidates.length === 0) {
     return getNoDataReply();
   }
 
-  const budgetFiltered = allCandidates.filter((candidate) => candidate.price <= budget);
-  if (budgetFiltered.length === 0) {
-    return getNoBudgetMatchReply(budget);
+  const filtered = filterCandidates(allCandidates, requirements);
+  if (filtered.length === 0) {
+    return getNoBudgetMatchReply(requirements.budget);
   }
 
-  const requirements = parseRequirements(question);
-  const requirementFiltered = filterByRequirements(budgetFiltered, requirements);
-
-  if (requirementFiltered.length === 0) {
-    return `ไม่พบแพ็กเกจที่ตรงเงื่อนไขทั้งหมดในงบ ${formatMoney(budget)} บาท กรุณาปรับเงื่อนไขหรือเพิ่มงบประมาณครับ`;
-  }
-
-  const ranked = rankCandidates(requirementFiltered).slice(0, 3);
+  const ranked = rankCandidates(filtered).slice(0, 3);
   if (ranked.length === 0) {
     return getNoDataReply();
   }
 
-  return formatRecommendationTable(budget, ranked);
+  return formatRecommendationReply(requirements, ranked);
 }

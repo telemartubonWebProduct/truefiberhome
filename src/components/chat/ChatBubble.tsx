@@ -4,7 +4,7 @@ import type { PackageItem } from "@/src/types/package";
 
 interface ChatBubbleProps {
   message: ChatMessageDto;
-  promotionFlexType?: PromotionFlexType | null;
+  promotionContext?: PromotionCardContext | null;
 }
 
 type BubbleLink = {
@@ -13,6 +13,11 @@ type BubbleLink = {
 };
 
 export type PromotionFlexType = "home" | "mobile" | "mixed";
+
+export type PromotionCardContext = {
+  flexType: PromotionFlexType;
+  budget: number | null;
+};
 
 function formatClock(value: string) {
   const date = new Date(value);
@@ -98,51 +103,38 @@ function extractMessageLinks(content: string) {
 }
 
 function getLinkLabel(link: BubbleLink, index: number) {
-  const normalizedLabel = link.label.toLowerCase();
-  if (normalizedLabel.includes("line") || link.url.includes("lin.ee") || link.url.includes("line.me")) {
-    return "คลิกเพื่อแอดไลน์";
-  }
-
-  if (link.url.includes("facebook.com") || normalizedLabel.includes("facebook")) {
-    return "คลิกเพื่อเปิด Facebook";
-  }
-
-  if (link.label !== "Open link") {
-    return link.label.length > 22 ? `${link.label.slice(0, 21)}…` : link.label;
-  }
-
-  try {
-    const hostname = new URL(link.url).hostname.replace(/^www\./i, "");
-    if (hostname.includes("truefiberhome")) {
-      return "คลิกเพื่อดูรายละเอียด";
-    }
-
-    return `คลิกเปิด ${hostname || `ลิงก์ ${index + 1}`}`;
-  } catch {
-    return `คลิกที่ปุ่ม ${index + 1}`;
-  }
+  void link;
+  void index;
+  return "คลิกที่นี่";
 }
 
-function getPromotionCards(promotionFlexType?: PromotionFlexType | null) {
+function getPromotionCards(promotionContext?: PromotionCardContext | null) {
   const sortedPackages = [...promotionPackages]
     .filter((pkg) => pkg.is_active)
     .sort((left, right) => (left.display_order ?? Number.MAX_SAFE_INTEGER) - (right.display_order ?? Number.MAX_SAFE_INTEGER));
 
-  if (promotionFlexType === "home") {
-    const homePackages = sortedPackages.filter((pkg) => pkg.category_id === 1).slice(0, 4);
-    return homePackages.length > 0 ? homePackages : sortedPackages.slice(0, 4);
+  const budget = promotionContext?.budget;
+  const budgetFiltered =
+    typeof budget === "number"
+      ? sortedPackages.filter((pkg) => pkg.price <= budget)
+      : sortedPackages;
+
+  if (!promotionContext) {
+    return [];
   }
 
-  if (promotionFlexType === "mobile") {
-    const mobilePackages = sortedPackages.filter((pkg) => pkg.category_id === 2).slice(0, 4);
-    return mobilePackages.length > 0 ? mobilePackages : sortedPackages.slice(0, 4);
+  if (promotionContext.flexType === "home") {
+    return budgetFiltered.filter((pkg) => pkg.category_id === 1).slice(0, 4);
   }
 
-  if (promotionFlexType === "mixed") {
-    const homePackages = sortedPackages.filter((pkg) => pkg.category_id === 1).slice(0, 2);
-    const mobilePackages = sortedPackages.filter((pkg) => pkg.category_id === 2).slice(0, 2);
-    const mixedPackages = [...homePackages, ...mobilePackages];
-    return mixedPackages.length > 0 ? mixedPackages : sortedPackages.slice(0, 4);
+  if (promotionContext.flexType === "mobile") {
+    return budgetFiltered.filter((pkg) => pkg.category_id === 2).slice(0, 4);
+  }
+
+  if (promotionContext.flexType === "mixed") {
+    const homePackages = budgetFiltered.filter((pkg) => pkg.category_id === 1).slice(0, 2);
+    const mobilePackages = budgetFiltered.filter((pkg) => pkg.category_id === 2).slice(0, 2);
+    return [...homePackages, ...mobilePackages];
   }
 
   return [];
@@ -176,13 +168,13 @@ function getPromotionHref(pkg: PackageItem) {
   return pkg.category_id === 1 ? "/boardband" : "/monthly";
 }
 
-export default function ChatBubble({ message, promotionFlexType = null }: ChatBubbleProps) {
+export default function ChatBubble({ message, promotionContext = null }: ChatBubbleProps) {
   const isVisitor = message.senderType === "VISITOR";
   const isAdmin = message.senderType === "ADMIN";
   const isSystem = message.senderType === "SYSTEM";
   const links = extractMessageLinks(message.content);
   const content = normalizeMessageText(message.content, links.length > 0);
-  const promotionCards = !isVisitor && !isSystem ? getPromotionCards(promotionFlexType) : [];
+  const promotionCards = !isVisitor && !isSystem ? getPromotionCards(promotionContext) : [];
 
   const containerClass = isVisitor ? "justify-end" : "justify-start";
 

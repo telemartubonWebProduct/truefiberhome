@@ -7,6 +7,7 @@ import {
   serializeChatMessage,
 } from "@/src/lib/chat";
 import { getKnowledgeContextForQuestion } from "@/src/lib/chat-knowledge";
+import { tryGeneratePackageRecommendationReply } from "@/src/lib/chat-package-recommendation";
 import { cleanupExpiredChatSessionsSafely } from "@/src/lib/chat-retention";
 import { getOptionalAdmin } from "@/src/lib/dashboard-auth";
 import { prisma } from "@/src/lib/prisma";
@@ -80,8 +81,6 @@ export async function POST(request: Request) {
     let aiMessage = null;
 
     if (senderType === "VISITOR" && session.status === "AI_ACTIVE") {
-      const knowledge = await getKnowledgeContextForQuestion(content);
-
       const recentMessages = await prisma.chatMessage.findMany({
         where: {
           sessionId,
@@ -93,11 +92,19 @@ export async function POST(request: Request) {
       });
 
       const history = recentMessages.reverse();
-      const aiReply = await generateAiReply({
-        latestMessage: content,
-        history,
-        knowledgeContext: knowledge.context,
-      });
+      const recommendationReply = await tryGeneratePackageRecommendationReply(content);
+
+      let aiReply = recommendationReply;
+
+      if (!aiReply) {
+        const knowledge = await getKnowledgeContextForQuestion(content);
+
+        aiReply = await generateAiReply({
+          latestMessage: content,
+          history,
+          knowledgeContext: knowledge.context,
+        });
+      }
 
       aiMessage = await prisma.chatMessage.create({
         data: {
