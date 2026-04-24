@@ -155,7 +155,7 @@ export default async function DashboardChatPage() {
               <p className="mt-1 text-xs text-gray-500">เรียงจากห้องที่มีความเคลื่อนไหวล่าสุด</p>
             </div>
 
-            <div className="max-h-[68vh] space-y-2 overflow-y-auto p-3">
+            <div className="max-h-[60vh] xl:max-h-[68vh] space-y-2 overflow-y-auto p-3">
               {sessions.map((session) => {
                 const lastMessage = session.messages[0];
                 const displayName = formatDisplayName(session.visitorName, session.visitorId);

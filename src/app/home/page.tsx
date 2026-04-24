@@ -9,6 +9,7 @@ import ContactSection from "./components/contact-section";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
 import { prisma } from "@/src/lib/prisma";
 import { lineSupport } from "@/src/context/line-path";
+import LineTest from "./components/line-test";
 
 export const metadata: Metadata = {
   title: "แพ็กเกจเน็ตบ้าน มือถือ และบริการติดตั้ง",
@@ -349,6 +350,9 @@ export default async function HomePage() {
         }}
         methods={displayContactMethods}
       />
+   
+          <LineTest />
+    
     </>
   );
 }

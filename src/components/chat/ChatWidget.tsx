@@ -1,8 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { createClient } from "@/src/lib/supabase";
-import ChatBubble, { type PromotionFlexType } from "@/src/components/chat/ChatBubble";
+import ChatBubble, {
+  type PromotionFlexType,
+} from "@/src/components/chat/ChatBubble";
 import ChatInput from "@/src/components/chat/ChatInput";
 import HandoffButton from "@/src/components/chat/HandoffButton";
 import {
@@ -22,10 +31,13 @@ function createVisitorId() {
   return `visitor-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function buildMessageFromRealtimeRow(row: Record<string, unknown>): ChatMessageDto | null {
+function buildMessageFromRealtimeRow(
+  row: Record<string, unknown>,
+): ChatMessageDto | null {
   const id = typeof row.id === "string" ? row.id : null;
   const sessionId = typeof row.session_id === "string" ? row.session_id : null;
-  const senderType = typeof row.sender_type === "string" ? row.sender_type : null;
+  const senderType =
+    typeof row.sender_type === "string" ? row.sender_type : null;
   const content = typeof row.content === "string" ? row.content : null;
   const createdAt = row.created_at;
 
@@ -37,7 +49,8 @@ function buildMessageFromRealtimeRow(row: Record<string, unknown>): ChatMessageD
     id,
     sessionId,
     senderType: senderType as ChatMessageDto["senderType"],
-    senderAdminId: typeof row.sender_admin_id === "string" ? row.sender_admin_id : null,
+    senderAdminId:
+      typeof row.sender_admin_id === "string" ? row.sender_admin_id : null,
     content,
     createdAt: new Date(String(createdAt)).toISOString(),
   };
@@ -58,7 +71,8 @@ const QUICK_ACTIONS = [
   },
 ] as const;
 
-const PROMOTION_QUERY_REGEX = /(โปร|โปรโมชั่น|โปรโมชัน|promotion|promo|แพ็กเกจ|package)/i;
+const PROMOTION_QUERY_REGEX =
+  /(โปร|โปรโมชั่น|โปรโมชัน|promotion|promo|แพ็กเกจ|package)/i;
 const HOME_PROMOTION_REGEX = /(เน็ตบ้าน|บ้าน|ไฟเบอร์|fiber|wifi|broadband)/i;
 const MOBILE_PROMOTION_REGEX = /(มือถือ|mobile|5g|4g|ซิม|รายเดือน|เติมเงิน)/i;
 
@@ -74,13 +88,17 @@ function classifyPromotionFlexType(content: string): PromotionFlexType {
   return "mixed";
 }
 
-function getPromotionFlexTypeForMessage(messages: ChatMessageDto[], messageIndex: number): PromotionFlexType | null {
+function getPromotionFlexTypeForMessage(
+  messages: ChatMessageDto[],
+  messageIndex: number,
+): PromotionFlexType | null {
   const currentMessage = messages[messageIndex];
   if (!currentMessage) {
     return null;
   }
 
-  const isSupportReply = currentMessage.senderType === "AI" || currentMessage.senderType === "ADMIN";
+  const isSupportReply =
+    currentMessage.senderType === "AI" || currentMessage.senderType === "ADMIN";
   if (!isSupportReply) {
     return null;
   }
@@ -95,7 +113,10 @@ function getPromotionFlexTypeForMessage(messages: ChatMessageDto[], messageIndex
       break;
     }
 
-    if (previousMessage.senderType === "AI" || previousMessage.senderType === "ADMIN") {
+    if (
+      previousMessage.senderType === "AI" ||
+      previousMessage.senderType === "ADMIN"
+    ) {
       return null;
     }
   }
@@ -119,7 +140,9 @@ export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-  const [visualViewportHeight, setVisualViewportHeight] = useState<number | null>(null);
+  const [visualViewportHeight, setVisualViewportHeight] = useState<
+    number | null
+  >(null);
   const [visitorId, setVisitorId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessageDto[]>([]);
@@ -129,6 +152,7 @@ export default function ChatWidget() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isRequestingHuman, setIsRequestingHuman] = useState(false);
+  const [waiting, setWaiting] = useState(false);
 
   const initializedRef = useRef(false);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -169,7 +193,7 @@ export default function ChatWidget() {
       applySession(payload);
       return payload;
     },
-    [applySession]
+    [applySession],
   );
 
   const createSession = useCallback(
@@ -182,8 +206,10 @@ export default function ChatWidget() {
         body: JSON.stringify({
           visitorId: currentVisitorId,
           metadata: {
-            pathname: typeof window !== "undefined" ? window.location.pathname : null,
-            userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+            pathname:
+              typeof window !== "undefined" ? window.location.pathname : null,
+            userAgent:
+              typeof navigator !== "undefined" ? navigator.userAgent : null,
           },
         }),
       });
@@ -196,7 +222,7 @@ export default function ChatWidget() {
       applySession(payload);
       return payload;
     },
-    [applySession]
+    [applySession],
   );
 
   useEffect(() => {
@@ -207,7 +233,8 @@ export default function ChatWidget() {
       const layoutHeight = window.innerHeight;
       const visibleHeight = viewport?.height ?? layoutHeight;
       const nextIsMobile = width < 1024;
-      const nextKeyboardOpen = nextIsMobile && visibleHeight < layoutHeight * 0.8;
+      const nextKeyboardOpen =
+        nextIsMobile && visibleHeight < layoutHeight * 0.8;
 
       setIsMobileViewport(nextIsMobile);
       setIsKeyboardOpen(nextKeyboardOpen);
@@ -227,7 +254,9 @@ export default function ChatWidget() {
   }, []);
 
   useEffect(() => {
-    const storedVisitorId = window.localStorage.getItem(CHAT_VISITOR_STORAGE_KEY);
+    const storedVisitorId = window.localStorage.getItem(
+      CHAT_VISITOR_STORAGE_KEY,
+    );
     const resolvedVisitorId = storedVisitorId || createVisitorId();
 
     if (!storedVisitorId) {
@@ -252,10 +281,15 @@ export default function ChatWidget() {
       setError(null);
 
       try {
-        const storedSessionId = window.localStorage.getItem(CHAT_SESSION_STORAGE_KEY);
+        const storedSessionId = window.localStorage.getItem(
+          CHAT_SESSION_STORAGE_KEY,
+        );
 
         if (storedSessionId) {
-          const restoredSession = await loadSession(storedSessionId, currentVisitorId);
+          const restoredSession = await loadSession(
+            storedSessionId,
+            currentVisitorId,
+          );
 
           if (!restoredSession) {
             await createSession(currentVisitorId);
@@ -269,7 +303,10 @@ export default function ChatWidget() {
         try {
           await createSession(currentVisitorId);
         } catch (createError) {
-          console.error("Failed to recover by creating a new chat session", createError);
+          console.error(
+            "Failed to recover by creating a new chat session",
+            createError,
+          );
           if (!cancelled) {
             setError("ไม่สามารถเริ่มต้นแชทได้ กรุณาลองใหม่อีกครั้ง");
           }
@@ -305,7 +342,9 @@ export default function ChatWidget() {
           filter: `session_id=eq.${sessionId}`,
         },
         (payload) => {
-          const nextMessage = buildMessageFromRealtimeRow(payload.new as Record<string, unknown>);
+          const nextMessage = buildMessageFromRealtimeRow(
+            payload.new as Record<string, unknown>,
+          );
           if (!nextMessage) {
             return;
           }
@@ -317,7 +356,7 @@ export default function ChatWidget() {
 
             return [...current, nextMessage];
           });
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -332,7 +371,7 @@ export default function ChatWidget() {
           if (typeof next.status === "string") {
             setStatus(next.status as ChatStatusValue);
           }
-        }
+        },
       )
       .subscribe();
 
@@ -347,7 +386,9 @@ export default function ChatWidget() {
     }
 
     const pollIntervalMs =
-      status === "WAITING_FOR_ADMIN" || status === "ADMIN_ACTIVE" ? 3000 : 10000;
+      status === "WAITING_FOR_ADMIN" || status === "ADMIN_ACTIVE"
+        ? 3000
+        : 10000;
 
     const intervalId = window.setInterval(() => {
       void loadSession(sessionId, visitorId)
@@ -411,91 +452,102 @@ export default function ChatWidget() {
     return "border border-[#f4bfd0] bg-[#fff1f6] text-[#c71b49]";
   }, [status]);
 
-  const handleSend = useCallback(async (presetMessage?: string) => {
-    if (!sessionId || !visitorId || isSending) {
-      return;
-    }
-
-    const content = (presetMessage ?? input).trim();
-    if (!content) {
-      return;
-    }
-
-    setError(null);
-    setInput("");
-    setIsSending(true);
-
-    const optimisticMessage: ChatMessageDto = {
-      id: `temp-${Date.now()}`,
-      sessionId,
-      senderType: "VISITOR",
-      senderAdminId: null,
-      content,
-      createdAt: new Date().toISOString(),
-    };
-
-    setMessages((current) => [...current, optimisticMessage]);
-
-    try {
-      const response = await fetch("/api/chat/message", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-chat-visitor-id": visitorId,
-        },
-        body: JSON.stringify({
-          sessionId,
-          content,
-        }),
-      });
-
-      if (isRecoverableSessionStatus(response.status)) {
-        setMessages((current) => current.filter((message) => message.id !== optimisticMessage.id));
-        await createSession(visitorId);
-        setError("แชทเดิมหมดอายุแล้ว ระบบเริ่มห้องใหม่ให้แล้ว กรุณาส่งข้อความอีกครั้ง");
+  const handleSend = useCallback(
+    async (presetMessage?: string) => {
+      if (!sessionId || !visitorId || isSending) {
         return;
       }
 
-      if (!response.ok) {
-        throw new Error(`Message send failed: ${response.status}`);
+      const content = (presetMessage ?? input).trim();
+      if (!content) {
+        return;
       }
 
-      const payload = (await response.json()) as {
-        message: ChatMessageDto;
-        aiMessage: ChatMessageDto | null;
+      setError(null);
+      setInput("");
+      setIsSending(true);
+
+      const optimisticMessage: ChatMessageDto = {
+        id: `temp-${Date.now()}`,
+        sessionId,
+        senderType: "VISITOR",
+        senderAdminId: null,
+        content,
+        createdAt: new Date().toISOString(),
       };
 
-      setMessages((current) => {
-        const withoutOptimistic = current.filter((message) => message.id !== optimisticMessage.id);
-        const next = [...withoutOptimistic, payload.message];
+      setMessages((current) => [...current, optimisticMessage]);
 
-        if (payload.aiMessage) {
-          next.push(payload.aiMessage);
+      try {
+        const response = await fetch("/api/chat/message", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-chat-visitor-id": visitorId,
+          },
+          body: JSON.stringify({
+            sessionId,
+            content,
+          }),
+        });
+
+        if (isRecoverableSessionStatus(response.status)) {
+          setMessages((current) =>
+            current.filter((message) => message.id !== optimisticMessage.id),
+          );
+          await createSession(visitorId);
+          setError(
+            "แชทเดิมหมดอายุแล้ว ระบบเริ่มห้องใหม่ให้แล้ว กรุณาส่งข้อความอีกครั้ง",
+          );
+          return;
         }
 
-        return next;
-      });
-    } catch (sendError) {
-      console.error("Failed to send message", sendError);
-      setMessages((current) => current.filter((message) => message.id !== optimisticMessage.id));
-      setError("ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง");
-    } finally {
-      setIsSending(false);
-    }
-  }, [createSession, input, isSending, sessionId, visitorId]);
+        if (!response.ok) {
+          throw new Error(`Message send failed: ${response.status}`);
+        }
+
+        const payload = (await response.json()) as {
+          message: ChatMessageDto;
+          aiMessage: ChatMessageDto | null;
+        };
+
+        setMessages((current) => {
+          const withoutOptimistic = current.filter(
+            (message) => message.id !== optimisticMessage.id,
+          );
+          const next = [...withoutOptimistic, payload.message];
+
+          if (payload.aiMessage) {
+            next.push(payload.aiMessage);
+          }
+
+          return next;
+        });
+      } catch (sendError) {
+        console.error("Failed to send message", sendError);
+        setMessages((current) =>
+          current.filter((message) => message.id !== optimisticMessage.id),
+        );
+        setError("ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง");
+      } finally {
+        setIsSending(false);
+      }
+    },
+    [createSession, input, isSending, sessionId, visitorId],
+  );
 
   const handleQuickAction = useCallback(
     (message: string) => {
       void handleSend(message);
     },
-    [handleSend]
+    [handleSend],
   );
 
   const handleHandoff = useCallback(async () => {
     if (!sessionId || !visitorId || isRequestingHuman) {
       return;
     }
-
+    setWaiting(true);
     setIsRequestingHuman(true);
     setError(null);
 
@@ -510,7 +562,19 @@ export default function ChatWidget() {
           sessionId,
         }),
       });
-
+      await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: [
+            "🔔 มีลูกค้าขอเจ้าหน้าที่ดูแล!",
+            `🕐 เวลา: ${new Date().toLocaleString("th-TH")}`,
+            "กรุณาตรวจสอบและติดต่อกลับลูกค้าโดยเร็วที่สุดด้วยครับ!",
+            "www.truefiberhome.com/dashboard/chat",
+          ].join("\n"),
+        }),
+      });
+     
       if (isRecoverableSessionStatus(response.status)) {
         await createSession(visitorId);
         setError("แชทเดิมหมดอายุแล้ว ระบบเริ่มห้องใหม่ให้แล้ว");
@@ -547,7 +611,10 @@ export default function ChatWidget() {
       const minimumHeight = isKeyboardOpen ? 180 : 290;
       const nextHeight = Math.max(
         minimumHeight,
-        Math.min(700, Math.floor(visualViewportHeight - reservedTop - reservedBottom))
+        Math.min(
+          700,
+          Math.floor(visualViewportHeight - reservedTop - reservedBottom),
+        ),
       );
 
       nextStyle.height = `${nextHeight}px`;
@@ -576,8 +643,13 @@ export default function ChatWidget() {
           <header className={headerClassName}>
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" aria-hidden />
-                <h2 className="text-[21px] font-semibold leading-none text-slate-900 sm:text-[24px]">Chatbot</h2>
+                <span
+                  className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"
+                  aria-hidden
+                />
+                <h2 className="text-[21px] font-semibold leading-none text-slate-900 sm:text-[24px]">
+                  Chatbot
+                </h2>
               </div>
               <button
                 type="button"
@@ -585,7 +657,11 @@ export default function ChatWidget() {
                 className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Close chat"
               >
-                <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4"
+                >
                   <path
                     fillRule="evenodd"
                     d="M4.47 4.47a.75.75 0 011.06 0L10 8.94l4.47-4.47a.75.75 0 111.06 1.06L11.06 10l4.47 4.47a.75.75 0 11-1.06 1.06L10 11.06l-4.47 4.47a.75.75 0 11-1.06-1.06L8.94 10 4.47 5.53a.75.75 0 010-1.06z"
@@ -608,7 +684,9 @@ export default function ChatWidget() {
                     key={action.label}
                     type="button"
                     onClick={() => handleQuickAction(action.message)}
-                    disabled={isInitializing || isSending || status === "CLOSED"}
+                    disabled={
+                      isInitializing || isSending || status === "CLOSED"
+                    }
                     className="inline-flex shrink-0 whitespace-nowrap rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 transition hover:border-[#f2b4c8] hover:bg-[#fff3f7] hover:text-[#c71b49] disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:py-1.5 sm:text-xs"
                   >
                     {action.label}
@@ -620,34 +698,45 @@ export default function ChatWidget() {
 
           <div className="min-h-0 flex-1 overflow-y-auto bg-[#eef1f7] px-3 py-4 sm:px-4 sm:py-5">
             <div className="space-y-4">
-              {isInitializing ? (
-                CHAT_DEFAULT_GREETING.map((message, index) => (
-                  <div key={`placeholder-${index}`} className="max-w-[88%] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm sm:px-4 sm:py-3 sm:text-[15px]">
-                    {message}
-                  </div>
-                ))
-              ) : messages.length > 0 ? (
-                messages.map((message, index) => (
-                  <ChatBubble
-                    key={message.id}
-                    message={message}
-                    promotionFlexType={getPromotionFlexTypeForMessage(messages, index)}
-                  />
-                ))
-              ) : (
-                CHAT_DEFAULT_GREETING.map((message, index) => (
-                  <div key={`fallback-${index}`} className="max-w-[88%] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm sm:px-4 sm:py-3 sm:text-[15px]">
-                    {message}
-                  </div>
-                ))
-              )}
+              {isInitializing
+                ? CHAT_DEFAULT_GREETING.map((message, index) => (
+                    <div
+                      key={`placeholder-${index}`}
+                      className="max-w-[88%] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm sm:px-4 sm:py-3 sm:text-[15px]"
+                    >
+                      {message}
+                    </div>
+                  ))
+                : messages.length > 0
+                  ? messages.map((message, index) => (
+                      <ChatBubble
+                        key={message.id}
+                        message={message}
+                        promotionFlexType={getPromotionFlexTypeForMessage(
+                          messages,
+                          index,
+                        )}
+                      />
+                    ))
+                  : CHAT_DEFAULT_GREETING.map((message, index) => (
+                      <div
+                        key={`fallback-${index}`}
+                        className="max-w-[88%] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm sm:px-4 sm:py-3 sm:text-[15px]"
+                      >
+                        {message}
+                      </div>
+                    ))}
               <div ref={messageEndRef} />
             </div>
           </div>
 
           <footer className="space-y-2 border-t border-slate-200 bg-white px-3 py-2 sm:space-y-2.5 sm:px-4 sm:py-2.5">
             <div className="flex items-center justify-between gap-2 sm:gap-3">
-              <p className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}>{statusLabel}</p>
+              <p
+                className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}
+              >
+                {statusLabel}
+              </p>
               {status === "AI_ACTIVE" && (
                 <HandoffButton
                   disabled={isInitializing || isSending}
@@ -664,16 +753,22 @@ export default function ChatWidget() {
               onSend={() => void handleSend()}
             />
 
-            {error && <p className="text-xs font-medium text-red-600">{error}</p>}
+            {error && (
+              <p className="text-xs font-medium text-red-600">{error}</p>
+            )}
 
             {!compactMobileLayout && (
               <>
-              <p className="text-center text-[11px] text-slate-500 sm:text-xs">
-                Powered by <span className="font-semibold text-[#e61c50]">True Fiber Home</span>
-              </p>
-              <p className="text-center text-[11px] text-slate-500 sm:text-xs">
-                ***ระบบChatAiอาจมีข้อผิดพลาดในการให้บริการแก่ท่าน กรุณาติดต่อเจ้าหน้าที่ดูแลเมื่อท่านพบปัญหา***
-              </p>
+                <p className="text-center text-[11px] text-slate-500 sm:text-xs">
+                  Powered by{" "}
+                  <span className="font-semibold text-[#e61c50]">
+                    True Fiber Home
+                  </span>
+                </p>
+                <p className="text-center text-[11px] text-slate-500 sm:text-xs">
+                  ***ระบบChatAiอาจมีข้อผิดพลาดในการให้บริการแก่ท่าน
+                  กรุณาติดต่อเจ้าหน้าที่ดูแลเมื่อท่านพบปัญหา***
+                </p>
               </>
             )}
           </footer>
@@ -688,7 +783,11 @@ export default function ChatWidget() {
           isOpen ? "ring-4 ring-white/90 shadow-2xl shadow-[#e83467]/45" : ""
         } ${hideFloatingToggle ? "pointer-events-none translate-y-2 opacity-0" : "opacity-100"}`}
       >
-        <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7">
+        <svg
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7"
+        >
           {isOpen ? (
             <path
               fillRule="evenodd"

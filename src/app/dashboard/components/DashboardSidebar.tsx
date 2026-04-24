@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/src/lib/supabase";
@@ -127,6 +128,7 @@ interface DashboardSidebarProps {
 export default function DashboardSidebar({ userEmail }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -135,10 +137,46 @@ export default function DashboardSidebar({ userEmail }: DashboardSidebarProps) {
     router.refresh();
   };
 
+  const closeSidebar = () => {
+    setIsOpen(false);
+  };
+
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-40">
-      {/* Brand */}
-      <div className="p-6 border-b border-gray-800">
+    <>
+      {/* Mobile Header Bar */}
+      <div className="fixed top-0 left-0 w-full h-16 bg-gray-900 border-b border-gray-800 z-30 flex items-center px-4 lg:hidden">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="p-2 -ml-2 text-gray-400 hover:text-white focus:outline-none"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+        <div className="ml-2 flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-md">
+            <span className="text-white font-bold text-sm">T</span>
+          </div>
+          <span className="text-white font-semibold text-sm">Telemart</span>
+        </div>
+      </div>
+
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
+      {/* Sidebar Panel */}
+      <aside
+        className={`fixed left-0 top-0 h-screen w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Brand */}
+        <div className="p-6 border-b border-gray-800 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/20">
             <span className="text-white font-bold text-lg">T</span>
@@ -159,6 +197,7 @@ export default function DashboardSidebar({ userEmail }: DashboardSidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={closeSidebar}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
                   ? "bg-red-500/10 text-red-400 border border-red-500/20"
@@ -194,6 +233,7 @@ export default function DashboardSidebar({ userEmail }: DashboardSidebarProps) {
           Sign Out
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

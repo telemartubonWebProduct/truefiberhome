@@ -736,7 +736,7 @@ export default function AdminChatRoom({ sessionId }: AdminChatRoomProps) {
 
   return (
     <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)] 2xl:grid-cols-[390px_minmax(0,1fr)]">
-      <aside className="flex h-[72vh] flex-col overflow-hidden rounded-3xl border border-gray-800 bg-gray-900/65 shadow-lg shadow-black/20">
+      <aside className="hidden xl:flex h-[72vh] flex-col overflow-hidden rounded-3xl border border-gray-800 bg-gray-900/65 shadow-lg shadow-black/20">
         <div className="space-y-3 border-b border-gray-800 px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -859,19 +859,22 @@ export default function AdminChatRoom({ sessionId }: AdminChatRoomProps) {
         </div>
       </aside>
 
-      <section className="flex h-[72vh] flex-col overflow-hidden rounded-3xl border border-gray-800 bg-gray-900/65 shadow-lg shadow-black/20">
-        <header className="border-b border-gray-800 bg-gradient-to-r from-gray-900/90 via-gray-900/75 to-red-500/5 px-5 py-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs">
+      <section className="flex h-[calc(100dvh-6rem)] lg:h-[72vh] flex-col overflow-hidden rounded-3xl border border-gray-800 bg-gray-900/65 shadow-lg shadow-black/20">
+        <header className="border-b border-gray-800 bg-gradient-to-r from-gray-900/90 via-gray-900/75 to-red-500/5 px-4 py-4 lg:px-5">
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
+            <div className="space-y-2 lg:space-y-1">
+              <div className="flex items-center gap-2 text-sm xl:text-xs">
                 <Link
                   href="/dashboard/chat"
-                  className="font-medium text-gray-400 transition hover:text-gray-200"
+                  className="flex items-center gap-1 font-medium text-gray-300 transition hover:text-white bg-gray-800/60 hover:bg-gray-800 px-3 py-1.5 xl:px-0 xl:py-0 xl:bg-transparent rounded-lg xl:rounded-none -ml-1 xl:ml-0"
                 >
-                  คิวแชททั้งหมด
+                  <svg className="w-4 h-4 xl:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  กลับไปหน้าคิวก่อนหน้า
                 </Link>
-                <span className="text-gray-600">/</span>
-                <span className="font-semibold text-gray-200">ห้องที่เลือก</span>
+                <span className="hidden xl:inline text-gray-600">/</span>
+                <span className="hidden xl:inline font-semibold text-gray-200">ห้องที่เลือก</span>
               </div>
 
               <h1 className="text-lg font-semibold text-white">

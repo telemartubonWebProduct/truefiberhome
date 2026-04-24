@@ -40,12 +40,12 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-950 flex">
-      {/* Sidebar */}
+      {/* Sidebar / Mobile Header */}
       <DashboardSidebar userEmail={user.email || ""} />
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 min-h-screen">
-        <div className="p-8">{children}</div>
+      <main className="flex-1 lg:ml-64 min-h-screen pt-16 lg:pt-0">
+        <div className="p-4 lg:p-8">{children}</div>
       </main>
     </div>
   );
