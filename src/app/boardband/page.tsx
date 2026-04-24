@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/src/lib/prisma";
 import { lineSupport } from "@/src/context/line-path";
+import ContactSection from "@/src/app/home/components/contact-section";
+import BroadbandPromotionsClient from "./BroadbandPromotionsClient";
 
 export const metadata: Metadata = {
   title: "โปรโมทเน็ตแพ็กเกจทั่วไป",
@@ -72,6 +74,24 @@ export default async function BroadbandPage() {
     : [];
 
   const totalPromotions = promotions.length;
+  const promotionCards = promotions.map((promo) => {
+    const promoDetails = getTextItems(promo.details);
+    const promoPerks = getTextItems(promo.perks);
+
+    return {
+      id: promo.id,
+      categoryName: promo.categoryName,
+      name: promo.name,
+      price: promo.price,
+      priceNote: promo.priceNote,
+      speed: promo.speed,
+      validity: promo.validity,
+      imageUrl: promo.imageUrl,
+      promoBadge: promo.promoBadge,
+      buyUrl: promo.buyUrl,
+      highlightItems: promoDetails.length > 0 ? promoDetails : promoPerks,
+    };
+  });
 
   return (
     <main className="bg-slate-50 min-h-screen pt-28 pb-20">
@@ -109,77 +129,18 @@ export default async function BroadbandPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {promotions.map((promo) => {
-              const promoDetails = getTextItems(promo.details);
-              const promoPerks = getTextItems(promo.perks);
-              const highlightItems = promoDetails.length > 0 ? promoDetails : promoPerks;
-              const buyUrl =
-                promo.buyUrl && promo.buyUrl.trim() && promo.buyUrl.trim() !== "/service" && promo.buyUrl.trim() !== "#"
-                  ? promo.buyUrl.trim()
-                  : lineSupport;
-
-              return (
-                <article
-                  key={promo.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] hover:shadow-[0_18px_36px_rgba(15,23,42,0.1)] transition-shadow"
-                >
-                  {promo.imageUrl && (
-                    <div className="h-44 w-full rounded-xl overflow-hidden border border-slate-200 mb-4 bg-slate-100">
-                      <img src={promo.imageUrl} alt={promo.name} className="h-full w-full object-cover" />
-                    </div>
-                  )}
-
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                        {promo.categoryName || "โปรโมชั่นเน็ตบ้าน"}
-                      </p>
-                      <h3 className="mt-1 text-xl font-black text-slate-900">{promo.name}</h3>
-                    </div>
-                    {promo.promoBadge && (
-                      <span className="shrink-0 rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 border border-rose-100">
-                        {promo.promoBadge}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-4 rounded-xl bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-100 p-4 flex items-end justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-500">ข้อมูลหลัก</p>
-                      <p className="text-xl font-black text-slate-900 leading-tight">{promo.speed || "-"}</p>
-                      <p className="text-xs font-semibold text-slate-500 mt-1">{promo.validity || "ระยะเวลาตามเงื่อนไข"}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-slate-500">ราคา</p>
-                      <p className="text-3xl font-black text-[#2f58e9] leading-none">฿{Number(promo.price).toLocaleString()}</p>
-                      <p className="text-xs font-semibold text-slate-500 mt-1">{promo.priceNote || "ต่อแพ็กเกจ"}</p>
-                    </div>
-                  </div>
-
-                  {highlightItems.length > 0 && (
-                    <ul className="mt-4 space-y-2">
-                      {highlightItems.slice(0, 4).map((item, idx) => (
-                        <li key={`${promo.id}-highlight-${idx}`} className="flex items-start gap-2 text-sm text-slate-700">
-                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#2f58e9]" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  <Link
-                    href={buyUrl}
-                    className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-[#2f58e9] px-4 py-3 text-white font-bold hover:bg-[#1f3fbf] transition-colors"
-                  >
-                    สนใจสมัครโปรโมชันนี้
-                  </Link>
-                </article>
-              );
-            })}
-          </div>
+          <BroadbandPromotionsClient promotions={promotionCards} defaultContactUrl={lineSupport} />
         )}
       </section>
+
+      <ContactSection
+        sectionId="boardband-contact-section"
+        content={{
+          title: "ติดต่อและสมัครบริการ",
+          subtitle: "เลือกช่องทางที่สะดวก ทีมงานพร้อมให้คำแนะนำแพ็กเกจที่เหมาะกับคุณ",
+          isActive: true,
+        }}
+      />
     </main>
   );
 }

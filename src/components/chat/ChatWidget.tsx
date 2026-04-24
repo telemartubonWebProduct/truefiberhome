@@ -2,10 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createClient } from "@/src/lib/supabase";
-import ChatBubble, {
-  type PromotionCardContext,
-  type PromotionFlexType,
-} from "@/src/components/chat/ChatBubble";
+import ChatBubble, { type PromotionFlexType } from "@/src/components/chat/ChatBubble";
 import ChatInput from "@/src/components/chat/ChatInput";
 import HandoffButton from "@/src/components/chat/HandoffButton";
 import {
@@ -64,39 +61,6 @@ const QUICK_ACTIONS = [
 const PROMOTION_QUERY_REGEX = /(โปร|โปรโมชั่น|โปรโมชัน|promotion|promo|แพ็กเกจ|package)/i;
 const HOME_PROMOTION_REGEX = /(เน็ตบ้าน|บ้าน|ไฟเบอร์|fiber|wifi|broadband)/i;
 const MOBILE_PROMOTION_REGEX = /(มือถือ|mobile|5g|4g|ซิม|รายเดือน|เติมเงิน)/i;
-const BUDGET_PATTERNS = [
-  /(?:ไม่เกิน|งบ(?:ประมาณ)?|budget|under|ราคา(?:\s*ไม่เกิน)?|<=)\s*[:=]?\s*(?:บาท|฿)?\s*([0-9,]+(?:\.[0-9]+)?)/i,
-  /([0-9,]+(?:\.[0-9]+)?)\s*บาท(?:\s*(?:หรือต่ำกว่า|หรือน้อยกว่า|ไม่เกิน))?/i,
-  /<=\s*([0-9,]+(?:\.[0-9]+)?)/i,
-  /฿\s*([0-9,]+(?:\.[0-9]+)?)/i,
-] as const;
-
-function toArabicDigits(value: string) {
-  const thaiDigits = "๐๑๒๓๔๕๖๗๘๙";
-
-  return value.replace(/[๐-๙]/g, (digit) => {
-    const index = thaiDigits.indexOf(digit);
-    return index >= 0 ? String(index) : digit;
-  });
-}
-
-function extractBudgetFromText(value: string) {
-  const normalized = toArabicDigits(value);
-
-  for (const pattern of BUDGET_PATTERNS) {
-    const match = normalized.match(pattern);
-    if (!match?.[1]) {
-      continue;
-    }
-
-    const parsed = Number.parseFloat(match[1].replace(/,/g, ""));
-    if (Number.isFinite(parsed) && parsed > 0) {
-      return Math.floor(parsed);
-    }
-  }
-
-  return null;
-}
 
 function classifyPromotionFlexType(content: string): PromotionFlexType {
   if (HOME_PROMOTION_REGEX.test(content)) {
@@ -110,10 +74,7 @@ function classifyPromotionFlexType(content: string): PromotionFlexType {
   return "mixed";
 }
 
-function getPromotionCardContextForMessage(
-  messages: ChatMessageDto[],
-  messageIndex: number
-): PromotionCardContext | null {
+function getPromotionFlexTypeForMessage(messages: ChatMessageDto[], messageIndex: number): PromotionFlexType | null {
   const currentMessage = messages[messageIndex];
   if (!currentMessage) {
     return null;
@@ -140,17 +101,11 @@ function getPromotionCardContextForMessage(
   }
 
   if (visitorQuestion && PROMOTION_QUERY_REGEX.test(visitorQuestion.content)) {
-    return {
-      flexType: classifyPromotionFlexType(visitorQuestion.content),
-      budget: extractBudgetFromText(visitorQuestion.content),
-    };
+    return classifyPromotionFlexType(visitorQuestion.content);
   }
 
   if (PROMOTION_QUERY_REGEX.test(currentMessage.content)) {
-    return {
-      flexType: classifyPromotionFlexType(currentMessage.content),
-      budget: extractBudgetFromText(currentMessage.content),
-    };
+    return classifyPromotionFlexType(currentMessage.content);
   }
 
   return null;
@@ -676,7 +631,7 @@ export default function ChatWidget() {
                   <ChatBubble
                     key={message.id}
                     message={message}
-                    promotionContext={getPromotionCardContextForMessage(messages, index)}
+                    promotionFlexType={getPromotionFlexTypeForMessage(messages, index)}
                   />
                 ))
               ) : (
