@@ -10,6 +10,7 @@ import Navbar from "@/src/components/layout/Navbar";
 import BottomNav from "@/src/components/layout/BottomNav";
 import { ToastContainer } from "react-toastify";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
+import { Analytics } from "@vercel/analytics/next"
 
 // 1) เรียกใช้ฟอนต์ Prompt จาก next/font/google
 const prompt = Prompt({
@@ -234,6 +235,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <BottomNav />
               </div>
               <ToastContainer position="bottom-right" theme="dark" />
+              <Analytics />
               <ChatWidgetVisibility />
             </ThemeProvider>
           </AppRouterCacheProvider>
