@@ -9,7 +9,7 @@ import SalerService from "./components/saler-service";
 import PackageOffers from "./components/PackageOffers";
 import HomeInternet from "./components/HomeInternet";
 import Banner from "./components/Banner";
-import LineTest from "./components/line-test";
+
 
 interface HomePageClientProps {
   banners: any[];
@@ -80,9 +80,7 @@ export default function HomePageClient({
         <section aria-label="แบนเนอร์โปรโมชัน">
           <Banner promoBannerData={homeSections?.promoBanner} />
         </section>
-        <section aria-label="ทดสอบการแจ้งเตือน LINE">
-          <LineTest />
-        </section>
+       
       </div>
     </Box>
   );
