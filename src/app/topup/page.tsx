@@ -58,25 +58,31 @@ function mapTopupCategoryId(categoryName: string | null): number {
   const exact = topupCategories.find((category) => category.name.toLowerCase() === normalized);
   if (exact) return exact.id;
 
-  if (normalized.includes("เน็ต") && normalized.includes("โทร")) return 2;
-  if (normalized.includes("โทร") && !normalized.includes("เน็ต")) return 3;
-  if (normalized.includes("บันเทิง") || normalized.includes("entertain") || normalized.includes("series")) return 4;
-  if (normalized.includes("เกม") || normalized.includes("game")) return 5;
-  if (normalized.includes("ประกัน") || normalized.includes("insurance")) return 6;
+  if (normalized.includes("รายวัน")) return 1;
+  if (normalized.includes("สัปดาห์")) return 2;
+  if (normalized.includes("30") || normalized.includes("เดือน")) return 3;
+  if (normalized.includes("มาราธอน")) return 4;
   return 1;
 }
 
-async function fetchTopupPackages(page: number, limit: number, q: string): Promise<{ data: PackageItem[]; totalPages: number }> {
+async function fetchTopupPackages(page: number, limit: number, q: string, categoryId: number | null): Promise<{ data: PackageItem[]; totalPages: number }> {
   const skip = (page - 1) * limit;
 
   try {
     const typeWhere: any = { type: "topup", status: true };
+    const selectedCategory = categoryId ? topupCategories.find(c => c.id === categoryId) : null;
+    
     const whereClause: any = {
       ...typeWhere,
       ...(q
         ? {
             name: { contains: q, mode: "insensitive" },
           }
+        : {}),
+      ...(selectedCategory 
+        ? { 
+            categoryName: { contains: selectedCategory.name, mode: "insensitive" } 
+          } 
         : {}),
     };
 
@@ -156,15 +162,17 @@ async function fetchTopupRecommendedPromotions(): Promise<RecommendedTopupPromot
   }
 }
 
-export default async function TopupPage(props: { searchParams: Promise<{ page?: string; q?: string }> }) {
+export default async function TopupPage(props: { searchParams: Promise<{ page?: string; q?: string; category?: string }> }) {
   const searchParams = await props.searchParams;
   const page = parseInt(searchParams?.page || "1", 10);
   const q = searchParams?.q || "";
+  const categoryStr = searchParams?.category || "all";
+  const categoryId = categoryStr === "all" ? null : parseInt(categoryStr, 10);
   const limit = 8;
 
   const safePage = Number.isFinite(page) && page > 0 ? page : 1;
   const [{ data: packages, totalPages }, recommendedPromotions] = await Promise.all([
-    fetchTopupPackages(safePage, limit, q),
+    fetchTopupPackages(safePage, limit, q, categoryId),
     fetchTopupRecommendedPromotions(),
   ]);
 

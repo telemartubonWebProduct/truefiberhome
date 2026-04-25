@@ -15,12 +15,10 @@ export const topupBannerMobile: BannerData[] = [
 
 // ===== Topup Categories (PackageList) =====
 export const topupCategories: PackageCategory[] = [
-  { id: 1, name: "เน็ต", slug: "net" },
-  { id: 2, name: "เน็ต + โทร", slug: "net-call" },
-  { id: 3, name: "โทร", slug: "call" },
-  { id: 4, name: "เอ็นเตอร์เทนเมนท์", slug: "entertainment" },
-  { id: 5, name: "เกมส์", slug: "games" },
-  { id: 6, name: "insurance", slug: "insurance" },
+  { id: 1, name: "แบบรายวัน", slug: "daily" },
+  { id: 2, name: "รายสัปดาห์", slug: "weekly" },
+  { id: 3, name: "โปร 30 วัน", slug: "monthly" },
+  { id: 4, name: "โปรเน็ตมาราธอน", slug: "marathon" },
 ];
 
 // ===== Topup Packages (PackageList) =====

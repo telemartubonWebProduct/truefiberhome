@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import WifiIcon from "@mui/icons-material/Wifi";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -55,22 +56,28 @@ const cardVariants = {
   },
 };
 
+
+
 export default function PackageList({ packages = [] }: PackageListProps) {
-  const [activeCategoryId, setActiveCategoryId] = useState<number | "all">("all");
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { lineSupportUrl } = useSiteSettings();
 
-  const visiblePackages = useMemo(() => {
-    if (activeCategoryId === "all") {
-      return packages;
-    }
-    return packages.filter((pkg) => pkg.category_id === activeCategoryId);
-  }, [packages, activeCategoryId]);
+  const categoryParam = searchParams.get("category") || "all";
+  const activeCategoryId = categoryParam === "all" ? "all" : parseInt(categoryParam, 10);
+
+  const handleCategoryChange = (id: number | "all") => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("category", id.toString());
+    params.set("page", "1"); // reset to page 1 on category change
+    router.push(`?${params.toString()}`);
+  };
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-10">
       <div className="mb-10 flex flex-wrap items-center justify-center gap-2 md:gap-3">
         <button
-          onClick={() => setActiveCategoryId("all")}
+          onClick={() => handleCategoryChange("all")}
           className={`rounded-full px-5 py-2.5 text-sm font-bold transition-colors ${
             activeCategoryId === "all" ? "bg-slate-900 text-white" : "bg-white text-slate-600 hover:bg-slate-100"
           }`}
@@ -80,7 +87,7 @@ export default function PackageList({ packages = [] }: PackageListProps) {
         {CATEGORIES.map((category) => (
           <button
             key={category.id}
-            onClick={() => setActiveCategoryId(category.id)}
+            onClick={() => handleCategoryChange(category.id)}
             className={`rounded-full px-5 py-2.5 text-sm font-bold transition-colors ${
               activeCategoryId === category.id
                 ? "bg-slate-900 text-white"
@@ -92,19 +99,20 @@ export default function PackageList({ packages = [] }: PackageListProps) {
         ))}
       </div>
 
-      {visiblePackages.length === 0 ? (
+      {packages.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
           ยังไม่มีแพ็กเกจในหมวดนี้
         </div>
       ) : (
         <motion.div
+          key={`grid-${activeCategoryId}-${searchParams.get("page") || "1"}`}
           variants={gridVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
           className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
         >
-          {visiblePackages.map((pkg) => {
+          {packages.map((pkg) => {
             const normalizedBuyLink = safeLink(pkg.buy_link);
             const buyUrl = normalizedBuyLink && normalizedBuyLink !== "#" ? normalizedBuyLink : lineSupportUrl;
             const openInNewTab = !/^tel:/i.test(buyUrl);
