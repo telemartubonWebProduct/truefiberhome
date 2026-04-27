@@ -44,6 +44,104 @@ function normalizePerks(value: unknown): PerkItem[] {
   return parsed;
 }
 
+function normalizeTextList(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    if (typeof value === "string" && value.trim()) {
+      return [value.trim()];
+    }
+    return [];
+  }
+
+  const parsed: string[] = [];
+
+  for (const item of value) {
+    if (typeof item === "string") {
+      const text = item.trim();
+      if (text) parsed.push(text);
+      continue;
+    }
+
+    if (item && typeof item === "object" && !Array.isArray(item)) {
+      const data = item as Record<string, unknown>;
+      const textRaw = data.text ?? data.label ?? data.title ?? data.name;
+      const text = typeof textRaw === "string" ? textRaw.trim() : "";
+      if (text) parsed.push(text);
+    }
+  }
+
+  return parsed;
+}
+
+function inferPerkIcon(text: string): string {
+  const normalized = text.toLowerCase();
+
+  if (/(วัน|เดือน|validity|ระยะเวลา|ชม\.|ชั่วโมง)/i.test(normalized)) {
+    return "calendar";
+  }
+
+  if (/(โทร|call|นาที)/i.test(normalized)) {
+    return "phone";
+  }
+
+  if (/(เกม|game|pubg|rov)/i.test(normalized)) {
+    return "games";
+  }
+
+  if (/(ทีวี|tv|movie|series|ซีรีส์|หนัง|บันเทิง|บอล)/i.test(normalized)) {
+    return "tv";
+  }
+
+  if (/(ประกัน|insurance|คุ้มครอง)/i.test(normalized)) {
+    return "insurance";
+  }
+
+  return "speed";
+}
+
+function buildPromotionPerks(promotion: {
+  perks: unknown;
+  speed: string | null;
+  validity: string | null;
+  details: unknown;
+  categoryName: string | null;
+}): PerkItem[] {
+  const fromPerks = normalizePerks(promotion.perks);
+  if (fromPerks.length > 0) {
+    return fromPerks;
+  }
+
+  const fallback: PerkItem[] = [];
+
+  if (promotion.speed && promotion.speed.trim()) {
+    fallback.push({ text: promotion.speed.trim(), imageUrl: "speed" });
+  }
+
+  if (promotion.validity && promotion.validity.trim()) {
+    fallback.push({ text: promotion.validity.trim(), imageUrl: "calendar" });
+  }
+
+  for (const detail of normalizeTextList(promotion.details)) {
+    if (fallback.length >= 3) {
+      break;
+    }
+
+    if (fallback.some((item) => item.text === detail)) {
+      continue;
+    }
+
+    fallback.push({
+      text: detail,
+      imageUrl: inferPerkIcon(detail),
+    });
+  }
+
+  if (fallback.length === 0 && promotion.categoryName && promotion.categoryName.trim()) {
+    fallback.push({ text: promotion.categoryName.trim(), imageUrl: "speed" });
+  }
+
+  return fallback;
+}
+
 function mapMonthlyCategoryId(categoryName: string | null): number {
   const normalized = (categoryName || "").trim().toLowerCase();
 
@@ -93,7 +191,13 @@ async function fetchMonthlyPackages(page: number, limit: number, q: string): Pro
         price: promo.price,
         price_note: promo.priceNote,
         speed: promo.speed,
-        perks: normalizePerks(promo.perks),
+        perks: buildPromotionPerks({
+          perks: promo.perks,
+          speed: promo.speed,
+          validity: promo.validity,
+          details: promo.details,
+          categoryName: promo.categoryName,
+        }),
         description: null,
         promo_badge: promo.promoBadge || undefined,
         is_active: promo.status,

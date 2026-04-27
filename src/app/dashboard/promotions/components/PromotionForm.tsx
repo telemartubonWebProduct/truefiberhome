@@ -43,6 +43,7 @@ const CATEGORY_OPTIONS: Record<string, string[]> = {
     "เกม & ไลฟ์สไตล์",
   ],
   topup: ["เน็ต", "เน็ต + โทร", "โทร", "เอ็นเตอร์เทนเมนท์", "เกมส์", "insurance"],
+  topup_dtac: ["เน็ต", "เน็ต + โทร", "โทร", "เอ็นเตอร์เทนเมนท์", "เกมส์", "insurance"],
   solar: ["S Pack", "M Pack", "L Pack", "XL Pack", "Commercial"],
 };
 
@@ -51,6 +52,7 @@ const SPEED_OPTIONS: Record<string, string[]> = {
   broadband: ["300/300 Mbps", "500/500 Mbps", "1000/1000 Mbps"],
   monthly: ["20GB", "30GB", "60GB", "ไม่จำกัด"],
   topup: ["5GB", "10GB", "20GB", "30GB"],
+  topup_dtac: ["5GB", "10GB", "20GB", "30GB"],
   solar: ["5kW", "8kW", "10kW", "15kW"],
 };
 const VALIDITY_OPTIONS = ["7 วัน", "15 วัน", "30 วัน", "90 วัน", "12 เดือน", "24 เดือน"];
@@ -65,6 +67,65 @@ const BUY_URL_OPTIONS = [
   "/monthly",
   "/wEnergy",
 ];
+
+function parseInitialPerks(value: unknown): { text: string; imageUrl?: string }[] {
+  if (!Array.isArray(value)) {
+    return [{ text: "", imageUrl: "" }];
+  }
+
+  const parsed = value
+    .map<{ text: string; imageUrl?: string } | null>((item) => {
+      if (typeof item === "string") {
+        const text = item.trim();
+        if (!text) return null;
+        return { text, imageUrl: "" };
+      }
+
+      if (item && typeof item === "object" && !Array.isArray(item)) {
+        const data = item as Record<string, unknown>;
+        const textRaw = data.text ?? data.label ?? data.title ?? data.name;
+        const imageRaw = data.imageUrl ?? data.icon ?? data.key;
+        const text = typeof textRaw === "string" ? textRaw.trim() : "";
+        const imageUrl = typeof imageRaw === "string" ? imageRaw.trim() : "";
+
+        if (!text) return null;
+        return { text, imageUrl };
+      }
+
+      return null;
+    })
+    .filter((item): item is { text: string; imageUrl?: string } => item !== null);
+
+  return parsed.length > 0 ? parsed : [{ text: "", imageUrl: "" }];
+}
+
+function parseInitialDetails(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    const parsed = value
+      .map((item) => {
+        if (typeof item === "string") {
+          return item.trim();
+        }
+
+        if (item && typeof item === "object" && !Array.isArray(item)) {
+          const data = item as Record<string, unknown>;
+          const textRaw = data.text ?? data.label ?? data.title ?? data.name;
+          return typeof textRaw === "string" ? textRaw.trim() : "";
+        }
+
+        return "";
+      })
+      .filter(Boolean);
+
+    return parsed.length > 0 ? parsed : [""];
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    return [value.trim()];
+  }
+
+  return [""];
+}
 
 function hasRecommendedBadge(badge: string | null): boolean {
   return (badge || "").includes("แนะนำ");
@@ -130,13 +191,11 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
 
   // Array states for JSON fields (perks typically have text and imageUrl)
   const [perks, setPerks] = useState<{ text: string; imageUrl?: string }[]>(() => {
-    if (Array.isArray(promotion?.perks)) return promotion.perks;
-    return [{ text: "", imageUrl: "" }];
+    return parseInitialPerks(promotion?.perks);
   });
 
   const [details, setDetails] = useState<string[]>(() => {
-    if (Array.isArray(promotion?.details)) return promotion.details;
-    return [""];
+    return parseInitialDetails(promotion?.details);
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -149,7 +208,7 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
   const categoryListId = `promotion-category-options-${type || "default"}`;
   const speedListId = `promotion-speed-options-${type || "default"}`;
   const selectedType = lockType ? activeType : type;
-  const isTopupType = selectedType === "topup";
+  const isTopupType = selectedType === "topup" || selectedType === "topup_dtac";
 
   useEffect(() => {
     if (lockType) {
@@ -225,8 +284,8 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
         validity: validity || null,
         imageUrl: imageFile ? finalImageUrl : (imagePreview ? (imagePreview.includes("blob:") ? finalImageUrl : imagePreview) : null),
         promoBadge: promoBadge || null,
-        perks: perks.filter((p) => p.text.trim() !== ""),
-        details: details.filter((d) => d.trim() !== ""),
+        perks: perks.filter((p) => p && typeof p.text === 'string' && p.text.trim() !== ""),
+        details: details.filter((d) => typeof d === 'string' && d.trim() !== ""),
         buyUrl: buyUrl || "",
         status,
         displayOrder,
@@ -327,7 +386,8 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
           >
             <option value="broadband">เน็ตบ้าน (Broadband)</option>
             <option value="monthly">รายเดือน (Monthly)</option>
-            <option value="topup">เติมเงิน (Topup)</option>
+            <option value="topup">เติมเงิน (True)</option>
+            <option value="topup_dtac">เติมเงิน (Dtac)</option>
             <option value="solar">โซล่าเซลล์ (wEnergy)</option>
           </select>
           {lockType && (
@@ -521,14 +581,14 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
                 <div className="flex-1 space-y-2">
                   <input
                     type="text"
-                    value={p.text}
+                    value={p?.text || ""}
                     onChange={(e) => handlePerkChange(i, "text", e.target.value)}
                     className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                     placeholder="e.g. โทรฟรี 200 นาที"
                   />
                   <input
                     type="text"
-                    value={p.imageUrl || ""}
+                    value={p?.imageUrl || ""}
                     onChange={(e) => handlePerkChange(i, "imageUrl", e.target.value)}
                     className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                     placeholder="Icon name (e.g. wifi, speed, phone) or URL"
@@ -564,7 +624,7 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
               <div key={`detail-${i}`} className="flex gap-2">
                 <input
                   type="text"
-                  value={d}
+                  value={d || ""}
                   onChange={(e) => handleDetailChange(i, e.target.value)}
                   className="flex-1 px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   placeholder="e.g. รับฟรี อุปกรณ์พิเศษ"

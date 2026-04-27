@@ -34,7 +34,8 @@ interface PromotionManagerProps {
 const TABS = [
   { id: "broadband", label: "เน็ตบ้าน (Broadband)" },
   { id: "monthly", label: "รายเดือน (Monthly)" },
-  { id: "topup", label: "เติมเงิน (Topup)" },
+  { id: "topup", label: "เติมเงิน (True)" },
+  { id: "topup_dtac", label: "เติมเงิน (Dtac)" },
   { id: "solar", label: "โซล่าเซลล์ (wEnergy)" }
 ];
 
@@ -101,7 +102,7 @@ export default function PromotionManager({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [togglingRecommendedId, setTogglingRecommendedId] = useState<string | null>(null);
-  const showRecommendedColumn = activeTab === "topup";
+  const showRecommendedColumn = activeTab === "topup" || activeTab === "topup_dtac";
 
   // Sync state when props change (after router.refresh())
   useEffect(() => {
@@ -186,7 +187,7 @@ export default function PromotionManager({
   };
 
   const handleToggleTopupRecommended = async (promo: Promotion) => {
-    if (promo.type !== "topup") return;
+    if (promo.type !== "topup" && promo.type !== "topup_dtac") return;
 
     const isRecommended = hasRecommendedBadge(promo.promoBadge);
     const nextBadge = isRecommended

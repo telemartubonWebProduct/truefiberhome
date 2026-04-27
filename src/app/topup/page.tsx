@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Box from "@mui/material/Box";
+import Link from "next/link";
 import BannerTop from "./components/BannerTop";
 import PromotionBanner from "./components/PromotionBanner";
 import PackageList from "./components/PackageList";
@@ -52,6 +53,104 @@ function normalizePerks(value: unknown): PerkItem[] {
   return parsed;
 }
 
+function normalizeTextList(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    if (typeof value === "string" && value.trim()) {
+      return [value.trim()];
+    }
+    return [];
+  }
+
+  const parsed: string[] = [];
+
+  for (const item of value) {
+    if (typeof item === "string") {
+      const text = item.trim();
+      if (text) parsed.push(text);
+      continue;
+    }
+
+    if (item && typeof item === "object" && !Array.isArray(item)) {
+      const data = item as Record<string, unknown>;
+      const textRaw = data.text ?? data.label ?? data.title ?? data.name;
+      const text = typeof textRaw === "string" ? textRaw.trim() : "";
+      if (text) parsed.push(text);
+    }
+  }
+
+  return parsed;
+}
+
+function inferPerkIcon(text: string): string {
+  const normalized = text.toLowerCase();
+
+  if (/(วัน|เดือน|validity|ระยะเวลา|ชม\.|ชั่วโมง)/i.test(normalized)) {
+    return "calendar";
+  }
+
+  if (/(โทร|call|นาที)/i.test(normalized)) {
+    return "phone";
+  }
+
+  if (/(เกม|game|pubg|rov)/i.test(normalized)) {
+    return "games";
+  }
+
+  if (/(ทีวี|tv|movie|series|ซีรีส์|หนัง|บันเทิง|บอล)/i.test(normalized)) {
+    return "tv";
+  }
+
+  if (/(ประกัน|insurance|คุ้มครอง)/i.test(normalized)) {
+    return "insurance";
+  }
+
+  return "wifi";
+}
+
+function buildPromotionPerks(promotion: {
+  perks: unknown;
+  speed: string | null;
+  validity: string | null;
+  details: unknown;
+  categoryName: string | null;
+}): PerkItem[] {
+  const fromPerks = normalizePerks(promotion.perks);
+  if (fromPerks.length > 0) {
+    return fromPerks;
+  }
+
+  const fallback: PerkItem[] = [];
+
+  if (promotion.speed && promotion.speed.trim()) {
+    fallback.push({ text: promotion.speed.trim(), imageUrl: "wifi" });
+  }
+
+  if (promotion.validity && promotion.validity.trim()) {
+    fallback.push({ text: promotion.validity.trim(), imageUrl: "calendar" });
+  }
+
+  for (const detail of normalizeTextList(promotion.details)) {
+    if (fallback.length >= 3) {
+      break;
+    }
+
+    if (fallback.some((item) => item.text === detail)) {
+      continue;
+    }
+
+    fallback.push({
+      text: detail,
+      imageUrl: inferPerkIcon(detail),
+    });
+  }
+
+  if (fallback.length === 0 && promotion.categoryName && promotion.categoryName.trim()) {
+    fallback.push({ text: promotion.categoryName.trim(), imageUrl: "wifi" });
+  }
+
+  return fallback;
+}
+
 function mapTopupCategoryId(categoryName: string | null): number {
   const normalized = (categoryName || "").trim().toLowerCase();
 
@@ -65,11 +164,11 @@ function mapTopupCategoryId(categoryName: string | null): number {
   return 1;
 }
 
-async function fetchTopupPackages(page: number, limit: number, q: string, categoryId: number | null): Promise<{ data: PackageItem[]; totalPages: number }> {
+async function fetchTopupPackages(page: number, limit: number, q: string, categoryId: number | null, networkType: string): Promise<{ data: PackageItem[]; totalPages: number }> {
   const skip = (page - 1) * limit;
 
   try {
-    const typeWhere: any = { type: "topup", status: true };
+    const typeWhere: any = { type: networkType, status: true };
     const selectedCategory = categoryId ? topupCategories.find(c => c.id === categoryId) : null;
     
     const whereClause: any = {
@@ -103,7 +202,13 @@ async function fetchTopupPackages(page: number, limit: number, q: string, catego
       price: promo.price,
       price_note: promo.priceNote,
       speed: promo.speed,
-      perks: normalizePerks(promo.perks),
+      perks: buildPromotionPerks({
+        perks: promo.perks,
+        speed: promo.speed,
+        validity: promo.validity,
+        details: promo.details,
+        categoryName: promo.categoryName,
+      }),
       description: null,
       is_active: promo.status,
       buy_link: promo.buyUrl,
@@ -139,8 +244,8 @@ function toRecommendedPromotion(promo: {
   };
 }
 
-async function fetchTopupRecommendedPromotions(): Promise<RecommendedTopupPromotion[]> {
-  const whereBase: any = { type: "topup", status: true };
+async function fetchTopupRecommendedPromotions(networkType: string): Promise<RecommendedTopupPromotion[]> {
+  const whereBase: any = { type: networkType, status: true };
 
   try {
     const recommended = await prisma.promotion.findMany({
@@ -162,30 +267,61 @@ async function fetchTopupRecommendedPromotions(): Promise<RecommendedTopupPromot
   }
 }
 
-export default async function TopupPage(props: { searchParams: Promise<{ page?: string; q?: string; category?: string }> }) {
+export default async function TopupPage(props: { searchParams: Promise<{ page?: string; q?: string; category?: string; network?: string }> }) {
   const searchParams = await props.searchParams;
   const page = parseInt(searchParams?.page || "1", 10);
   const q = searchParams?.q || "";
+  const network = searchParams?.network === "dtac" ? "dtac" : "true";
+  const networkType = network === "dtac" ? "topup_dtac" : "topup";
   const categoryStr = searchParams?.category || "all";
   const categoryId = categoryStr === "all" ? null : parseInt(categoryStr, 10);
   const limit = 8;
 
   const safePage = Number.isFinite(page) && page > 0 ? page : 1;
   const [{ data: packages, totalPages }, recommendedPromotions] = await Promise.all([
-    fetchTopupPackages(safePage, limit, q, categoryId),
-    fetchTopupRecommendedPromotions(),
+    fetchTopupPackages(safePage, limit, q, categoryId, networkType),
+    fetchTopupRecommendedPromotions(networkType),
   ]);
 
   return (
     <Box className="bg-white pb-20">
       <BannerTop />
-      <PromotionBanner promotions={recommendedPromotions} />
+      
+      {/* Network Switcher */}
+      <Box className="flex justify-center -mt-6 relative z-10">
+        <div className="bg-white p-1.5 rounded-full shadow-lg border border-gray-100 flex items-center gap-1">
+          <Link
+            href="?network=true"
+            className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+              network === "true" 
+                ? "bg-red-600 text-white shadow-md shadow-red-600/20" 
+                : "text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            ซิมทรู (True)
+          </Link>
+          <Link
+            href="?network=dtac"
+            className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+              network === "dtac" 
+                ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" 
+                : "text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            ซิมดีแทค (Dtac)
+          </Link>
+        </div>
+      </Box>
+
+      <div className="mt-8">
+        <PromotionBanner promotions={recommendedPromotions} />
+      </div>
 
       <Box className="mt-7 max-w-6xl mx-auto px-4">
         <StoreSearch placeholder="ค้นหาแพ็กเกจเติมเงิน..." />
       </Box>
 
-      <PackageList packages={packages} />
+      <PackageList packages={packages} themeColor={network === "dtac" ? "blue" : "red"} />
 
       {totalPages > 1 && (
         <Box className="mt-8">

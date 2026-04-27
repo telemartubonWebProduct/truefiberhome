@@ -37,6 +37,7 @@ function renderIcon(icon?: string) {
 
 interface PackageListProps {
   packages?: PackageItem[];
+  themeColor?: "red" | "blue";
 }
 
 const gridVariants = {
@@ -58,7 +59,7 @@ const cardVariants = {
 
 
 
-export default function PackageList({ packages = [] }: PackageListProps) {
+export default function PackageList({ packages = [], themeColor = "red" }: PackageListProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { lineSupportUrl } = useSiteSettings();
@@ -73,13 +74,21 @@ export default function PackageList({ packages = [] }: PackageListProps) {
     router.push(`?${params.toString()}`);
   };
 
+  const activeCategoryClass = themeColor === "blue" 
+    ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" 
+    : "bg-slate-900 text-white";
+    
+  const buyBtnClass = themeColor === "blue"
+    ? "bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20"
+    : "bg-slate-900 hover:bg-slate-700";
+
   return (
     <section className="mx-auto max-w-6xl px-4 py-10">
       <div className="mb-10 flex flex-wrap items-center justify-center gap-2 md:gap-3">
         <button
           onClick={() => handleCategoryChange("all")}
-          className={`rounded-full px-5 py-2.5 text-sm font-bold transition-colors ${
-            activeCategoryId === "all" ? "bg-slate-900 text-white" : "bg-white text-slate-600 hover:bg-slate-100"
+          className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
+            activeCategoryId === "all" ? activeCategoryClass : "bg-white text-slate-600 hover:bg-slate-100"
           }`}
         >
           ทั้งหมด
@@ -88,9 +97,9 @@ export default function PackageList({ packages = [] }: PackageListProps) {
           <button
             key={category.id}
             onClick={() => handleCategoryChange(category.id)}
-            className={`rounded-full px-5 py-2.5 text-sm font-bold transition-colors ${
+            className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
               activeCategoryId === category.id
-                ? "bg-slate-900 text-white"
+                ? activeCategoryClass
                 : "bg-white text-slate-600 hover:bg-slate-100"
             }`}
           >
@@ -151,7 +160,7 @@ export default function PackageList({ packages = [] }: PackageListProps) {
                     href={buyUrl}
                     target={openInNewTab ? "_blank" : undefined}
                     rel={openInNewTab ? "noopener noreferrer" : undefined}
-                    className="rounded-full bg-slate-900 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-slate-700"
+                    className={`rounded-full px-6 py-2 text-sm font-bold text-white transition-all ${buyBtnClass}`}
                   >
                     กดสมัคร
                   </a>
