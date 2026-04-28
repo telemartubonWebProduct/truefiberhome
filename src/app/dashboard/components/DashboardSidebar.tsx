@@ -20,6 +20,19 @@ const navItems = [
     ),
   },
   {
+    label: "บันทึกรายวัน",
+    href: "/dashboard/daily-performance",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M7.5 3.75v3m9-3.75v3m-11.25 3h13.5m-15 9.75h16.5A1.5 1.5 0 0021.75 18V6A1.5 1.5 0 0020.25 4.5H3.75A1.5 1.5 0 002.25 6v12A1.5 1.5 0 003.75 19.5zm4.5-6h3"
+        />
+      </svg>
+    ),
+  },
+  {
     label: "แชทสด",
     href: "/dashboard/chat",
     icon: (

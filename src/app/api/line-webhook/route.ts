@@ -24,8 +24,14 @@ export async function POST(req: NextRequest) {
   for (const event of events) {
     if (event.type === "message" && event.message.type === "text") {
       const userId = event.source.userId;
+      const groupId = event.source.groupId; // ดึง Group ID ออกมา
       const text = event.message.text;
+      
       console.log(`User ${userId} sent: ${text}`);
+      if (groupId) {
+        console.log(`★★★ ได้ Group ID แล้วคือ: ${groupId} ★★★`);
+      }
+      
       // ทำ logic ต่อจากนี้...
     }
   }

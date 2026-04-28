@@ -219,6 +219,24 @@ model ServiceCard {
   @@map("service_cards")
 }
 
+model DailyPerformanceLog {
+  id               String   @id @default(cuid())
+  recordDate       DateTime @unique @map("record_date") @db.Date
+  lineLeads        Int      @default(0) @map("line_leads")
+  phoneLeads       Int      @default(0) @map("phone_leads")
+  facebookLeads    Int      @default(0) @map("facebook_leads")
+  salesSuccess     Int      @default(0) @map("sales_success")
+  installSuccess   Int      @default(0) @map("install_success")
+  pendingInstall   Int      @default(0) @map("pending_install")
+  installFailed    Int      @default(0) @map("install_failed")
+  waitingDocuments Int      @default(0) @map("waiting_documents")
+  notes            String?  @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("daily_performance_logs")
+}
+
 model AdminProfile {
   id        String    @id @default(cuid())
   authUid   String    @unique @map("auth_uid")

@@ -25,6 +25,7 @@ const hasExpectedDelegates =
   typeof (cachedClient as any).banner !== "undefined" &&
   typeof (cachedClient as any).agent !== "undefined" &&
   typeof (cachedClient as any).package !== "undefined" &&
+  typeof (cachedClient as any).dailyPerformanceLog !== "undefined" &&
   typeof (cachedClient as any).adminProfile !== "undefined" &&
   typeof (cachedClient as any).chatSession !== "undefined" &&
   typeof (cachedClient as any).chatMessage !== "undefined" &&
