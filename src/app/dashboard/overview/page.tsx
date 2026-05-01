@@ -276,14 +276,7 @@ export default async function DashboardOverviewPage(props: {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-5">
-        <h3 className="text-lg font-bold text-white">วิธีใช้งานระบบใหม่</h3>
-        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-gray-300">
-          <li>เข้าเมนู "บันทึกรายวัน" ทุกวันเพื่อกรอกผลการขายและติดตั้ง</li>
-          <li>บันทึกซ้ำในวันเดิมจะเป็นการอัปเดตข้อมูลทันที ไม่ต้องลบข้อมูลก่อน</li>
-          <li>หน้า Overview จะสรุปข้อมูลอัตโนมัติรายเดือน เพื่อให้เห็นภาพรวมเร็วขึ้น</li>
-        </ul>
-      </section>
+   
     </div>
   );
 }
