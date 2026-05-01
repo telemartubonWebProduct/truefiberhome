@@ -10,6 +10,7 @@ import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import TvIcon from "@mui/icons-material/Tv";
 import ShieldIcon from "@mui/icons-material/Shield";
 import SpeedIcon from "@mui/icons-material/Speed";
+import StorageIcon from "@mui/icons-material/Storage";
 import HeaderMonthy from "./Header";
 import type { PackageCategory, PackageItem } from "@/src/types/package";
 import { monthlyCategories as CATEGORIES, monthlyPackages as FALLBACK_PACKAGES } from "@/src/data/monthly";
@@ -17,7 +18,12 @@ import { useSiteSettings } from "@/src/context/SiteSettingsContext";
 import { safeLink } from "@/src/lib/api-normalize";
 
 function renderIcon(icon?: string) {
-  const props = { className: "mr-2 h-[18px] w-[18px] text-gray-500" };
+  const props = { className: "mr-2 h-[18px] w-[18px] text-gray-500 flex-shrink-0" };
+
+  if (icon && (icon.startsWith("http") || icon.startsWith("/"))) {
+    return <img src={icon} alt="" className="mr-2 h-[18px] w-[18px] object-contain flex-shrink-0" />;
+  }
+
   switch (icon) {
     case "wifi":
       return <WifiIcon {...props} />;
@@ -34,6 +40,9 @@ function renderIcon(icon?: string) {
       return <TvIcon {...props} />;
     case "insurance":
       return <ShieldIcon {...props} />;
+    case "disk":
+    case "storage":
+      return <StorageIcon {...props} />;
     default:
       return <WifiIcon {...props} />;
   }

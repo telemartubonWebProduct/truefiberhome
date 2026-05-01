@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/src/lib/prisma';
+import { getMonthDateRange, getCurrentMonthKey, getTodayInputValue, summarizeDailyPerformance } from '@/src/lib/daily-performance';
 
 const LINE_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN!;
 const GROUP_ID = process.env.LINE_GROUP_ID!;
@@ -31,13 +33,39 @@ async function sendReport() {
     day: 'numeric' 
   });
 
-  // ตัวแปรจำลองสำหรับข้อมูลยอดขาย (ที่ต้องไปดึงจาก Database)
-  const regis = 11;
-  const connect = 8;
-  const wait = 1;
-  const cannotInstall = 2;
-  const today = 0;
-  const totalSub = 11;
+  // ดึงข้อมูลยอดขายจาก Database ของเดือนนี้
+  const monthKey = getCurrentMonthKey();
+  const { startDate, endDate } = getMonthDateRange(monthKey);
+  const todayStr = getTodayInputValue();
+
+  const dailyPerformanceLog = (prisma as any).dailyPerformanceLog;
+  const isDelegateReady = typeof dailyPerformanceLog?.findMany === "function";
+
+  const rows = isDelegateReady
+    ? await dailyPerformanceLog.findMany({
+        where: {
+          recordDate: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
+      })
+    : [];
+
+  const summary = summarizeDailyPerformance(rows);
+  const todayRow = rows.find((r: any) => r.recordDate.toISOString().startsWith(todayStr)) || {
+    installSuccess: 0,
+    pendingInstall: 0,
+    installFailed: 0,
+  };
+
+  const regis = summary.totalInstallSuccess + summary.totalPendingInstall + summary.totalInstallFailed;
+  const connect = summary.totalInstallSuccess;
+  const wait = summary.totalPendingInstall;
+  const cannotInstall = summary.totalInstallFailed;
+  
+  const todayRegis = todayRow.installSuccess + todayRow.pendingInstall + todayRow.installFailed;
+  const totalSub = regis;
 
   const reportData = `📊 สรุปยอดขายออนไลน์ประจำวัน
 📅 ประจำวันที่: ${thaiDate}
@@ -48,7 +76,7 @@ async function sendReport() {
 ❌ ติดไม่ได้: ${cannotInstall}
 
 ➖➖➖➖➖➖➖➖➖
-🎯 ยอดขายวันนี้ = ${today}
+🎯 ยอดขายวันนี้ = ${todayRegis}
 📈 รวมทั้งหมด = ${totalSub} Sub`;
 
   // 3. ยิง Push Message เข้ากลุ่ม
