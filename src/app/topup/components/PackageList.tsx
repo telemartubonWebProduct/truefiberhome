@@ -15,6 +15,7 @@ import type { PackageItem } from "@/src/types/package";
 import { topupCategories as CATEGORIES } from "@/src/data/topup";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
 import { safeLink } from "@/src/lib/api-normalize";
+import { trackLineClick, trackPhoneClick, trackSignupInterest } from "@/src/lib/track-event";
 
 function renderIcon(icon?: string) {
   const props = { className: "mr-2 h-[18px] w-[18px] text-gray-500 flex-shrink-0" };
@@ -172,6 +173,11 @@ export default function PackageList({ packages = [], themeColor = "red" }: Packa
                     href={buyUrl}
                     target={openInNewTab ? "_blank" : undefined}
                     rel={openInNewTab ? "noopener noreferrer" : undefined}
+                    onClick={() => {
+                      trackSignupInterest("topup", pkg.name);
+                      if (/^tel:/i.test(buyUrl)) trackPhoneClick("topup", buyUrl.replace(/^tel:/i, ""));
+                      else if (buyUrl.includes("lin.ee") || buyUrl.includes("line.me")) trackLineClick("topup", buyUrl);
+                    }}
                     className={`rounded-full px-6 py-2 text-sm font-bold text-white transition-all ${buyBtnClass}`}
                   >
                     กดสมัคร

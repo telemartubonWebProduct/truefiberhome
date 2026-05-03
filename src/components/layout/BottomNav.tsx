@@ -9,6 +9,7 @@ import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
 import SimCardRoundedIcon from "@mui/icons-material/SimCardRounded";
 import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
 import { lineSupport } from "@/src/context/line-path";
+import { trackLineClick } from "@/src/lib/track-event";
 
 const navItems = [
   {
@@ -72,6 +73,11 @@ export default function BottomNav() {
               prefetch={isInternalRoute ? true : undefined}
               target={isInternalRoute ? undefined : "_blank"}
               rel={isInternalRoute ? undefined : "noopener noreferrer"}
+              onClick={() => {
+                if (!isInternalRoute && item.name === "สมัครทาง LINE") {
+                  trackLineClick("bottom_nav", item.href);
+                }
+              }}
               onTouchStart={() => {
                 if (isInternalRoute) {
                   router.prefetch(item.href);

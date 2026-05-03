@@ -22,6 +22,7 @@ import {
   type ChatSessionDto,
   type ChatStatusValue,
 } from "@/src/types/chat";
+import { trackChatOpen, trackChatSendMessage, trackChatQuickAction, trackChatHandoff } from "@/src/lib/track-event";
 
 function createVisitorId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -466,6 +467,7 @@ export default function ChatWidget() {
       setError(null);
       setInput("");
       setIsSending(true);
+      trackChatSendMessage();
 
       const optimisticMessage: ChatMessageDto = {
         id: `temp-${Date.now()}`,
@@ -536,8 +538,9 @@ export default function ChatWidget() {
     [createSession, input, isSending, sessionId, visitorId],
   );
 
-  const handleQuickAction = useCallback(
-    (message: string) => {
+    const handleQuickAction = useCallback(
+    (message: string, label: string) => {
+      trackChatQuickAction(label);
       void handleSend(message);
     },
     [handleSend],
@@ -550,6 +553,7 @@ export default function ChatWidget() {
     setWaiting(true);
     setIsRequestingHuman(true);
     setError(null);
+    trackChatHandoff();
 
     try {
       const response = await fetch("/api/chat/handoff", {
@@ -683,7 +687,7 @@ export default function ChatWidget() {
                   <button
                     key={action.label}
                     type="button"
-                    onClick={() => handleQuickAction(action.message)}
+                    onClick={() => handleQuickAction(action.message, action.label)}
                     disabled={
                       isInitializing || isSending || status === "CLOSED"
                     }
@@ -777,7 +781,11 @@ export default function ChatWidget() {
 
       <button
         type="button"
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={() => {
+          const nextOpen = !isOpen;
+          setIsOpen(nextOpen);
+          if (nextOpen) trackChatOpen();
+        }}
         aria-label={isOpen ? "Close chat" : "Open chat"}
         className={`fixed bottom-[calc(env(safe-area-inset-bottom,0px)+96px)] right-3 z-[9999] inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#ef2d63] to-[#c81649] text-white shadow-xl shadow-[#e83467]/35 transition-all duration-200 hover:scale-[1.03] sm:bottom-[calc(env(safe-area-inset-bottom,0px)+86px)] sm:right-4 sm:h-14 sm:w-14 lg:bottom-[calc(env(safe-area-inset-bottom,0px)+18px)] lg:h-16 lg:w-16 ${
           isOpen ? "ring-4 ring-white/90 shadow-2xl shadow-[#e83467]/45" : ""

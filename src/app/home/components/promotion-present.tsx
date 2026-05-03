@@ -15,6 +15,7 @@ import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { lineSupport } from "@/src/context/line-path";
+import { trackLineClick, trackPhoneClick, trackFacebookClick, trackSignupInterest } from "@/src/lib/track-event";
 
 interface GiftItem {
   image?: string;
@@ -377,7 +378,13 @@ export default function PromotionPresent({
                   key={method.id}
                   component="a"
                   href={method.href}
-                  onClick={() => setIsContactModalOpen(false)}
+                  onClick={() => {
+                    const key = (method.key || method.title || "").toLowerCase();
+                    if (key.includes("line")) trackLineClick("home_promo_modal", method.href);
+                    else if (key.includes("facebook")) trackFacebookClick("home_promo_modal", method.href);
+                    else if (key.includes("phone") || key.includes("โทร")) trackPhoneClick("home_promo_modal");
+                    setIsContactModalOpen(false);
+                  }}
                   sx={{
                     justifyContent: "space-between",
                     alignItems: "center",
@@ -666,7 +673,10 @@ function PromotionCard({ pkg, onInterestClick }: { pkg: PackageData; onInterestC
           <Button
             variant="contained"
             fullWidth
-            onClick={() => onInterestClick(buyUrl)}
+            onClick={() => {
+              trackSignupInterest("home_promotion", pkg.name);
+              onInterestClick(buyUrl);
+            }}
             sx={{
               mt: 2.5,
               bgcolor: "#3466F6",

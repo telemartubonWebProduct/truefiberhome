@@ -16,6 +16,7 @@ import type { PackageCategory, PackageItem } from "@/src/types/package";
 import { monthlyCategories as CATEGORIES, monthlyPackages as FALLBACK_PACKAGES } from "@/src/data/monthly";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
 import { safeLink } from "@/src/lib/api-normalize";
+import { trackLineClick, trackPhoneClick, trackSignupInterest } from "@/src/lib/track-event";
 
 function renderIcon(icon?: string) {
   const props = { className: "mr-2 h-[18px] w-[18px] text-gray-500 flex-shrink-0" };
@@ -171,6 +172,11 @@ export default function PromotionMonthy({
                           href={buyUrl}
                           target={openInNewTab ? "_blank" : undefined}
                           rel={openInNewTab ? "noopener noreferrer" : undefined}
+                          onClick={() => {
+                            trackSignupInterest("monthly", pkg.name);
+                            if (/^tel:/i.test(buyUrl)) trackPhoneClick("monthly", buyUrl.replace(/^tel:/i, ""));
+                            else if (buyUrl.includes("lin.ee") || buyUrl.includes("line.me")) trackLineClick("monthly", buyUrl);
+                          }}
                           className="mb-0.5 rounded-full bg-slate-900 px-7 py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-700"
                         >
                           กดสมัคร

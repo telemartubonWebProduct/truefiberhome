@@ -35,6 +35,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  transpilePackages: ["@mui/material", "@mui/system", "@mui/icons-material"],
   images: {
     remotePatterns: [
       {

@@ -174,10 +174,13 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
                   rel={lineSupportUrl ? "noopener noreferrer" : undefined}
                   color="inherit"
                   aria-label="LINE support"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#00B900] px-3 py-2 text-white transition-colors hover:bg-[#009f00]"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#00B900] px-3 py-2 text-white transition-colors hover:bg-[#009f00] no-underline"
+                  sx={{ textDecoration: "none" }}
                 >
                   <Image src={LineIcon} alt="LINE" width={20} height={20} className="h-5 w-5 object-contain" />
-                  
+                  <Typography variant="body1" sx={{ fontFamily: "Prompt" }} color="#ffffff">
+                    @truefiberhome
+                  </Typography>
                 </Link>
               </Box>
 

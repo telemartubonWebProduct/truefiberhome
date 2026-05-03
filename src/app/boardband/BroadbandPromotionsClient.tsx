@@ -5,6 +5,7 @@ import Image from "next/image";
 import LocalPhoneRoundedIcon from "@mui/icons-material/LocalPhoneRounded";
 import LineIcon from "@/src/assets/icons/line-icon.svg";
 import FacebookIconSvg from "@/src/assets/icons/facebook-icon.svg";
+import { trackLineClick, trackPhoneClick, trackFacebookClick, trackSignupInterest } from "@/src/lib/track-event";
 
 type PromotionCardItem = {
   id: string;
@@ -118,7 +119,10 @@ export default function BroadbandPromotionsClient({ promotions, defaultContactUr
 
             <button
               type="button"
-              onClick={() => setSelectedPromotion(promo)}
+              onClick={() => {
+                trackSignupInterest("broadband", promo.name);
+                setSelectedPromotion(promo);
+              }}
               className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-[#2f58e9] px-4 py-3 font-bold text-white transition-colors hover:bg-[#1f3fbf]"
             >
               สนใจสมัครโปรโมชันนี้
@@ -151,6 +155,7 @@ export default function BroadbandPromotionsClient({ promotions, defaultContactUr
                 href={selectedBuyUrl || defaultContactUrl}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => trackLineClick("broadband_modal", selectedBuyUrl || defaultContactUrl)}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#00B900] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#009f00]"
               >
                 <Image src={LineIcon} alt="Line" width={20} height={20} className="h-5 w-5 object-contain" />
@@ -158,17 +163,19 @@ export default function BroadbandPromotionsClient({ promotions, defaultContactUr
               </a>
               <a
                 href={phoneHref}
+                onClick={() => trackPhoneClick("broadband_modal", "0910192552")}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-900 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100"
               >
                 <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-white">
                   <LocalPhoneRoundedIcon className="!text-sm" />
                 </span>
-                <span>โทรสมัคร 02-123-4567</span>
+                <span>โทรสมัคร 0910192552</span>
               </a>
               <a
                 href={facebookHref}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => trackFacebookClick("broadband_modal", facebookHref)}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#1877F2] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1668d3]"
               >
                 <Image src={FacebookIconSvg} alt="Facebook" width={20} height={20} className="h-5 w-5 object-contain" />

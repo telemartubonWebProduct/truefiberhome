@@ -6,6 +6,7 @@ import PhoneCallbackIcon from "@mui/icons-material/PhoneCallback";
 import LineIcon from "@/src/assets/icons/line-icon.svg";
 import FacebookIconSvg from "@/src/assets/icons/facebook-icon.svg";
 import { lineSupport } from "@/src/context/line-path";
+import { trackLineClick, trackPhoneClick, trackFacebookClick } from "@/src/lib/track-event";
 
 interface ContactMethodItem {
   id: string;
@@ -168,6 +169,12 @@ export default function ContactSection({ content, methods, sectionId = "home-con
                   ? method.href.trim()
                   : lineSupport
               }
+              onClick={() => {
+                const k = (method.key || method.title || "").toLowerCase();
+                if (k.includes("line")) trackLineClick("home_contact", method.href);
+                else if (k.includes("facebook")) trackFacebookClick("home_contact", method.href);
+                else if (k.includes("phone") || k.includes("โทร")) trackPhoneClick("home_contact");
+              }}
               variants={itemVariants}
               whileHover={{ y: -5, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

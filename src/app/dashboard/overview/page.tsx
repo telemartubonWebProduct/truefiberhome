@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AnalyticsSection from "./components/AnalyticsSection";
 import Link from "next/link";
 import {
   getCurrentMonthKey,
@@ -99,6 +100,7 @@ export default async function DashboardOverviewPage(props: {
             สรุปภาพรวมข้อมูลสำคัญของระบบ และผลการขายออนไลน์รายเดือน
           </p>
         </div>
+
 
         <div className="flex flex-wrap items-center gap-2">
           <Link
@@ -276,7 +278,9 @@ export default async function DashboardOverviewPage(props: {
         </div>
       </section>
 
-   
+      {/* Google Analytics Section */}
+      <AnalyticsSection />
+
     </div>
   );
 }
