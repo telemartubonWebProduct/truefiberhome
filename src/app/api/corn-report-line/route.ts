@@ -64,20 +64,18 @@ async function sendReport() {
   const wait = summary.totalPendingInstall;
   const cannotInstall = summary.totalInstallFailed;
   
-  const todayRegis = todayRow.installSuccess + todayRow.pendingInstall + todayRow.installFailed;
-  const totalSub = regis;
+  const todaySales = todayRow.salesSuccess;
+  const totalSales = summary.totalSalesSuccess;
 
-  const reportData = `📊 สรุปยอดขายออนไลน์ประจำวัน
-📅 ประจำวันที่: ${thaiDate}
+  const reportData = `📊 รายงานยอดขายออนไลน์ประจำวัน
+🗓️ ${thaiDate}
 
-📌 สถานะงาน (Regis / Connect)
-🌐 ออนไลน์: ${regis} / ${connect}
-⏳ รอติดตั้ง: ${wait}
-❌ ติดไม่ได้: ${cannotInstall}
+📌 สถานะงาน (Regis/Connect)
+🌐 ออนไลน์: (${regis}/${connect}) | ⏳ รอ: ${wait} | ❌ ติดไม่ได้: ${cannotInstall}
 
-➖➖➖➖➖➖➖➖➖
-🎯 ยอดขายวันนี้ = ${todayRegis}
-📈 รวมทั้งหมด = ${totalSub} Sub`;
+➖➖➖➖➖➖➖➖➖➖
+🎯 ยอดขายวันนี้: ${todaySales} Sub
+📈 ยอดขายรวม: ${totalSales} Sub`;
 
   // 3. ยิง Push Message เข้ากลุ่ม
   const res = await fetch('https://api.line.me/v2/bot/message/push', {
