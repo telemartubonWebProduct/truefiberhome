@@ -13,11 +13,23 @@ let _auth: InstanceType<typeof google.auth.GoogleAuth> | null = null;
 function getAuth() {
   if (_auth) return _auth;
 
+  const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
   const keyPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH;
 
-  if (keyPath) {
+  if (keyJson) {
+    // ✅ วิธีแนะนำ: เก็บ JSON content ใน env var โดยตรง (ปลอดภัย, ไม่ต้องมีไฟล์บน server)
+    try {
+      const credentials = JSON.parse(keyJson);
+      _auth = new google.auth.GoogleAuth({
+        credentials,
+        scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
+      });
+    } catch {
+      throw new Error("GOOGLE_SERVICE_ACCOUNT_KEY is not valid JSON");
+    }
+  } else if (keyPath) {
+    // วิธีเก่า: อ่านจากไฟล์ (ใช้ได้แค่ตอน dev local)
     const resolvedPath = path.resolve(keyPath);
-    // Verify the file exists
     if (!fs.existsSync(resolvedPath)) {
       throw new Error(`Service account key file not found: ${resolvedPath}`);
     }
@@ -26,6 +38,7 @@ function getAuth() {
       scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
     });
   } else {
+    // Fallback: ใช้ Application Default Credentials (สำหรับ GCP)
     _auth = new google.auth.GoogleAuth({
       scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
     });

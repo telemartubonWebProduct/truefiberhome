@@ -155,6 +155,8 @@ export default async function DashboardOverviewPage(props: {
           </div>
         </div>
 
+            <AnalyticsSection />
+
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse text-sm">
             <thead>
@@ -279,7 +281,7 @@ export default async function DashboardOverviewPage(props: {
       </section>
 
       {/* Google Analytics Section */}
-      <AnalyticsSection />
+  
 
     </div>
   );
