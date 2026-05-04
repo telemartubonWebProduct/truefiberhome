@@ -128,12 +128,6 @@ export default async function RootLayout({
     <html lang="th" className={prompt.className} suppressHydrationWarning>
       <head>
         <Script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=AW-18007307609"
-          strategy="afterInteractive"
-        />
-
-        <Script
           id="structured-data-organization"
           type="application/ld+json"
           strategy="afterInteractive"
@@ -156,6 +150,25 @@ export default async function RootLayout({
             }),
           }}
         />
+      </head>
+      <body>
+        {/* ── Google Tag Manager (noscript fallback) ── */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-PGGH95T3"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
+
+        {/* ── gtag.js loader (single source) ── */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-0X5TY75CH1"
+          strategy="afterInteractive"
+        />
+
+        {/* ── Unified gtag init: GA4 + Google Ads ── */}
         <Script
           id="gtag-init"
           strategy="afterInteractive"
@@ -167,15 +180,18 @@ export default async function RootLayout({
               gtag('js', new Date());
               gtag('consent', 'default', {
                 ad_storage: 'denied',
-                analytics_storage: 'denied',
+                analytics_storage: 'granted',
                 ad_user_data: 'denied',
                 ad_personalization: 'denied',
                 wait_for_update: 500
               });
+              gtag('config', 'G-0X5TY75CH1', { anonymize_ip: true });
               gtag('config', 'AW-18007307609', { anonymize_ip: true });
             `,
           }}
         />
+
+        {/* ── Google Tag Manager container ── */}
         <Script
           id="gtm-init"
           strategy="afterInteractive"
@@ -187,34 +203,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PGGH95T3');`,
           }}
         />
-
-        <Script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-0X5TY75CH1"
-          strategy="afterInteractive"
-        />
-        <Script
-          id="gtag-init-2"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-0X5TY75CH1', { anonymize_ip: true });
-    `,
-          }}
-        />
-      </head>
-      <body>
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-PGGH95T3"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          />
-        </noscript>
 
         <SiteSettingsProvider
           settings={{
