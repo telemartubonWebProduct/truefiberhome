@@ -11,57 +11,6 @@ import {
 import { cleanupExpiredChatSessionsSafely } from "@/src/lib/chat-retention";
 import { requireAdmin } from "@/src/lib/dashboard-auth";
 import { prisma } from "@/src/lib/prisma";
-import { applyRequestRateLimit } from "@/src/lib/rate-limit";
-
-export async function POST(request: Request) {
-  try {
-    await cleanupExpiredChatSessionsSafely();
-
-    const body = await request.json().catch(() => ({}));
-    const requestedVisitorId = normalizeVisitorId(body.visitorId);
-    const rateLimited = applyRequestRateLimit(request, {
-      scope: "chat-session-create",
-      limit: 6,
-      windowMs: 5 * 60_000,
-      identifier: requestedVisitorId ? `visitor:${requestedVisitorId}` : null,
-      message: "สร้างห้องแชทถี่เกินไป กรุณาลองใหม่อีกครั้งภายหลัง",
-    });
-
-    if (rateLimited) {
-      return rateLimited;
-    }
-
-    const visitorId = requestedVisitorId || crypto.randomUUID();
-    const visitorName = nonEmptyString(body.visitorName);
-    const metadata = normalizeJsonRecord(body.metadata);
-
-    const session = await prisma.chatSession.create({
-      data: {
-        visitorId,
-        visitorName,
-        metadata: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
-        messages: {
-          create: CHAT_DEFAULT_GREETING.map((content) => ({
-            senderType: "AI",
-            content,
-          })),
-        },
-      },
-      include: {
-        messages: {
-          orderBy: {
-            createdAt: "asc",
-          },
-        },
-      },
-    });
-
-    return NextResponse.json(serializeChatSession(session), { status: 201 });
-  } catch (error) {
-    console.error("POST /api/chat/session failed:", error);
-    return NextResponse.json({ error: "Failed to create chat session" }, { status: 500 });
-  }
-}
 
 export async function GET(request: Request) {
   const auth = await requireAdmin();

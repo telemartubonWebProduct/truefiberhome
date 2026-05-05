@@ -199,7 +199,7 @@ export default function ChatWidget() {
 
   const createSession = useCallback(
     async (currentVisitorId: string) => {
-      const response = await fetch("/api/chat/session", {
+      const response = await fetch("/api/chat/sessions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -787,29 +787,48 @@ export default function ChatWidget() {
           if (nextOpen) trackChatOpen();
         }}
         aria-label={isOpen ? "Close chat" : "Open chat"}
-        className={`fixed bottom-[calc(env(safe-area-inset-bottom,0px)+96px)] right-3 z-[9999] inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#ef2d63] to-[#c81649] text-white shadow-xl shadow-[#e83467]/35 transition-all duration-200 hover:scale-[1.03] sm:bottom-[calc(env(safe-area-inset-bottom,0px)+86px)] sm:right-4 sm:h-14 sm:w-14 lg:bottom-[calc(env(safe-area-inset-bottom,0px)+18px)] lg:h-16 lg:w-16 ${
-          isOpen ? "ring-4 ring-white/90 shadow-2xl shadow-[#e83467]/45" : ""
-        } ${hideFloatingToggle ? "pointer-events-none translate-y-2 opacity-0" : "opacity-100"}`}
+        className={`group fixed bottom-[calc(env(safe-area-inset-bottom,0px)+96px)] right-3 z-[9999] inline-flex items-center justify-center rounded-full text-white transition-all duration-300 sm:bottom-[calc(env(safe-area-inset-bottom,0px)+86px)] sm:right-4 lg:bottom-[calc(env(safe-area-inset-bottom,0px)+18px)] ${
+          isOpen
+            ? "h-12 w-12 bg-[#e61c50] ring-4 ring-white/90 shadow-2xl shadow-[#e61c50]/50 hover:scale-105 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
+            : "h-12 gap-2.5 bg-gradient-to-r from-[#ef2d63] to-[#c81649] pl-1.5 pr-4 shadow-[0_8px_30px_rgba(230,28,80,0.35)] hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(230,28,80,0.5)] sm:h-14 sm:pl-2 sm:pr-5 lg:h-16 lg:pl-2.5 lg:pr-6"
+        } ${hideFloatingToggle ? "pointer-events-none translate-y-4 opacity-0" : "opacity-100"}`}
       >
-        <svg
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7"
-        >
-          {isOpen ? (
+        {isOpen ? (
+          <svg
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-6 w-6 transition-transform duration-300 group-hover:rotate-90 sm:h-7 sm:w-7 lg:h-8 lg:w-8"
+          >
             <path
               fillRule="evenodd"
               d="M5.22 5.22a.75.75 0 011.06 0L10 8.94l3.72-3.72a.75.75 0 111.06 1.06L11.06 10l3.72 3.72a.75.75 0 11-1.06 1.06L10 11.06l-3.72 3.72a.75.75 0 11-1.06-1.06L8.94 10 5.22 6.28a.75.75 0 010-1.06z"
               clipRule="evenodd"
             />
-          ) : (
-            <path
-              fillRule="evenodd"
-              d="M3.5 5.75A2.25 2.25 0 015.75 3.5h8.5a2.25 2.25 0 012.25 2.25v5.38a2.25 2.25 0 01-2.25 2.25H10.9l-3.2 2.67a.75.75 0 01-1.23-.58v-2.1H5.75A2.25 2.25 0 013.5 11.13V5.75zm3.75 2a.75.75 0 000 1.5h5.5a.75.75 0 000-1.5h-5.5z"
-              clipRule="evenodd"
-            />
-          )}
-        </svg>
+          </svg>
+        ) : (
+          <>
+            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#e61c50] shadow-sm transition-transform duration-300 group-hover:scale-110 sm:h-10 sm:w-10 lg:h-11 lg:w-11">
+              <svg
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-5 w-5 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3.5 5.75A2.25 2.25 0 015.75 3.5h8.5a2.25 2.25 0 012.25 2.25v5.38a2.25 2.25 0 01-2.25 2.25H10.9l-3.2 2.67a.75.75 0 01-1.23-.58v-2.1H5.75A2.25 2.25 0 013.5 11.13V5.75zm3.75 2a.75.75 0 000 1.5h5.5a.75.75 0 000-1.5h-5.5z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5 sm:h-4 sm:w-4">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 sm:h-4 sm:w-4"></span>
+              </span>
+            </div>
+            <span className="text-[12px] font-semibold tracking-wide sm:text-[13px] lg:text-[14px]">
+              ติดต่อทีมงาน
+            </span>
+          </>
+        )}
       </button>
     </>
   );
