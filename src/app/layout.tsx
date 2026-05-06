@@ -10,7 +10,7 @@ import Navbar from "@/src/components/layout/Navbar";
 import BottomNav from "@/src/components/layout/BottomNav";
 import { ToastContainer } from "react-toastify";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 
 // 1) เรียกใช้ฟอนต์ Prompt จาก next/font/google
 const prompt = Prompt({
@@ -150,10 +150,6 @@ export default async function RootLayout({
             }),
           }}
         />
-
-    
-
-
       </head>
       <body>
         {/* ── Google Tag Manager (noscript fallback) ── */}
