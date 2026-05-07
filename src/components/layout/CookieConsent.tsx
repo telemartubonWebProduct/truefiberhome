@@ -8,19 +8,26 @@ const COOKIE_KEY = "cookie-consent-accepted-v2";
 export default function CookieConsent() {
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    try {
-      const accepted = typeof window !== "undefined"
-        ? window.localStorage.getItem(COOKIE_KEY)
-        : null;
+useEffect(() => {
+  const accepted =
+    typeof window !== "undefined" &&
+    window.localStorage.getItem(COOKIE_KEY) === "true";
 
-      if (accepted !== "true") {
-        setOpen(true);
-      }
-    } catch {
-      setOpen(true);
-    }
-  }, []);
+  const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
+
+  if (accepted) {
+    gtag?.("consent", "update", {
+      ad_storage: "granted",
+      analytics_storage: "granted",
+      ad_user_data: "granted",
+      ad_personalization: "granted",
+    });
+    setOpen(false);
+    return;
+  }
+
+  setOpen(true);
+}, []);
 
   const handleAccept = () => {
     try {
