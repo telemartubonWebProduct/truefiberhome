@@ -165,19 +165,6 @@ export default function PromotionPresent({
     setActiveIndex(index);
   }, [displayPackages.length]);
 
-  // Auto-play
-  useEffect(() => {
-    if (displayPackages.length <= 1) return;
-
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => {
-        const next = (prev + 1) % displayPackages.length;
-        scrollToIndex(next);
-        return next;
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [displayPackages.length, scrollToIndex]);
 
   const handleInterestClick = useCallback((fallbackUrl?: string) => {
     if (isSmallScreen) {
@@ -269,8 +256,8 @@ export default function PromotionPresent({
             <Box
               key={pkg.id}
               sx={{
-                minWidth: { xs: "85%", sm: "45%", md: "38%", lg: "45%", xl: "31%" },
-                maxWidth: { xs: "85%", sm: "45%", md: "38%", lg: "45%", xl: "31%" },
+                minWidth: { xs: "92%", sm: "60%", md: "38%", lg: "45%", xl: "31%" },
+                maxWidth: { xs: "92%", sm: "60%", md: "38%", lg: "45%", xl: "31%" },
                 scrollSnapAlign: "start",
                 flexShrink: 0,
               }}
@@ -486,7 +473,7 @@ function PromotionCard({ pkg, onInterestClick }: { pkg: PackageData; onInterestC
         >
           <Typography
             variant="caption"
-            sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 700 }}
+            sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 700, fontSize: { xs: "0.7rem", sm: "0.75rem" } }}
           >
             แพ็กเกจแนะนำ
           </Typography>
@@ -500,7 +487,7 @@ function PromotionCard({ pkg, onInterestClick }: { pkg: PackageData; onInterestC
           >
             <Typography
               variant="caption"
-              sx={{ fontWeight: 800, color: "#3466F6", fontSize: "0.7rem" }}
+              sx={{ fontWeight: 800, color: "#3466F6", fontSize: { xs: "0.68rem", sm: "0.7rem" } }}
             >
               {pkg.tag}
             </Typography>
@@ -512,7 +499,7 @@ function PromotionCard({ pkg, onInterestClick }: { pkg: PackageData; onInterestC
           {/* Package name */}
           <Typography
             variant="body2"
-            sx={{ color: "#9ca3af", fontWeight: 600, mb: 0.5 }}
+            sx={{ color: "#9ca3af", fontWeight: 600, mb: 0.5, fontSize: { xs: "0.75rem", sm: "0.85rem" } }}
           >
             {pkg.name}
           </Typography>
@@ -521,35 +508,65 @@ function PromotionCard({ pkg, onInterestClick }: { pkg: PackageData; onInterestC
           <Box
             sx={{
               display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
               justifyContent: "space-between",
-              alignItems: "flex-end",
+              alignItems: { xs: "flex-start", sm: "flex-end" },
+              gap: { xs: 0.75, sm: 2 },
               mb: 2,
+              flexWrap: "wrap",
+              width: "100%",
+              "@media (max-width: 420px)": {
+                flexDirection: "column",
+                alignItems: "flex-start",
+              },
             }}
           >
-            <Box>
+            <Box sx={{ minWidth: 0, width: { xs: "100%", sm: "auto" } }}>
               <Typography
                 variant="h4"
-                sx={{ fontWeight: 900, color: "#1a1a2e", lineHeight: 1 }}
+                sx={{
+                  fontWeight: 900,
+                  color: "#1a1a2e",
+                  lineHeight: 1.05,
+                  fontSize: "clamp(1.35rem, 5.2vw, 2rem)",
+                  wordBreak: "break-word",
+                }}
               >
                 {pkg.speed}
               </Typography>
               <Typography
                 variant="body2"
-                sx={{ fontWeight: 700, color: "#6b7280", mt: 0.3 }}
+                sx={{ fontWeight: 700, color: "#6b7280", mt: 0.3, fontSize: { xs: "0.75rem", sm: "0.85rem" } }}
               >
                 Mbps
               </Typography>
             </Box>
-            <Box sx={{ textAlign: "right" }}>
-              <Box component="span" sx={{ fontSize: "1.75rem", fontWeight: 900, color: "#3466F6" }}>
+            <Box
+              sx={{
+                textAlign: { xs: "left", sm: "right" },
+                width: { xs: "100%", sm: "auto" },
+                alignSelf: { xs: "flex-start", sm: "flex-end" },
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: "clamp(1.25rem, 5vw, 1.85rem)",
+                  fontWeight: 900,
+                  color: "#3466F6",
+                  lineHeight: 1.1,
+                  display: "inline-flex",
+                  alignItems: "baseline",
+                  gap: 0.3,
+                }}
+              >
                 {pkg.price}
-              </Box>
-              <Box component="span" sx={{ fontSize: "0.875rem", fontWeight: 700, color: "#3466F6", ml: 0.3 }}>
-                บาท
-              </Box>
+                <Box component="span" sx={{ fontSize: "clamp(0.7rem, 3vw, 0.9rem)", fontWeight: 700, color: "#3466F6" }}>
+                  บาท
+                </Box>
+              </Typography>
               <Typography
                 variant="caption"
-                sx={{ display: "block", color: "#9ca3af", fontWeight: 600 }}
+                sx={{ display: "block", color: "#9ca3af", fontWeight: 600, fontSize: { xs: "0.7rem", sm: "0.75rem" } }}
               >
                 / เดือน
               </Typography>
@@ -563,7 +580,7 @@ function PromotionCard({ pkg, onInterestClick }: { pkg: PackageData; onInterestC
           <Box sx={{ mb: 2 }}>
             <Typography
               variant="caption"
-              sx={{ fontWeight: 800, color: "#1a1a2e", mb: 1, display: "block" }}
+              sx={{ fontWeight: 800, color: "#1a1a2e", mb: 1, display: "block", fontSize: { xs: "0.72rem", sm: "0.78rem" } }}
             >
               รับทันที!
             </Typography>
@@ -576,7 +593,7 @@ function PromotionCard({ pkg, onInterestClick }: { pkg: PackageData; onInterestC
                   <CheckCircleIcon sx={{ color: "#3466F6", fontSize: 16 }} />
                   <Typography
                     variant="body2"
-                    sx={{ fontWeight: 600, color: "#4b5563", fontSize: "0.8rem" }}
+                    sx={{ fontWeight: 600, color: "#4b5563", fontSize: { xs: "0.75rem", sm: "0.8rem" } }}
                   >
                     {item}
                   </Typography>

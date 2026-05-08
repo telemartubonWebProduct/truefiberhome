@@ -1,6 +1,6 @@
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
@@ -15,11 +15,10 @@ const Carousel = ({ banners }: CarouselProps) => {
   return (
     <div className="w-full mx-auto">
       <Swiper
-        modules={[Navigation, Pagination, Autoplay]}
+        modules={[Navigation, Pagination]}
         spaceBetween={0}
         slidesPerView={1}
         pagination={{ clickable: true }}
-        autoplay={{ delay: 3500, disableOnInteraction: false }}
         loop={true}
         className="w-full"
         a11y={{

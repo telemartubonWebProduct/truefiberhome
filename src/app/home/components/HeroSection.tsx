@@ -120,12 +120,16 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
       />
 
       <Container maxWidth="lg" className="relative z-10">
-        <MotionBox initial="hidden" animate="visible" className="max-w-2xl space-y-6">
+        <MotionBox
+          initial="hidden"
+          animate="visible"
+          className="mx-auto max-w-2xl space-y-5 text-center sm:mx-0 sm:space-y-6 sm:text-left"
+        >
           <Typography
             variants={childVariants}
             component={motion.p}
             variant="overline"
-            className="tracking-[0.25em] text-red-400"
+            className="text-xs font-semibold tracking-[0.2em] text-red-300/90 sm:text-sm"
           >
             {tagline}
           </Typography>
@@ -134,8 +138,11 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
             variants={childVariants}
             component={motion.h1}
             variant="h2"
-            className="font-semibold leading-tight text-white drop-shadow-md"
-            sx={{ fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem", lg: "3.5rem" } }}
+            className="font-semibold text-white drop-shadow-md"
+            sx={{
+              fontSize: { xs: "1.9rem", sm: "2.4rem", md: "3rem", lg: "3.25rem" },
+              lineHeight: { xs: 1.2, md: 1.15 },
+            }}
           >
             {titlePrefix}{" "}
             <span className="relative bg-gradient-to-r from-red-400 via-orange-400 to-amber-300 bg-clip-text text-transparent">
@@ -148,12 +155,17 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
             variants={childVariants}
             component={motion.p}
             variant="body1"
-            className="max-w-xl text-base text-slate-100/80 md:text-lg"
+            className="max-w-xl text-sm text-slate-100/80 sm:text-base md:text-lg"
+            sx={{ lineHeight: { xs: 1.6, md: 1.7 } }}
           >
             {description}
           </Typography>
 
-          <Box component={motion.div} variants={childVariants} className="mt-6 flex flex-wrap items-center gap-4">
+          <Box
+            component={motion.div}
+            variants={childVariants}
+            className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-start sm:gap-4"
+          >
             <Button
               component={motion.a}
               animate={{
@@ -171,10 +183,11 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
               href={primaryHref || undefined}
               target={primaryOpenInNewTab ? "_blank" : undefined}
               rel={primaryOpenInNewTab ? "noopener noreferrer" : undefined}
-              className="rounded-full px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-lg shadow-red-500/40"
+              className="w-full justify-center rounded-full px-6 py-2.5 text-sm font-semibold tracking-wide shadow-lg shadow-red-500/40 sm:w-auto sm:px-8 sm:py-3 sm:text-base"
               sx={{
                 backgroundImage: "linear-gradient(90deg, #f97316, #ef4444, #fb923c)",
                 "&:hover": { backgroundImage: "linear-gradient(90deg, #fecaca, #fb923c, #f97316)" },
+                textTransform: "none",
               }}
             >
               {ctaPrimaryLabel}
@@ -188,11 +201,16 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
                 href={secondaryHref || undefined}
                 target={secondaryOpenInNewTab ? "_blank" : undefined}
                 rel={secondaryOpenInNewTab ? "noopener noreferrer" : undefined}
-                className="rounded-full px-8 py-2 text-sm font-semibold uppercase tracking-wide shadow-md"
+                className="w-full justify-center rounded-full px-6 py-2.5 text-sm font-semibold tracking-wide shadow-md sm:w-auto sm:px-8 sm:py-3 sm:text-base"
                 sx={{
                   borderColor: "rgba(255,255,255,0.6)",
                   color: "rgba(255,255,255,0.8)",
-                  "&:hover": { borderColor: "rgba(255,255,255,0.9)", backgroundColor: "rgba(255,255,255,0.1)", color: "#fff" },
+                  "&:hover": {
+                    borderColor: "rgba(255,255,255,0.9)",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    color: "#fff",
+                  },
+                  textTransform: "none",
                 }}
               >
                 {ctaSecondaryLabel}

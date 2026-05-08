@@ -199,6 +199,24 @@ export default async function HomePage() {
   const contactVisible = contactSection?.isActive ?? true;
   const contactSectionId = "home-contact-section";
 
+  const ctaIcon = (
+    <Box
+      sx={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: { xs: 32, sm: 36 },
+        height: { xs: 32, sm: 36 },
+        borderRadius: "999px",
+        bgcolor: "rgba(255,255,255,0.2)",
+        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.35)",
+        backdropFilter: "blur(6px)",
+      }}
+    >
+      <PhoneIphoneIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
+    </Box>
+  );
+
   const displayContactMethods = (contactMethods as any[]).map((item, index) => ({
     id: item.id ?? `contact-${index}`,
     key: typeof item.key === "string" ? item.key : "phone",
@@ -251,57 +269,97 @@ export default async function HomePage() {
                 sx={{
                   position: "absolute",
                   inset: 0,
-                  backgroundColor: "rgba(0, 0, 0, 0.4)",
-                  backdropFilter: "blur(6px)",
+                  backgroundColor: "rgba(0, 0, 0, 0.45)",
+                  backdropFilter: "blur(4px)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
                   alignItems: "center",
                   textAlign: "center",
-                  p: 4,
+                  p: { xs: 3, sm: 4, md: 6 },
                 }}
               >
-                <Typography
-                  variant="h3"
-                  sx={{ color: "white", fontWeight: 700, mb: 2, textShadow: "0px 4px 10px rgba(0,0,0,0.3)" }}
-                >
-                  {heroTitle}
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{ color: "rgba(255, 255, 255, 0.9)", mb: 4, fontWeight: 400, maxWidth: "800px", lineHeight: 1.6 }}
-                >
-                  {heroSubtitle}
-                </Typography>
-                <Button
-                  component="a"
-                  href={buttonHref}
-                  variant="contained"
-                  size="large"
+                <Box
                   sx={{
-                    borderRadius: "8px",
-                    px: 4,
-                    py: 1.5,
-                    fontSize: "1.1rem",
-                    backgroundColor: "#FF3737",
-                    fontWeight: 600,
-                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    boxShadow: "0px 8px 24px rgba(255, 55, 55, 0.4)",
-                    position: "relative",
-                    overflow: "hidden",
-                    "&:hover": {
-                      backgroundColor: "#E53935",
-                      transform: "translateY(-3px)",
-                      boxShadow: "0px 12px 32px rgba(255, 55, 55, 0.6)",
-                    },
-                    "&:active": {
-                      transform: "translateY(-1px)",
-                    },
+                    maxWidth: { xs: "20rem", sm: "28rem", md: "34rem" },
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: { xs: 2, md: 3 },
                   }}
-                  endIcon={<PhoneIphoneIcon />}
                 >
-                  {buttonLabel}
-                </Button>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      color: "white",
+                      fontWeight: 700,
+                      textShadow: "0px 4px 10px rgba(0,0,0,0.3)",
+                      fontSize: { xs: "1.9rem", sm: "2.4rem", md: "3rem" },
+                      lineHeight: { xs: 1.2, md: 1.15 },
+                    }}
+                  >
+                    {heroTitle}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: "rgba(255, 255, 255, 0.9)",
+                      fontWeight: 400,
+                      lineHeight: { xs: 1.6, md: 1.7 },
+                      fontSize: { xs: "0.95rem", sm: "1.05rem", md: "1.15rem" },
+                    }}
+                  >
+                    {heroSubtitle}
+                  </Typography>
+                  <Button
+                    component="a"
+                    href={buttonHref}
+                    variant="contained"
+                    disableElevation
+                    sx={{
+                      borderRadius: "999px",
+                      px: { xs: 2.75, sm: 3.5 },
+                      py: { xs: 1.1, sm: 1.35 },
+                      fontSize: { xs: "0.95rem", sm: "1.05rem" },
+                      fontWeight: 700,
+                      letterSpacing: "0.01em",
+                      textTransform: "none",
+                      width: { xs: "100%", sm: "auto" },
+                      maxWidth: { xs: "18rem", sm: "none" },
+                      justifyContent: "center",
+                      gap: 1,
+                      color: "#fff",
+                      backgroundImage: "linear-gradient(135deg, #ff3b3b 0%, #ff6b4a 45%, #ff9a5a 100%)",
+                      border: "1px solid rgba(255,255,255,0.25)",
+                      boxShadow: "0px 10px 28px rgba(255, 59, 59, 0.45)",
+                      position: "relative",
+                      overflow: "hidden",
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease",
+                      "&::before": {
+                        content: '""',
+                        position: "absolute",
+                        inset: "1px",
+                        borderRadius: "999px",
+                        background: "linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0))",
+                        opacity: 0.5,
+                      },
+                      "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0px 14px 36px rgba(255, 59, 59, 0.6)",
+                        filter: "brightness(1.05)",
+                      },
+                      "&:active": {
+                        transform: "translateY(-1px)",
+                      },
+                      "& .MuiButton-endIcon": {
+                        marginLeft: "0.6rem",
+                      },
+                    }}
+                    endIcon={ctaIcon}
+                  >
+                    {buttonLabel}
+                  </Button>
+                </Box>
               </Box>
             </Box>
           )}

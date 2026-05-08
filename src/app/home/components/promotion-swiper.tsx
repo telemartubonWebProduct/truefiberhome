@@ -268,8 +268,8 @@ export default function PromotionSwiper({ packages = [] }: PromotionSwiperProps)
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
               sx={{
-                minWidth: { xs: "88%", sm: "45%", md: "31%", lg: "300px" },
-                maxWidth: "340px",
+                minWidth: { xs: "92%", sm: "48%", md: "32%", lg: "320px" },
+                maxWidth: { xs: "92%", sm: "360px" },
                 scrollSnapAlign: "start",
                 flexShrink: 0,
                 display: "flex",
@@ -379,7 +379,7 @@ function PromoCard({ pkg }: { pkg: any }) {
           spacing={1}
           sx={{ alignItems: "center", justifyContent: "space-between" }}
         >
-          <Typography sx={{ fontWeight: 900, letterSpacing: 0.2 }}>
+          <Typography sx={{ fontWeight: 900, letterSpacing: 0.2, fontSize: { xs: "0.85rem", sm: "0.95rem" }, lineHeight: 1.2 }}>
             {header.title}
           </Typography>
           {pkg.code ? (
@@ -389,6 +389,7 @@ function PromoCard({ pkg }: { pkg: any }) {
               sx={{
                 bgcolor: "rgba(255,255,255,0.92)",
                 fontWeight: 900,
+                fontSize: "0.7rem",
               }}
             />
           ) : null}
@@ -397,7 +398,7 @@ function PromoCard({ pkg }: { pkg: any }) {
 
       <CardContent
         sx={{
-          p: 3,
+          p: { xs: 2, sm: 3 },
           flex: 1,
           display: "flex",
           flexDirection: "column",
@@ -411,18 +412,38 @@ function PromoCard({ pkg }: { pkg: any }) {
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
-            mb: 1.5,
+            mb: 1.25,
+            fontSize: { xs: "0.98rem", sm: "1.05rem", md: "1.1rem" },
+            lineHeight: 1.35,
           }}
         >
           {pkg.name}
         </Typography>
 
         <Stack
-          direction="row"
-          sx={{ mt: 1, alignItems: "flex-end", justifyContent: "space-between" }}
+          direction={{ xs: "column", sm: "row" }}
+          spacing={{ xs: 1, sm: 2 }}
+          sx={{
+            mt: 0.5,
+            alignItems: { xs: "flex-start", sm: "flex-end" },
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            "@media (max-width: 420px)": {
+              flexDirection: "column",
+              alignItems: "flex-start",
+            },
+          }}
         >
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 950, lineHeight: 1 }}>
+          <Box sx={{ minWidth: 0, width: { xs: "100%", sm: "auto" } }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 950,
+                lineHeight: 1.05,
+                fontSize: "clamp(1.35rem, 5vw, 2.05rem)",
+                wordBreak: "break-word",
+              }}
+            >
               {speedText || formatPriceTHB(pkg.price)}
             </Typography>
 
@@ -431,13 +452,18 @@ function PromoCard({ pkg }: { pkg: any }) {
                 {Array.isArray(pkg.details) ? (
                   <Stack spacing={0.5}>
                     {pkg.details.map((d: string, idx: number) => (
-                      <Typography key={`detail-${idx}`} variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
+                      <Typography
+                        key={`detail-${idx}`}
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontWeight: 700, fontSize: { xs: "0.78rem", sm: "0.85rem" } }}
+                      >
                         • {d}
                       </Typography>
                     ))}
                   </Stack>
                 ) : (
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700, fontSize: { xs: "0.78rem", sm: "0.85rem" } }}>
                     {pkg.details}
                   </Typography>
                 )}
@@ -445,31 +471,50 @@ function PromoCard({ pkg }: { pkg: any }) {
             )}
           </Box>
 
-          <Box sx={{ textAlign: "right" }}>
-            <Typography variant="h5" sx={{ fontWeight: 950, color: "primary.main", lineHeight: 1 }}>
+          <Box
+            sx={{
+              textAlign: { xs: "left", sm: "right" },
+              minWidth: { xs: "auto", sm: "120px" },
+              width: { xs: "100%", sm: "auto" },
+              alignSelf: { xs: "flex-start", sm: "flex-end" },
+            }}
+          >
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 950,
+                color: "primary.main",
+                lineHeight: 1,
+                fontSize: "clamp(1.2rem, 4.6vw, 1.8rem)",
+              }}
+            >
               {formatPriceTHB(pkg.price)}
-              <Typography component="span" variant="body2" sx={{ fontWeight: 800, ml: 0.5 }}>
+              <Typography
+                component="span"
+                variant="body2"
+                sx={{ fontWeight: 800, ml: 0.5, fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
+              >
                 บาท
               </Typography>
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700, mt: 0.5 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700, mt: 0.5, fontSize: { xs: "0.72rem", sm: "0.8rem" } }}>
               / เดือน
             </Typography>
           </Box>
         </Stack>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: { xs: 1.5, sm: 2 } }} />
 
         <Box sx={{ flex: 1 }}>
           {pkg.imageUrl && (
             <Box sx={{ mb: 2, display: "flex", justifyContent: "center" }}>
-              <img src={pkg.imageUrl} alt={pkg.name} style={{ maxHeight: "80px", objectFit: "contain" }} />
+              <img src={pkg.imageUrl} alt={pkg.name} style={{ maxHeight: "72px", objectFit: "contain" }} />
             </Box>
           )}
 
           {pkg.freebie && (
             <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 900, mb: 1.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 900, mb: 1.25, fontSize: { xs: "0.8rem", sm: "0.85rem" } }}>
                 รับทันที!
               </Typography>
               <Stack spacing={1.5}>
@@ -481,7 +526,7 @@ function PromoCard({ pkg }: { pkg: any }) {
                     sx={{ alignItems: "flex-start" }}
                   >
                     <CheckCircleOutlineIcon sx={{ fontSize: 20, mt: "2px", color: "primary.main", flexShrink: 0 }} />
-                    <Typography variant="body2" sx={{ fontWeight: 650, color: "text.secondary", lineHeight: 1.4 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 650, color: "text.secondary", lineHeight: 1.4, fontSize: { xs: "0.78rem", sm: "0.85rem" } }}>
                       {f.trim()}
                     </Typography>
                   </Stack>
@@ -497,10 +542,11 @@ function PromoCard({ pkg }: { pkg: any }) {
           href={(pkg.buyUrl && pkg.buyUrl !== "#") ? pkg.buyUrl : lineSupportUrl}
           target="_blank"
           sx={{
-            mt: 3,
+            mt: { xs: 2, sm: 3 },
             borderRadius: 999,
-            py: 1.15,
+            py: { xs: 1, sm: 1.15 },
             fontWeight: 800,
+            fontSize: { xs: "0.9rem", sm: "0.95rem" },
             backgroundImage: "linear-gradient(90deg, #3b82f6, #6366f1)",
             "&:hover": {
               backgroundImage: "linear-gradient(90deg, #2563eb, #4f46e5)",

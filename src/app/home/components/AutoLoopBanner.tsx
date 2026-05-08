@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, EffectFade } from "swiper/modules";
+import { EffectFade } from "swiper/modules";
 import { Box } from "@mui/material";
 
 // Import Swiper styles
@@ -31,12 +31,8 @@ export default function AutoLoopBanner() {
   return (
     <Box sx={{ flex: 2, position: 'relative', borderRadius: '12px', overflow: 'hidden', minHeight: 300 }}>
       <Swiper
-        modules={[Autoplay, EffectFade]}
+        modules={[EffectFade]}
         effect="fade"
-        autoplay={{
-          delay: 2000,
-          disableOnInteraction: false,
-        }}
         loop={true}
         allowTouchMove={true}
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
