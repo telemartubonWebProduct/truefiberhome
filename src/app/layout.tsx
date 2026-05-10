@@ -186,7 +186,6 @@ export default async function RootLayout({
                 wait_for_update: 500
               });
               gtag('config', 'G-0X5TY75CH1', { anonymize_ip: true });
-              gtag('config', 'AW-18007307609', { anonymize_ip: true });
             `,
           }}
         />
