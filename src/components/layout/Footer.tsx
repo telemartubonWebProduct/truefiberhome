@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
+import { trackLineClick } from "@/src/lib/track-event";
 import LineIcon from "@/src/assets/icons/line-icon.svg";
 
 interface FooterLinkItem {
@@ -176,6 +177,7 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
                   aria-label="LINE support"
                   className="inline-flex items-center gap-2 rounded-full bg-[#00B900] px-3 py-2 text-white transition-colors hover:bg-[#009f00] no-underline"
                   sx={{ textDecoration: "none" }}
+                  onClick={() => trackLineClick("footer", lineSupportUrl)}
                 >
                   <Image src={LineIcon} alt="LINE" width={20} height={20} className="h-5 w-5 object-contain" />
                   <Typography variant="body1" sx={{ fontFamily: "Prompt" }} color="#ffffff">

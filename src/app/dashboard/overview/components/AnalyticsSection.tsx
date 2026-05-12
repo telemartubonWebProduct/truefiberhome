@@ -17,16 +17,11 @@ interface AnalyticsOverview {
 interface PageMetric { path: string; views: number; }
 interface ChannelMetric { channel: string; sessions: number; }
 interface DeviceMetric { device: string; sessions: number; }
-interface EventMetric { eventName: string; count: number; }
-interface EventSourceBreakdown { eventName: string; source: string; count: number; }
-
 interface AnalyticsSummary {
   overview: AnalyticsOverview;
   topPages: PageMetric[];
   trafficSources: ChannelMetric[];
   devices: DeviceMetric[];
-  events: EventMetric[];
-  breakdown: EventSourceBreakdown[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -48,19 +43,7 @@ const TIME_RANGES = [
   { label: "All Time", startDate: "2020-01-01", endDate: "today" },
 ];
 
-const EVENT_CARD_CONFIG: Record<string, { label: string; gradient: string; emoji: string }> = {
-  line_click: { label: "กดแอดไลน์", gradient: "linear-gradient(135deg, #00B900, #00d900)", emoji: "📱" },
-  phone_click: { label: "กดโทรสมัคร", gradient: "linear-gradient(135deg, #3b82f6, #60a5fa)", emoji: "📞" },
-  facebook_click: { label: "กดไป Facebook", gradient: "linear-gradient(135deg, #1877F2, #42a5f5)", emoji: "📘" },
-  signup_interest: { label: "สนใจสมัคร", gradient: "linear-gradient(135deg, #8b5cf6, #a78bfa)", emoji: "✅" },
-  chat_open: { label: "เปิดแชท", gradient: "linear-gradient(135deg, #ef4444, #f87171)", emoji: "💬" },
-};
 
-const MINI_EVENT_CONFIG: Record<string, string> = {
-  chat_send_message: "ส่งข้อความแชท",
-  chat_quick_action: "Quick Action แชท",
-  chat_handoff: "ขอเจ้าหน้าที่ดูแล",
-};
 
 /* ------------------------------------------------------------------ */
 /*  Sub-components                                                     */
@@ -94,32 +77,7 @@ function MetricCard({ label, value, subtext, icon, gradient }: {
   );
 }
 
-function EventCard({ label, count, gradient, emoji, breakdowns }: {
-  label: string; count: number; gradient: string; emoji: string; breakdowns: EventSourceBreakdown[];
-}) {
-  return (
-    <div className="group relative overflow-hidden rounded-2xl border border-gray-800 bg-gray-900/60 p-4 shadow-lg shadow-black/20 transition-all duration-300 hover:border-gray-700 hover:shadow-xl">
-      <div className="absolute top-0 right-0 h-20 w-20 -translate-y-4 translate-x-4 rounded-full opacity-15 blur-2xl" style={{ background: gradient }} />
-      <div className="flex items-center gap-3 mb-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl text-lg" style={{ background: gradient }}>{emoji}</div>
-        <div>
-          <p className="text-xs text-gray-400">{label}</p>
-          <p className="text-2xl font-black text-white">{fmt(count)}</p>
-        </div>
-      </div>
-      {breakdowns.length > 0 && (
-        <div className="space-y-1 border-t border-gray-800 pt-2">
-          {breakdowns.slice(0, 5).map((b) => (
-            <div key={b.source} className="flex items-center justify-between text-xs">
-              <span className="text-gray-500 truncate max-w-[120px]">{b.source === "(not set)" ? "ไม่ระบุ" : b.source}</span>
-              <span className="text-gray-300 font-semibold">{fmt(b.count)}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+
 
 function TrafficBar({ channel, sessions, maxSessions, color }: {
   channel: string; sessions: number; maxSessions: number; color: string;
@@ -212,8 +170,6 @@ export default function AnalyticsSection() {
         topPages: json.topPages ?? [],
         trafficSources: json.trafficSources ?? [],
         devices: json.devices ?? [],
-        events: json.events ?? [],
-        breakdown: json.breakdown ?? [],
       });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
@@ -259,10 +215,8 @@ export default function AnalyticsSection() {
 
   if (!data) return null;
 
-  const { overview, topPages, trafficSources, devices, events, breakdown } = data;
+  const { overview, topPages, trafficSources, devices } = data;
   const maxCh = trafficSources.length ? Math.max(...trafficSources.map((c) => c.sessions)) : 0;
-  const getEventCount = (name: string) => events.find((e) => e.eventName === name)?.count ?? 0;
-  const getBreakdowns = (name: string) => breakdown.filter((b) => b.eventName === name);
 
   return (
     <section className="space-y-6">
@@ -304,55 +258,7 @@ export default function AnalyticsSection() {
         <MetricCard label="Avg Duration" value={fmtDur(overview.avgSessionDurationSec)} subtext="เวลาเฉลี่ยต่อ session" gradient="linear-gradient(135deg, #14b8a6, #2dd4bf)" icon={METRIC_ICONS.avgDuration} />
       </div>
 
-      {/* Button Tracking Cards */}
-      <div>
-        <h3 className="text-sm font-bold text-white uppercase tracking-[0.12em] mb-3">🎯 ติดตามการกดปุ่ม (Button Tracking)</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
-          {Object.entries(EVENT_CARD_CONFIG).map(([eventName, cfg]) => (
-            <EventCard
-              key={eventName}
-              label={cfg.label}
-              count={getEventCount(eventName)}
-              gradient={cfg.gradient}
-              emoji={cfg.emoji}
-              breakdowns={getBreakdowns(eventName)}
-            />
-          ))}
-        </div>
-      </div>
 
-      {/* Mini table for less-important events */}
-      <div className="rounded-2xl border border-gray-800 bg-gray-900/60 p-5 shadow-lg shadow-black/20">
-        <h3 className="text-sm font-bold text-white uppercase tracking-[0.12em] mb-3">📋 อีเวนต์อื่นๆ</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="bg-gray-800/60 text-xs uppercase tracking-[0.1em] text-gray-400">
-                <th className="border border-gray-700 px-3 py-2 text-left">Event</th>
-                <th className="border border-gray-700 px-3 py-2 text-center">จำนวน</th>
-                <th className="border border-gray-700 px-3 py-2 text-left">รายละเอียด</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(MINI_EVENT_CONFIG).map(([eventName, label]) => {
-                const count = getEventCount(eventName);
-                const sources = getBreakdowns(eventName);
-                return (
-                  <tr key={eventName} className="text-gray-200 hover:bg-gray-800/20">
-                    <td className="border border-gray-700 px-3 py-2 font-semibold">{label}</td>
-                    <td className="border border-gray-700 px-3 py-2 text-center font-bold text-indigo-300">{fmt(count)}</td>
-                    <td className="border border-gray-700 px-3 py-2 text-xs text-gray-400">
-                      {sources.length > 0
-                        ? sources.slice(0, 3).map((s) => `${s.source}: ${s.count}`).join(", ")
-                        : "—"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
       {/* Bottom row: Top Pages + Traffic Sources + Devices */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

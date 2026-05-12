@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { heroContent as defaultHero } from "@/src/data/home";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
+import { trackLineClick, trackSignupInterest } from "@/src/lib/track-event";
 
 const MotionBox = motion(Box);
 
@@ -189,6 +190,10 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
                 "&:hover": { backgroundImage: "linear-gradient(90deg, #fecaca, #fb923c, #f97316)" },
                 textTransform: "none",
               }}
+              onClick={() => {
+                if (primaryOpenInNewTab) trackLineClick("hero_primary_cta", primaryHref || undefined);
+                else trackSignupInterest("hero_primary_cta", ctaPrimaryLabel || undefined);
+              }}
             >
               {ctaPrimaryLabel}
             </Button>
@@ -211,6 +216,9 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
                     color: "#fff",
                   },
                   textTransform: "none",
+                }}
+                onClick={() => {
+                  if (secondaryOpenInNewTab) trackLineClick("hero_secondary_cta", secondaryHref || undefined);
                 }}
               >
                 {ctaSecondaryLabel}

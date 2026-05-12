@@ -256,10 +256,6 @@ export interface EventsSummary {
 }
 
 const TRACKED_EVENTS = [
-  "line_click",
-  "phone_click",
-  "facebook_click",
-  "signup_interest",
   "chat_open",
   "chat_send_message",
   "chat_quick_action",

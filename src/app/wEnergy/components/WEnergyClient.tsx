@@ -13,6 +13,7 @@ import StorePagination from "@/src/components/ui/StorePagination";
 import { lineSupport } from "@/src/context/line-path";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
 import { safeLink } from "@/src/lib/api-normalize";
+import { trackLineClick, trackPhoneClick, trackSignupInterest } from "@/src/lib/track-event";
 import {
   installationSteps,
   knowledgeArticles,
@@ -184,6 +185,7 @@ export default function WEnergyClient({ plans, currentPage, totalPages, content 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100"
+                onClick={() => trackLineClick("wenergy_hero", primaryContactUrl)}
               >
                 {heroPrimaryCtaLabel}
                 <ArrowOutwardRoundedIcon className="!text-[18px]" />
@@ -230,7 +232,9 @@ export default function WEnergyClient({ plans, currentPage, totalPages, content 
           <p className="mt-2 text-lg font-medium text-slate-600">{productSubtitle}</p>
           <p className="mt-4 text-sm leading-7 text-slate-600">{productDescription}</p>
           <div className="mt-6 rounded-xl bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700">
-            โทรปรึกษา: {productPhone}
+            <a href={`tel:${productPhone.replace(/[^0-9+]/g, "")}`} onClick={() => trackPhoneClick("wenergy_product", productPhone)}>
+              โทรปรึกษา: {productPhone}
+            </a>
           </div>
         </div>
 
@@ -317,6 +321,11 @@ export default function WEnergyClient({ plans, currentPage, totalPages, content 
                         target={openInNewTab ? "_blank" : undefined}
                         rel={openInNewTab ? "noopener noreferrer" : undefined}
                         className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700"
+                        onClick={() => {
+                          trackSignupInterest("wenergy_package", plan.name);
+                          if (openInNewTab) trackLineClick("wenergy_package", contactUrl);
+                          else trackPhoneClick("wenergy_package", contactUrl.replace(/^tel:/i, ""));
+                        }}
                       >
                         สอบถามแพ็กนี้
                       </a>

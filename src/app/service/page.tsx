@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/src/lib/prisma";
 import { lineSupport } from "@/src/context/line-path";
+import ServiceContactCard from "./components/ServiceContactCard";
+import ServiceCtaLink from "./components/ServiceCtaLink";
 
 export const metadata: Metadata = {
   title: "บริการของเรา",
@@ -223,12 +225,11 @@ export default async function ServicePage() {
               <h1 className="mt-2 text-3xl md:text-5xl font-black leading-tight">{title}</h1>
               <p className="mt-4 text-sm md:text-base text-white/90 leading-7">{subtitle}</p>
 
-              <Link
+              <ServiceCtaLink
                 href={contactHref}
+                label={jsonData.topCtaLabel}
                 className="inline-flex mt-6 rounded-xl bg-white text-[#1a3fb8] px-5 py-2.5 font-bold hover:bg-slate-100 transition-colors"
-              >
-                {jsonData.topCtaLabel}
-              </Link>
+              />
             </div>
 
             <div className="rounded-2xl overflow-hidden border border-white/20 bg-white/10 backdrop-blur-sm">
@@ -241,12 +242,13 @@ export default async function ServicePage() {
       <section className="mx-auto max-w-7xl px-4 mt-10">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {contactCards.map((item) => (
-            <a
+            <ServiceContactCard
               key={item.label}
+              label={item.label}
+              value={item.value}
+              subText={item.subText}
               href={item.href}
-              target={item.href.startsWith("http") ? "_blank" : undefined}
-              rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-              className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
+              type={item.type}
             >
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700 group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors">
@@ -258,7 +260,7 @@ export default async function ServicePage() {
                   <p className="mt-1 text-xs text-slate-500 break-words">{item.subText}</p>
                 </div>
               </div>
-            </a>
+            </ServiceContactCard>
           ))}
         </div>
         <p className="mt-4 text-slate-600 text-sm md:text-base">{jsonData.contactNote}</p>

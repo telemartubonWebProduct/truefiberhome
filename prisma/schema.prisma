@@ -319,3 +319,18 @@ model KnowledgeSnapshot {
 
   @@map("knowledge_snapshots")
 }
+
+/// Self-hosted click tracking for button interactions (LINE, Phone, Facebook, Signup).
+/// Replaces GA4-based event tracking for accurate, real-time dashboard data.
+model ClickEvent {
+  id        String   @id @default(cuid())
+  eventName String   @map("event_name")
+  source    String
+  url       String?
+  pagePath  String?  @map("page_path")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([eventName, createdAt])
+  @@index([createdAt])
+  @@map("click_events")
+}

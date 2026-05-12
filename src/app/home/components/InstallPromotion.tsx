@@ -4,6 +4,7 @@ import { Box, Typography, Button } from "@mui/material";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { motion } from "framer-motion";
 import { lineSupport } from "@/src/context/line-path";
+import { trackLineClick } from "@/src/lib/track-event";
 
 interface InstallPromotionContent {
   title: string;
@@ -116,11 +117,12 @@ export default function InstallPromotion({ content }: InstallPromotionProps) {
           whileTap={{ scale: 0.95 }}
           style={{ willChange: 'transform' }}
         >
-          <Button 
-            component="a"
-            href={primaryButtonHref}
-            variant="contained"
-            disableElevation
+            <Button 
+              component="a"
+              href={primaryButtonHref}
+              variant="contained"
+              disableElevation
+              onClick={() => trackLineClick("home_install_promo", primaryButtonHref)}
             sx={{ 
               px: { xs: 3, md: 4 }, 
               py: 1.5, 

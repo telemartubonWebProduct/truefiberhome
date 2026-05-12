@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AnalyticsSection from "./components/AnalyticsSection";
+import ClickTrackingSection from "./components/ClickTrackingSection";
 import Link from "next/link";
 import {
   getCurrentMonthKey,
@@ -211,6 +212,9 @@ export default async function DashboardOverviewPage(props: {
           </div>
         </div>
       </section>
+
+      {/* Click Tracking Section */}
+      <ClickTrackingSection />
 
       <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
