@@ -23,6 +23,16 @@ import { useMemo, useState, useRef, MouseEvent, useEffect } from "react";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 
+const getCardId = (pkg: any) => {
+  if (pkg.code && typeof pkg.code === "string" && pkg.code.trim()) {
+    return pkg.code.replace(/^#/, '').trim().replace(/\s+/g, '-');
+  }
+  if (pkg.tag && typeof pkg.tag === "string" && pkg.tag.trim()) {
+    return pkg.tag.replace(/^#/, '').trim().replace(/\s+/g, '-');
+  }
+  return `pkg-${pkg.id}`;
+};
+
 function formatPriceTHB(value: number) {
   return new Intl.NumberFormat("th-TH").format(value);
 }
@@ -45,6 +55,7 @@ export default function PromotionSwiper({ packages = [] }: PromotionSwiperProps)
   const startX = useRef(0);
   const scrollLeft = useRef(0);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const [highlightedPkgId, setHighlightedPkgId] = useState<string | null>(null);
 
   // Derive categories from packages if available, otherwise use defaults
   const categories = useMemo(() => {
@@ -96,6 +107,67 @@ export default function PromotionSwiper({ packages = [] }: PromotionSwiperProps)
       window.removeEventListener("resize", checkArrowVisibility);
     };
   }, [filteredPackages, tabIndex]);
+
+  // Handle hash-based deep linking
+  useEffect(() => {
+    const handleHashScroll = () => {
+      const hash = decodeURIComponent(window.location.hash);
+      if (!hash) return;
+
+      const hashValue = hash.slice(1); // e.g. "09" or "pkg-5"
+
+      // Find which category contains this package
+      for (let catIdx = 0; catIdx < categories.length; catIdx++) {
+        const cat = categories[catIdx];
+        const catPackages = packages.filter(
+          (p) => (p.type || "ทั่วไป") === cat.name
+        );
+        const pkgIndex = catPackages.findIndex((p) => {
+          const cardId = getCardId(p);
+          const cleanCode = p.code ? p.code.replace(/^#/, '').trim() : '';
+          const cleanTag = p.tag ? p.tag.replace(/^#/, '').trim() : '';
+          return cardId === hashValue || cleanCode === hashValue || cleanTag === hashValue || String(p.id) === hashValue || `pkg-${p.id}` === hashValue;
+        });
+
+        if (pkgIndex !== -1) {
+          const matchedPkg = catPackages[pkgIndex];
+          const targetId = getCardId(matchedPkg);
+
+          // Switch to the correct tab
+          setTabIndex(catIdx);
+
+          setTimeout(() => {
+            // Scroll page to the section
+            const targetEl = document.getElementById(targetId);
+            if (targetEl) {
+              targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+
+            // Scroll horizontal container to show the card
+            if (scrollRef.current) {
+              const targetCard = scrollRef.current.querySelector(`[id="${targetId}"]`);
+              if (targetCard) {
+                const containerRect = scrollRef.current.getBoundingClientRect();
+                const cardRect = targetCard.getBoundingClientRect();
+                const scrollOffset = cardRect.left - containerRect.left + scrollRef.current.scrollLeft - 16;
+                scrollRef.current.scrollTo({ left: scrollOffset, behavior: "smooth" });
+              }
+            }
+
+            // Highlight the card
+            setHighlightedPkgId(targetId);
+            setTimeout(() => setHighlightedPkgId(null), 3000);
+          }, 600);
+
+          break;
+        }
+      }
+    };
+
+    handleHashScroll();
+    window.addEventListener("hashchange", handleHashScroll);
+    return () => window.removeEventListener("hashchange", handleHashScroll);
+  }, [categories, packages]);
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     isDragging.current = true;
@@ -260,25 +332,29 @@ export default function PromotionSwiper({ packages = [] }: PromotionSwiperProps)
             scrollbarWidth: "thin",
           }}
         >
-          {filteredPackages.map((pkg, index) => (
-            <Box
-              key={`pkg-${pkg.id}`}
-              component={motion.div}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              sx={{
-                minWidth: { xs: "92%", sm: "48%", md: "32%", lg: "320px" },
-                maxWidth: { xs: "92%", sm: "360px" },
-                scrollSnapAlign: "start",
-                flexShrink: 0,
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <PromoCard pkg={pkg} />
-            </Box>
-          ))}
+          {filteredPackages.map((pkg, index) => {
+            const cardId = getCardId(pkg);
+            return (
+              <Box
+                key={`pkg-${pkg.id}`}
+                id={cardId}
+                component={motion.div}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                sx={{
+                  minWidth: { xs: "92%", sm: "48%", md: "32%", lg: "320px" },
+                  maxWidth: { xs: "92%", sm: "360px" },
+                  scrollSnapAlign: "start",
+                  flexShrink: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <PromoCard pkg={pkg} isHighlighted={highlightedPkgId === cardId} />
+              </Box>
+            );
+          })}
         </Box>
 
         <AnimatePresence>
@@ -328,7 +404,7 @@ export default function PromotionSwiper({ packages = [] }: PromotionSwiperProps)
   );
 }
 
-function PromoCard({ pkg }: { pkg: any }) {
+function PromoCard({ pkg, isHighlighted = false }: { pkg: any; isHighlighted?: boolean }) {
   const { lineSupportUrl } = useSiteSettings();
   const header = useMemo(() => {
     const pName = pkg.name || "";
@@ -356,18 +432,28 @@ function PromoCard({ pkg }: { pkg: any }) {
     <Card
       component={motion.div}
       whileHover={{ y: -6, transition: { duration: 0.2 } }}
+      animate={
+        isHighlighted
+          ? {
+              scale: [1, 1.03, 1],
+              transition: { duration: 0.6, repeat: 2, ease: "easeInOut" },
+            }
+          : {}
+      }
       elevation={0}
       sx={{
         borderRadius: 4,
-        border: "1px solid",
-        borderColor: "divider",
+        border: isHighlighted ? "2px solid #3b82f6" : "1px solid",
+        borderColor: isHighlighted ? "#3b82f6" : "divider",
         overflow: "hidden",
         bgcolor: "background.paper",
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
-        transition: "box-shadow 0.2s ease-in-out",
+        boxShadow: isHighlighted
+          ? "0 0 0 4px rgba(59, 130, 246, 0.2), 0 12px 28px rgba(59, 130, 246, 0.15)"
+          : "0 4px 12px rgba(0,0,0,0.03)",
+        transition: "box-shadow 0.3s ease-in-out, border 0.3s ease-in-out",
         "&:hover": {
           boxShadow: "0 12px 28px rgba(0,0,0,0.08)",
         },

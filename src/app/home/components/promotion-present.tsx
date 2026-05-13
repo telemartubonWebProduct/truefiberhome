@@ -41,6 +41,13 @@ interface ContactMethodItem {
   href: string;
 }
 
+const getCardId = (pkg: PackageData) => {
+  if (pkg.tag && pkg.tag.trim() && !pkg.tag.startsWith("Package ")) {
+    return pkg.tag.replace(/^#/, '').trim().replace(/\s+/g, '-');
+  }
+  return `pkg-${pkg.id}`;
+};
+
 const mockPackages: PackageData[] = [
   {
     id: 1,
@@ -137,6 +144,7 @@ export default function PromotionPresent({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [highlightedPkgId, setHighlightedPkgId] = useState<string | null>(null);
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -164,6 +172,52 @@ export default function PromotionPresent({
     container.scrollTo({ left: cardWidth * index, behavior: "smooth" });
     setActiveIndex(index);
   }, [displayPackages.length]);
+
+  // Handle hash-based deep linking: scroll to & highlight a specific package card
+  useEffect(() => {
+    const handleHashScroll = () => {
+      const hash = decodeURIComponent(window.location.hash);
+      if (!hash) return;
+
+      const hashValue = hash.slice(1); // e.g. "09" or "pkg-5"
+
+      // Find matching package index
+      const targetIndex = displayPackages.findIndex((pkg) => {
+        const cardId = getCardId(pkg);
+        const cleanTag = pkg.tag ? pkg.tag.replace(/^#/, '').trim() : '';
+        return cardId === hashValue || cleanTag === hashValue || String(pkg.id) === hashValue || `pkg-${pkg.id}` === hashValue;
+      });
+
+      if (targetIndex === -1) return;
+
+      const matchedPkg = displayPackages[targetIndex];
+      const targetId = getCardId(matchedPkg);
+
+      // Small delay to let the DOM render
+      setTimeout(() => {
+        // 1. Scroll the page to the promotion section
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+
+        // 2. Scroll the horizontal container to show the card
+        scrollToIndex(targetIndex);
+
+        // 3. Highlight the card
+        setHighlightedPkgId(targetId);
+
+        // Remove highlight after animation
+        setTimeout(() => setHighlightedPkgId(null), 3000);
+      }, 500);
+    };
+
+    handleHashScroll();
+
+    // Also handle hash changes (e.g. user clicks internal link)
+    window.addEventListener("hashchange", handleHashScroll);
+    return () => window.removeEventListener("hashchange", handleHashScroll);
+  }, [displayPackages, scrollToIndex]);
 
 
   const handleInterestClick = useCallback((fallbackUrl?: string) => {
@@ -252,19 +306,27 @@ export default function PromotionPresent({
             scrollbarWidth: "none",
           }}
         >
-          {displayPackages.map((pkg) => (
-            <Box
-              key={pkg.id}
-              sx={{
-                minWidth: { xs: "92%", sm: "60%", md: "38%", lg: "45%", xl: "31%" },
-                maxWidth: { xs: "92%", sm: "60%", md: "38%", lg: "45%", xl: "31%" },
-                scrollSnapAlign: "start",
-                flexShrink: 0,
-              }}
-            >
-              <PromotionCard pkg={pkg} onInterestClick={handleInterestClick} />
-            </Box>
-          ))}
+          {displayPackages.map((pkg) => {
+            const cardId = getCardId(pkg);
+            return (
+              <Box
+                key={pkg.id}
+                id={cardId}
+                sx={{
+                  minWidth: { xs: "92%", sm: "60%", md: "38%", lg: "45%", xl: "31%" },
+                  maxWidth: { xs: "92%", sm: "60%", md: "38%", lg: "45%", xl: "31%" },
+                  scrollSnapAlign: "start",
+                  flexShrink: 0,
+                }}
+              >
+                <PromotionCard
+                  pkg={pkg}
+                  onInterestClick={handleInterestClick}
+                  isHighlighted={highlightedPkgId === cardId}
+                />
+              </Box>
+            );
+          })}
         </Box>
 
         {/* Navigation & Pagination */}
@@ -434,7 +496,7 @@ export default function PromotionPresent({
 }
 
 /* ─────────── Clean Promotion Card ─────────── */
-function PromotionCard({ pkg, onInterestClick }: { pkg: PackageData; onInterestClick: (fallbackUrl?: string) => void }) {
+function PromotionCard({ pkg, onInterestClick, isHighlighted = false }: { pkg: PackageData; onInterestClick: (fallbackUrl?: string) => void; isHighlighted?: boolean }) {
   const normalizedBuyUrl = pkg.buyUrl?.trim();
   const buyUrl = normalizedBuyUrl && normalizedBuyUrl !== "/service" && normalizedBuyUrl !== "#" ? normalizedBuyUrl : lineSupport;
 
@@ -443,15 +505,25 @@ function PromotionCard({ pkg, onInterestClick }: { pkg: PackageData; onInterestC
       whileHover={{ y: -4 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       style={{ height: "100%" }}
+      animate={
+        isHighlighted
+          ? {
+              scale: [1, 1.03, 1],
+              transition: { duration: 0.6, repeat: 2, ease: "easeInOut" },
+            }
+          : {}
+      }
     >
       <Box
         sx={{
           borderRadius: "20px",
           overflow: "hidden",
           bgcolor: "#fff",
-          border: "1px solid #eee",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-          transition: "box-shadow 0.3s ease",
+          border: isHighlighted ? "2px solid #3466F6" : "1px solid #eee",
+          boxShadow: isHighlighted
+            ? "0 0 0 4px rgba(52, 102, 246, 0.2), 0 8px 28px rgba(52, 102, 246, 0.18)"
+            : "0 2px 12px rgba(0,0,0,0.06)",
+          transition: "box-shadow 0.3s ease, border 0.3s ease",
           "&:hover": {
             boxShadow: "0 8px 28px rgba(52, 102, 246, 0.12)",
           },
