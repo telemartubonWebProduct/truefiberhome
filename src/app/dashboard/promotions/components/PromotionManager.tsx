@@ -26,9 +26,11 @@ interface PromotionManagerProps {
   initialPromotions: Promotion[];
   initialType: string;
   initialSearchQuery: string;
+  initialCategory?: string;
   currentPage: number;
   totalPages: number;
   lockedType?: string;
+  dynamicCategories?: string[];
 }
 
 const TABS = [
@@ -89,13 +91,16 @@ export default function PromotionManager({
   initialPromotions,
   initialType,
   initialSearchQuery,
+  initialCategory = "all",
   currentPage,
   totalPages,
   lockedType,
+  dynamicCategories,
 }: PromotionManagerProps) {
   const router = useRouter();
   const [promotions, setPromotions] = useState<Promotion[]>(initialPromotions);
   const [activeTab, setActiveTab] = useState(lockedType || initialType);
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -108,8 +113,9 @@ export default function PromotionManager({
   useEffect(() => {
     setPromotions(initialPromotions);
     setActiveTab(lockedType || initialType);
+    setActiveCategory(initialCategory);
     setSearchQuery(initialSearchQuery);
-  }, [initialPromotions, initialType, initialSearchQuery, lockedType]);
+  }, [initialPromotions, initialType, initialSearchQuery, initialCategory, lockedType]);
 
   const handleTabChange = (tabId: string) => {
     if (lockedType) return;
@@ -118,16 +124,29 @@ export default function PromotionManager({
     router.push(`?type=${tabId}&page=1`);
   };
 
+  const handleCategoryChange = (cat: string) => {
+    setActiveCategory(cat);
+    setSearchQuery("");
+    router.push(`?category=${encodeURIComponent(cat)}&page=1`);
+  };
+
+  const buildQueryString = (newPage: number, q: string) => {
+    const params = new URLSearchParams();
+    if (!dynamicCategories) params.set("type", activeTab);
+    if (dynamicCategories && activeCategory !== "all") params.set("category", activeCategory);
+    params.set("page", newPage.toString());
+    if (q) params.set("q", q);
+    return `?${params.toString()}`;
+  };
+
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
-    const qParam = searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : "";
-    router.push(`?type=${activeTab}&page=${newPage}${qParam}`);
+    router.push(buildQueryString(newPage, searchQuery));
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const qParam = searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : "";
-    router.push(`?type=${activeTab}&page=1${qParam}`);
+    router.push(buildQueryString(1, searchQuery));
   };
 
   const filteredPromotions = promotions; // already filtered and paginated from server
@@ -240,7 +259,7 @@ export default function PromotionManager({
               type="button"
               onClick={() => {
                 setSearchQuery("");
-                router.push(`?type=${activeTab}&page=1`);
+                router.push(buildQueryString(1, ""));
               }}
               className="absolute right-3 top-3 text-gray-400 hover:text-white"
             >
@@ -265,7 +284,7 @@ export default function PromotionManager({
       {/* Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div className="flex flex-wrap gap-2 w-full">
-          {!lockedType && TABS.map(tab => (
+          {!lockedType && !dynamicCategories && TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
@@ -279,7 +298,35 @@ export default function PromotionManager({
             </button>
           ))}
 
-          {lockedType && (
+          {dynamicCategories && (
+            <div className="flex flex-wrap gap-2 w-full">
+              <button
+                onClick={() => handleCategoryChange("all")}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  activeCategory === "all"
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                    : "bg-gray-800 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700"
+                }`}
+              >
+                ทั้งหมด
+              </button>
+              {dynamicCategories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => handleCategoryChange(cat)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    activeCategory === cat
+                      ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                      : "bg-gray-800 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {lockedType && !dynamicCategories && (
             <div className="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs font-medium text-blue-300">
               โหมดจัดการเฉพาะแพ็กเกจประเภทนี้
             </div>

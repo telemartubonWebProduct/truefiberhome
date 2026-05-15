@@ -2,10 +2,11 @@ import { prisma } from "@/src/lib/prisma";
 import PromotionManager from "./components/PromotionManager";
 
 export default async function PromotionsPage(props: {
-  searchParams: Promise<{ type?: string; page?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; category?: string }>;
 }) {
   const searchParams = await props.searchParams;
-  const type = searchParams.type || "broadband";
+  const type = "broadband";
+  const category = searchParams.category || "all";
   const page = parseInt(searchParams.page || "1", 10);
   const q = searchParams.q || "";
 
@@ -17,8 +18,11 @@ export default async function PromotionsPage(props: {
   if (q) {
     whereClause.name = { contains: q, mode: "insensitive" };
   }
+  if (category !== "all") {
+    whereClause.categoryName = { contains: category, mode: "insensitive" };
+  }
 
-  const [promotions, total] = await Promise.all([
+  const [promotions, total, categoryNames] = await Promise.all([
     prisma.promotion.findMany({
       where: whereClause,
       orderBy: { displayOrder: "asc" },
@@ -26,18 +30,26 @@ export default async function PromotionsPage(props: {
       take: limit,
     }),
     prisma.promotion.count({ where: whereClause }),
+    prisma.promotion.findMany({
+      where: { type: "broadband", status: true },
+      select: { categoryName: true },
+      distinct: ["categoryName"],
+    }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const dynamicCategories = categoryNames
+    .map((c) => c.categoryName)
+    .filter((name): name is string => Boolean(name && name.trim() !== ""));
 
   const s = (data: any) => JSON.parse(JSON.stringify(data));
 
   return (
     <div className="space-y-12 pb-12">
       <div>
-        <h1 className="text-3xl font-bold text-white">จัดการโปรโมชันทั้งหมด</h1>
+        <h1 className="text-3xl font-bold text-white">จัดการโปรโมชันเน็ตบ้าน</h1>
         <p className="text-gray-400 mt-1">
-          ระบบจัดการโปรโมชันสำหรับ เน็ตบ้าน, มือถือรายเดือน, มือถือเติมเงิน และ โซล่าเซลล์
+          ระบบจัดการแพ็กเกจอินเทอร์เน็ตบ้าน (Broadband)
         </p>
       </div>
 
@@ -46,8 +58,11 @@ export default async function PromotionsPage(props: {
           initialPromotions={s(promotions)}
           initialType={type}
           initialSearchQuery={q}
+          initialCategory={category}
           currentPage={safePage}
           totalPages={totalPages}
+          lockedType="broadband"
+          dynamicCategories={dynamicCategories}
         />
       </section>
     </div>

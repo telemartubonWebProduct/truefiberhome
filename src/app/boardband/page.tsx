@@ -93,6 +93,8 @@ export default async function BroadbandPage() {
     };
   });
 
+  const categories = Array.from(new Set(promotions.map((p) => p.categoryName).filter((c): c is string => Boolean(c && c.trim() !== ""))));
+
   return (
     <main className="bg-slate-50 min-h-screen pt-28 pb-20">
       <section className="mx-auto max-w-7xl px-4">
@@ -129,7 +131,11 @@ export default async function BroadbandPage() {
             </Link>
           </div>
         ) : (
-          <BroadbandPromotionsClient promotions={promotionCards} defaultContactUrl={lineSupport} />
+          <BroadbandPromotionsClient 
+            promotions={promotionCards} 
+            categories={categories}
+            defaultContactUrl={lineSupport} 
+          />
         )}
       </section>
 

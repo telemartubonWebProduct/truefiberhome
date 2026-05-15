@@ -23,6 +23,7 @@ type PromotionCardItem = {
 
 type BroadbandPromotionsClientProps = {
   promotions: PromotionCardItem[];
+  categories?: string[];
   defaultContactUrl: string;
 };
 
@@ -42,8 +43,13 @@ function normalizeBuyUrl(value: string | null | undefined): string | null {
   return trimmed;
 }
 
-export default function BroadbandPromotionsClient({ promotions, defaultContactUrl }: BroadbandPromotionsClientProps) {
+export default function BroadbandPromotionsClient({ promotions, categories = [], defaultContactUrl }: BroadbandPromotionsClientProps) {
   const [selectedPromotion, setSelectedPromotion] = useState<PromotionCardItem | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
+  const filteredPromotions = activeCategory === "all" 
+    ? promotions 
+    : promotions.filter((p) => p.categoryName === activeCategory);
 
   useEffect(() => {
     if (!selectedPromotion) {
@@ -69,8 +75,41 @@ export default function BroadbandPromotionsClient({ promotions, defaultContactUr
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {promotions.map((promo) => (
+      {categories.length > 0 && (
+        <div className="mb-8 flex flex-wrap items-center gap-2 md:gap-3">
+          <button
+            onClick={() => setActiveCategory("all")}
+            className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
+              activeCategory === "all"
+                ? "bg-[#2f58e9] text-white shadow-md shadow-[#2f58e9]/20"
+                : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+            }`}
+          >
+            ทั้งหมด
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
+                activeCategory === cat
+                  ? "bg-[#2f58e9] text-white shadow-md shadow-[#2f58e9]/20"
+                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {filteredPromotions.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
+          ยังไม่มีโปรโมชันในหมวดหมู่นี้
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {filteredPromotions.map((promo) => (
           <article
             key={promo.id}
             className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-shadow hover:shadow-[0_18px_36px_rgba(15,23,42,0.1)]"
@@ -129,7 +168,8 @@ export default function BroadbandPromotionsClient({ promotions, defaultContactUr
             </button>
           </article>
         ))}
-      </div>
+        </div>
+      )}
 
       {selectedPromotion && (
         <div
