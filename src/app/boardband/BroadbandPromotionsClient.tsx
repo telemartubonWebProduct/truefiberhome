@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import LocalPhoneRoundedIcon from "@mui/icons-material/LocalPhoneRounded";
 import LineIcon from "@/src/assets/icons/line-icon.svg";
@@ -43,9 +44,28 @@ function normalizeBuyUrl(value: string | null | undefined): string | null {
   return trimmed;
 }
 
-export default function BroadbandPromotionsClient({ promotions, categories = [], defaultContactUrl }: BroadbandPromotionsClientProps) {
+function BroadbandPromotionsClientInner({ promotions, categories = [], defaultContactUrl }: BroadbandPromotionsClientProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [selectedPromotion, setSelectedPromotion] = useState<PromotionCardItem | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+  
+  const categoryParam = searchParams.get("category");
+  const [activeCategory, setActiveCategory] = useState<string>(categoryParam || "all");
+
+  useEffect(() => {
+    const cat = searchParams.get("category");
+    if (cat && cat !== activeCategory) {
+      setActiveCategory(cat);
+    }
+  }, [searchParams]);
+
+  const handleCategoryClick = (cat: string) => {
+    setActiveCategory(cat);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("category", cat);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   const filteredPromotions = activeCategory === "all" 
     ? promotions 
@@ -82,7 +102,8 @@ export default function BroadbandPromotionsClient({ promotions, categories = [],
       {categories.length > 0 && (
         <div className="mb-8 flex flex-wrap items-center gap-2 md:gap-3">
           <button
-            onClick={() => setActiveCategory("all")}
+            id="category-tab-all"
+            onClick={() => handleCategoryClick("all")}
             className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
               activeCategory === "all"
                 ? "bg-[#2f58e9] text-white shadow-md shadow-[#2f58e9]/20"
@@ -94,7 +115,8 @@ export default function BroadbandPromotionsClient({ promotions, categories = [],
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
+              id={`category-tab-${cat.toLowerCase().replace(/\s+/g, '-')}`}
+              onClick={() => handleCategoryClick(cat)}
               className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
                 activeCategory === cat
                   ? "bg-[#2f58e9] text-white shadow-md shadow-[#2f58e9]/20"
@@ -238,5 +260,17 @@ export default function BroadbandPromotionsClient({ promotions, categories = [],
         </div>
       )}
     </>
+  );
+}
+
+export default function BroadbandPromotionsClient(props: BroadbandPromotionsClientProps) {
+  return (
+    <Suspense fallback={
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 animate-pulse">
+        {[1,2,3].map(i => <div key={i} className="h-80 bg-slate-200 rounded-2xl"></div>)}
+      </div>
+    }>
+      <BroadbandPromotionsClientInner {...props} />
+    </Suspense>
   );
 }
