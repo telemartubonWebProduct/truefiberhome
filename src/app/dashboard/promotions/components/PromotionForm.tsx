@@ -402,7 +402,7 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
             value={categoryName}
             onChange={(e) => setCategoryName(e.target.value)}
             className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="e.g. เน็ตเพิ่มสปีด, L Pack"
+            placeholder="e.g. Starter, Netflix (ใส่ลูกน้ำคั่นเพื่อโชว์หลายหมวดหมู่)"
           />
           {categoryOptions.length > 0 && (
             <>
@@ -416,7 +416,13 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
                   <button
                     key={option}
                     type="button"
-                    onClick={() => setCategoryName(option)}
+                    onClick={() => {
+                      setCategoryName(prev => {
+                        const current = prev.split(',').map(s => s.trim()).filter(Boolean);
+                        if (current.includes(option)) return prev;
+                        return current.length > 0 ? `${prev}, ${option}` : option;
+                      });
+                    }}
                     className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                       categoryName === option
                         ? "border-blue-400/60 bg-blue-500/15 text-blue-300"

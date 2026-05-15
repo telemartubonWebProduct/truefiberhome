@@ -38,9 +38,17 @@ export default async function PromotionsPage(props: {
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
-  const dynamicCategories = categoryNames
-    .map((c) => c.categoryName)
-    .filter((name): name is string => Boolean(name && name.trim() !== ""));
+  
+  const allCategories = new Set<string>();
+  categoryNames.forEach(c => {
+    if (c.categoryName) {
+      c.categoryName.split(',').forEach(cat => {
+        const trimmed = cat.trim();
+        if (trimmed) allCategories.add(trimmed);
+      });
+    }
+  });
+  const dynamicCategories = Array.from(allCategories);
 
   const s = (data: any) => JSON.parse(JSON.stringify(data));
 

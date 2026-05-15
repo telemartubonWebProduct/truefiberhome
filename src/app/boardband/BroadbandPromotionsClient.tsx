@@ -49,7 +49,11 @@ export default function BroadbandPromotionsClient({ promotions, categories = [],
 
   const filteredPromotions = activeCategory === "all" 
     ? promotions 
-    : promotions.filter((p) => p.categoryName === activeCategory);
+    : promotions.filter((p) => {
+        if (!p.categoryName) return false;
+        const cats = p.categoryName.split(",").map(c => c.trim());
+        return cats.includes(activeCategory);
+      });
 
   useEffect(() => {
     if (!selectedPromotion) {

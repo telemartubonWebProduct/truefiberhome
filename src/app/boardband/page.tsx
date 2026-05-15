@@ -93,7 +93,16 @@ export default async function BroadbandPage() {
     };
   });
 
-  const categories = Array.from(new Set(promotions.map((p) => p.categoryName).filter((c): c is string => Boolean(c && c.trim() !== ""))));
+  const allCategories = new Set<string>();
+  promotions.forEach((p) => {
+    if (p.categoryName) {
+      p.categoryName.split(",").forEach((c) => {
+        const trimmed = c.trim();
+        if (trimmed) allCategories.add(trimmed);
+      });
+    }
+  });
+  const categories = Array.from(allCategories);
 
   return (
     <main className="bg-slate-50 min-h-screen pt-28 pb-20">
