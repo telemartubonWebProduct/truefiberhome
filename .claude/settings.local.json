@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(awk -F= '{print $2}')",
+      "Bash(xxd)",
+      "Bash(awk '{print NR\": length=\"length\\($0\\)}')"
     ]
   }
 }
