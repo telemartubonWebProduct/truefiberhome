@@ -190,10 +190,24 @@ export default function DailyPerformanceManager({
       if (res.ok) {
         alert("ส่งรายงานเข้ากลุ่ม LINE สำเร็จ");
       } else {
-        const err = await res.json();
-        alert("เกิดข้อผิดพลาด: " + (err.error || res.statusText));
+        const body = await res.json().catch(() => null);
+        const lineErr = body?.error;
+        const lineMsg =
+          typeof lineErr === "string"
+            ? lineErr
+            : lineErr?.message ||
+              (Array.isArray(lineErr?.details) &&
+                lineErr.details
+                  .map((d: any) => `${d.property ?? ""} ${d.message ?? ""}`.trim())
+                  .filter(Boolean)
+                  .join("; ")) ||
+              JSON.stringify(lineErr ?? body) ||
+              res.statusText;
+        console.error("LINE report failed:", { status: res.status, body });
+        alert(`เกิดข้อผิดพลาด (${res.status}): ${lineMsg}`);
       }
     } catch (e) {
+      console.error(e);
       alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
     } finally {
       setIsSendingReport(false);
