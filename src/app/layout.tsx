@@ -22,6 +22,10 @@ const prompt = Prompt({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://truefiberhome.com";
 
+// ยิง analytics เฉพาะ production deploy (โดเมนหลัก) เท่านั้น
+// VERCEL_ENV: 'production' | 'preview' | 'development'
+const isProductionDeploy = process.env.VERCEL_ENV === "production";
+
 export const metadata: Metadata = {
   title: {
     default: "True Fiber Home | เน็ตบ้าน มือถือ โซล่าเซลล์",
@@ -152,56 +156,62 @@ export default async function RootLayout({
         />
       </head>
       <body>
-        {/* ── Google Tag Manager (noscript fallback) ── */}
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-M82FD3NC"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          />
-        </noscript>
+        {/* ยิง GA/GTM เฉพาะ production domain เท่านั้น
+            preview/dev deploys (vercel.app) ไม่ยิง — กัน Google Tag เตือนเรื่อง domain แปลก ๆ */}
+        {isProductionDeploy && (
+          <>
+            {/* ── Google Tag Manager (noscript fallback) ── */}
+            <noscript>
+              <iframe
+                src="https://www.googletagmanager.com/ns.html?id=GTM-M82FD3NC"
+                height="0"
+                width="0"
+                style={{ display: "none", visibility: "hidden" }}
+              />
+            </noscript>
 
-        {/* ── gtag.js loader (single source) ── */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-0X5TY75CH1"
-          strategy="afterInteractive"
-        />
+            {/* ── gtag.js loader (single source) ── */}
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=G-0X5TY75CH1"
+              strategy="afterInteractive"
+            />
 
-        {/* ── Unified gtag init: GA4 + Google Ads ── */}
-        <Script
-          id="gtag-init"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              window.gtag = gtag;
-              gtag('js', new Date());
-              gtag('consent', 'default', {
-                ad_storage: 'denied',
-                analytics_storage: 'granted',
-                ad_user_data: 'denied',
-                ad_personalization: 'denied',
-                wait_for_update: 500
-              });
-              gtag('config', 'G-0X5TY75CH1', { anonymize_ip: true });
-            `,
-          }}
-        />
+            {/* ── Unified gtag init: GA4 + Google Ads ── */}
+            <Script
+              id="gtag-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  window.gtag = gtag;
+                  gtag('js', new Date());
+                  gtag('consent', 'default', {
+                    ad_storage: 'denied',
+                    analytics_storage: 'granted',
+                    ad_user_data: 'denied',
+                    ad_personalization: 'denied',
+                    wait_for_update: 500
+                  });
+                  gtag('config', 'G-0X5TY75CH1', { anonymize_ip: true });
+                `,
+              }}
+            />
 
-        {/* ── Google Tag Manager container ── */}
-        <Script
-          id="gtm-init"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            {/* ── Google Tag Manager container ── */}
+            <Script
+              id="gtm-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-M82FD3NC');`,
-          }}
-        />
+              }}
+            />
+          </>
+        )}
 
         <SiteSettingsProvider
           settings={{
