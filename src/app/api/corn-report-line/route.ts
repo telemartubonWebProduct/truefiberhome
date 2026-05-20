@@ -17,7 +17,6 @@ const stripQuotes = (v: string | undefined) =>
 
 const LINE_TOKEN = stripQuotes(process.env.LINE_CHANNEL_ACCESS_TOKEN);
 const GROUP_ID = stripQuotes(process.env.LINE_GROUP_ID);
-const USER_ID = stripQuotes(process.env.LINE_USER_ID);
 const CRON_SECRET = stripQuotes(process.env.CRON_SECRET);
 
 const LINE_PUSH_URL = 'https://api.line.me/v2/bot/message/push';
@@ -73,10 +72,10 @@ async function sendReport() {
       { status: 500 },
     );
   }
-  if (!GROUP_ID && !USER_ID) {
-    console.error('Both LINE_GROUP_ID and LINE_USER_ID missing');
+  if (!GROUP_ID) {
+    console.error('LINE_GROUP_ID missing');
     return NextResponse.json(
-      { error: 'No LINE recipient configured (need LINE_GROUP_ID or LINE_USER_ID)' },
+      { error: 'LINE_GROUP_ID missing' },
       { status: 500 },
     );
   }
@@ -126,22 +125,15 @@ async function sendReport() {
   const flexMessage = buildDailyReportFlex(stats);
   const textMessage = { type: 'text' as const, text: buildDailyReportText(stats) };
 
-  // ลำดับการลอง: Group(Flex) → Group(Text) → User(Flex) → User(Text)
-  // อะไรสำเร็จก่อนถือว่าจบ ผู้ใช้ได้รับข้อความแน่นอน
+  // ส่งเข้ากลุ่มเท่านั้น: ลอง Flex ก่อน ถ้าไม่สำเร็จจึง fallback เป็น Text
   const attempts: Array<{
     to: string;
     kind: 'flex' | 'text';
     messages: unknown[];
-  }> = [];
-
-  if (GROUP_ID) {
-    attempts.push({ to: GROUP_ID, kind: 'flex', messages: [flexMessage] });
-    attempts.push({ to: GROUP_ID, kind: 'text', messages: [textMessage] });
-  }
-  if (USER_ID) {
-    attempts.push({ to: USER_ID, kind: 'flex', messages: [flexMessage] });
-    attempts.push({ to: USER_ID, kind: 'text', messages: [textMessage] });
-  }
+  }> = [
+    { to: GROUP_ID, kind: 'flex', messages: [flexMessage] },
+    { to: GROUP_ID, kind: 'text', messages: [textMessage] },
+  ];
 
   const failures: Array<Record<string, unknown>> = [];
   for (const attempt of attempts) {
