@@ -5,7 +5,13 @@
       "Bash(awk -F= '{print $2}')",
       "Bash(xxd)",
       "Bash(awk '{print NR\": length=\"length\\($0\\)}')",
-      "Bash(git ls-tree *)"
+      "Bash(git ls-tree *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\sutti\\\\Documents\\\\truefiberhome\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(npx tsc *)",
+      "Bash(dir .env*)",
+      "Bash(node -e ' *)"
     ]
   }
 }

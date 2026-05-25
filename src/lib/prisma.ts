@@ -29,7 +29,8 @@ const hasExpectedDelegates =
   typeof (cachedClient as any).adminProfile !== "undefined" &&
   typeof (cachedClient as any).chatSession !== "undefined" &&
   typeof (cachedClient as any).chatMessage !== "undefined" &&
-  typeof (cachedClient as any).knowledgeSnapshot !== "undefined";
+  typeof (cachedClient as any).knowledgeSnapshot !== "undefined" &&
+  typeof (cachedClient as any).article !== "undefined";
 
 export const prisma = hasExpectedDelegates ? cachedClient : createPrismaClient();
 

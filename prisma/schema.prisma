@@ -334,3 +334,34 @@ model ClickEvent {
   @@index([createdAt])
   @@map("click_events")
 }
+
+/// Blog articles / news posts with custom layout support.
+/// Layout options: "default" | "full-width" | "magazine" | "minimal"
+model Article {
+  id             String    @id @default(cuid())
+  title          String
+  slug           String    @unique
+  excerpt        String?   @db.Text
+  content        String    @db.Text
+  contentBlocks  Json?     @map("content_blocks")
+  coverImage     String?   @map("cover_image")
+  category       String?
+  tags           Json?
+  layout         String    @default("default")
+  author         String?
+  readingTime    Int?      @map("reading_time")
+  isPublished    Boolean   @default(false) @map("is_published")
+  isFeatured     Boolean   @default(false) @map("is_featured")
+  publishedAt    DateTime? @map("published_at")
+  seoTitle       String?   @map("seo_title")
+  seoDescription String?   @map("seo_description") @db.Text
+  viewCount      Int       @default(0) @map("view_count")
+  displayOrder   Int       @default(0) @map("display_order")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([isPublished, publishedAt])
+  @@index([category])
+  @@map("articles")
+}

@@ -232,6 +232,13 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
               เกี่ยวกับ
             </Link>
             <Link
+              href="/articles"
+              className="text-[12px] font-semibold tracking-widest text-[#4a4a4a] hover:text-black transition-colors py-2"
+              onMouseEnter={() => handleMouseEnter("none")}
+            >
+              บทความ
+            </Link>
+            <Link
               href="/termsAndPrivacy"
               className="text-[12px] font-semibold tracking-widest text-[#4a4a4a] hover:text-black transition-colors py-2"
               onMouseEnter={() => handleMouseEnter("none")}
@@ -373,6 +380,9 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
 
                 <Link href="/about" className="block py-3 text-[13px] font-semibold tracking-widest text-gray-900 border-b border-gray-100">
                   เกี่ยวกับเรา
+                </Link>
+                <Link href="/articles" className="block py-3 text-[13px] font-semibold tracking-widest text-gray-900 border-b border-gray-100">
+                  บทความ
                 </Link>
                 <Link href="/termsAndPrivacy" className="block py-3 text-[13px] font-semibold tracking-widest text-gray-900 text-left">
                   นโยบายและเงื่อนไข
