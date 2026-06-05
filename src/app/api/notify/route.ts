@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const LINE_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN!;
-const USER_ID = process.env.LINE_USER_ID!; // User ID ที่จะส่งหา
+const stripQuotes = (v: string | undefined) =>
+  (v ?? '').trim().replace(/^['"]|['"]$/g, '');
+
+const LINE_TOKEN = stripQuotes(process.env.LINE_CHANNEL_ACCESS_TOKEN);
+const GROUP_ID = stripQuotes(process.env.LINE_GROUP_ID); // Group ID ที่จะส่งเข้ากลุ่ม
 
 export async function POST(req: NextRequest) {
   const { message } = await req.json();
+
+  if (!LINE_TOKEN || !GROUP_ID) {
+    return NextResponse.json(
+      { error: 'LINE_CHANNEL_ACCESS_TOKEN or LINE_GROUP_ID missing' },
+      { status: 500 },
+    );
+  }
 
   const res = await fetch('https://api.line.me/v2/bot/message/push', {
     method: 'POST',
@@ -13,7 +23,7 @@ export async function POST(req: NextRequest) {
       Authorization: `Bearer ${LINE_TOKEN}`,
     },
     body: JSON.stringify({
-      to: USER_ID,
+      to: GROUP_ID,
       messages: [{ type: 'text', text: message }],
     }),
   });
