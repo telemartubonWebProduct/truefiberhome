@@ -33,6 +33,7 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const homeSectionDelegate = (prisma as any).homeSection;
+  const bannerDelegate = (prisma as any).banner;
   const packageDelegate = (prisma as any).package;
   const contactMethodDelegate = (prisma as any).contactMethod;
   const agentDelegate = (prisma as any).agent;
@@ -42,6 +43,7 @@ export default async function HomePage() {
     installPromotionSection,
     promotionPresentSection,
     contactSection,
+    banners,
     packages,
     contactMethods,
     agents,
@@ -50,6 +52,9 @@ export default async function HomePage() {
     homeSectionDelegate ? homeSectionDelegate.findUnique({ where: { sectionKey: "homeInstallPromotion" } }) : null,
     homeSectionDelegate ? homeSectionDelegate.findUnique({ where: { sectionKey: "homePromotionPresent" } }) : null,
     homeSectionDelegate ? homeSectionDelegate.findUnique({ where: { sectionKey: "homeContactSection" } }) : null,
+    bannerDelegate
+      ? bannerDelegate.findMany({ where: { isActive: true }, orderBy: { displayOrder: "asc" } })
+      : [],
     packageDelegate
       ? packageDelegate.findMany({ where: { status: true }, orderBy: { displayOrder: "asc" } })
       : [],
@@ -193,6 +198,13 @@ export default async function HomePage() {
           : lineSupport,
     };
   });
+
+  const autoLoopBanners = (banners as any[]).map((banner, index) => ({
+    id: banner.id ?? `banner-${index}`,
+    title: typeof banner.title === "string" ? banner.title : null,
+    description: typeof banner.description === "string" ? banner.description : null,
+    imageUrl: typeof banner.imageUrl === "string" ? banner.imageUrl : null,
+  }));
 
   const contactTitle = contactSection?.title || "ติดต่อและสมัครบริการ";
   const contactSubtitle = contactSection?.subtitle || "เลือกช่องทางที่สะดวก ทีมงานพร้อมดูแลทันที";
@@ -365,7 +377,7 @@ export default async function HomePage() {
           )}
 
           <Stack spacing={{ xs: 1, md: 2 }} sx={{ flex: 1 }}>
-            <AutoLoopBanner />
+            <AutoLoopBanner banners={autoLoopBanners} />
             <InstallPromotion
               content={{
                 title: installTitle,

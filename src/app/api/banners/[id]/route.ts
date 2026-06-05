@@ -73,6 +73,7 @@ export async function PUT(request: Request, context: Context) {
       data,
     });
 
+    revalidatePath("/");
     revalidatePath("/home");
     revalidatePath("/dashboard/banners");
     revalidatePath("/dashboard/home-content");
@@ -99,6 +100,7 @@ export async function DELETE(_: Request, context: Context) {
 
     await prisma.banner.delete({ where: { id: bannerId } });
 
+    revalidatePath("/");
     revalidatePath("/home");
     revalidatePath("/dashboard/banners");
     revalidatePath("/dashboard/home-content");

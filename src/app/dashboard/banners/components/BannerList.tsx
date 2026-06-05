@@ -27,7 +27,7 @@ export default function BannerList({ initialBanners }: BannerListProps) {
   const searchParams = useSearchParams();
   const showNewForm = searchParams.get("action") === "new";
 
-  const [banners] = useState<Banner[]>(initialBanners);
+  const banners = initialBanners;
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [showForm, setShowForm] = useState(showNewForm);
   const [deletingId, setDeletingId] = useState<string | null>(null);
