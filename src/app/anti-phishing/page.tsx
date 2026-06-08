@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AntiPhishingPage() {
   return (
-    <main className="mx-auto max-w-5xl px-4 py-24 text-slate-800">
+    <div className="mx-auto max-w-5xl px-4 py-24 text-slate-800">
       <h1 className="text-3xl font-bold text-slate-900">มาตรการป้องกันการหลอกลวง (Anti‑Phishing)</h1>
 
       <section className="mt-8 space-y-3 text-slate-700 leading-7">
@@ -36,6 +36,6 @@ export default function AntiPhishingPage() {
           หากพบข้อความหรือเว็บไซต์ที่แอบอ้างชื่อบริษัท กรุณาหยุดการทำรายการทันทีและติดต่อช่องทางทางการที่หน้า Home เพื่อยืนยันข้อมูลก่อนดำเนินการต่อ
         </p>
       </section>
-    </main>
+    </div>
   );
 }

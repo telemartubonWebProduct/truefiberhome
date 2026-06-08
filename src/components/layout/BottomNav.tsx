@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
@@ -42,14 +41,6 @@ const navItems = [
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
-
-  useEffect(() => {
-    navItems.forEach((item) => {
-      if (item.href.startsWith("/")) {
-        router.prefetch(item.href);
-      }
-    });
-  }, [router]);
 
   // ซ่อน Bottom Bar หากอยู่ใน Dashboard / Backend
   const isHiddenRoute = pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend");

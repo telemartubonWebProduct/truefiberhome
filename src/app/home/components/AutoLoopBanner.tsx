@@ -1,19 +1,14 @@
 "use client";
 
-import React from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { EffectFade } from "swiper/modules";
-import { Box } from "@mui/material";
-
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/effect-fade";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
 type BannerSlide = {
   id: number | string;
   title?: string | null;
   description?: string | null;
   imageUrl?: string | null;
+  mobileImage?: string | null;
   image?: string | null;
 };
 
@@ -21,93 +16,71 @@ type AutoLoopBannerProps = {
   banners?: BannerSlide[];
 };
 
-const BANNER_ASPECT_RATIO = 907 / 300;
-
 const fallbackSlides: BannerSlide[] = [
-    {
-      id: 1,
-      image: "https://mms.img.susercontent.com/th-11134210-7qukx-lkj9ox5urx7td5",
-
-    },
-    {
-      id: 2,
-      image: "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt3813f2889a82cb5b/6982acb69e7fce6dc9af6763/banner-true-id-tv-gen-3-02.jpg",
-
-    },
-    {
-      id: 3,
-      image: "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt9f8824d17aed407a/69d4868ce94b4816c55ef77e/truex-cloud-12month-7apr2026-1040x1040.jpg?auto=webp&quality=85",
-
-    }
-  ];
+  {
+    id: 1,
+    title: "โปรเน็ตบ้านทรู",
+    image:
+      "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt3813f2889a82cb5b/6982acb69e7fce6dc9af6763/banner-true-id-tv-gen-3-02.jpg",
+  },
+];
 
 export default function AutoLoopBanner({ banners = [] }: AutoLoopBannerProps) {
   const slides = banners.filter((slide) => (slide.imageUrl || slide.image)?.trim());
   const displaySlides = slides.length > 0 ? slides : fallbackSlides;
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (displaySlides.length < 2) return;
+    const timer = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % displaySlides.length);
+    }, 5_000);
+    return () => window.clearInterval(timer);
+  }, [displaySlides.length]);
+
+  const activeSlide = displaySlides[activeIndex] || displaySlides[0];
+  const desktopImage = activeSlide.imageUrl || activeSlide.image || "";
+  const mobileImage = activeSlide.mobileImage || desktopImage;
+  const alt =
+    activeSlide.title || activeSlide.description || `โปรโมชัน ${activeIndex + 1}`;
 
   return (
-    <Box
-      sx={{
-        flex: 2,
-        position: "relative",
-        borderRadius: "12px",
-        overflow: "hidden",
-        minHeight: { xs: 220, md: 300 },
-        aspectRatio: BANNER_ASPECT_RATIO,
-        backgroundColor: "#0b1220",
-      }}
+    <section
+      className="relative min-h-[300px] w-full flex-[2] overflow-hidden rounded-xl border border-slate-200 bg-slate-950"
+      aria-roledescription="carousel"
+      aria-label="โปรโมชันแนะนำ"
     >
-      <Swiper
-        modules={[EffectFade]}
-        effect="fade"
-        loop={true}
-        allowTouchMove={true}
-        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-      >
-        {displaySlides.map((slide, index) => {
-          const image = slide.imageUrl || slide.image || "";
-          const alt = slide.title || slide.description || `Slide ${index + 1}`;
+      <picture>
+        {mobileImage !== desktopImage ? (
+          <source media="(max-width: 639px)" srcSet={mobileImage} />
+        ) : null}
+        <Image
+          key={desktopImage}
+          src={desktopImage}
+          alt={alt}
+          fill
+          priority={activeIndex === 0}
+          className="object-contain object-center"
+          sizes="(max-width: 1024px) 100vw, 50vw"
+        />
+      </picture>
 
-          return (
-            <SwiperSlide key={slide.id}>
-              <Box sx={{ width: "100%", height: "100%", position: "relative" }}>
-                <Box
-                  component="img"
-                  src={image}
-                  alt=""
-                  aria-hidden
-                  sx={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    filter: "blur(16px)",
-                    transform: "scale(1.08)",
-                    opacity: 0.55,
-                  }}
-                />
-                <Box
-                  component="img"
-                  src={image}
-                  alt={alt}
-                  loading={index === 0 ? "eager" : "lazy"}
-                  decoding="async"
-                  sx={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
-                    objectPosition: "center",
-                    p: { xs: 1, md: 1.5 },
-                  }}
-                />
-              </Box>
-            </SwiperSlide>
-          );
-        })}
-      </Swiper>
-    </Box>
+      {displaySlides.length > 1 ? (
+        <div className="absolute inset-x-0 bottom-3 flex justify-center gap-2">
+          {displaySlides.map((slide, index) => (
+            <button
+              key={slide.id}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              aria-label={`แสดงโปรโมชัน ${index + 1}`}
+              aria-current={index === activeIndex}
+              className={`h-2 rounded-full shadow-sm transition-[width,background-color] ${
+                index === activeIndex ? "w-7 bg-white" : "w-2 bg-white/60"
+              }`}
+            />
+          ))}
+        </div>
+      ) : null}
+    </section>
   );
 }

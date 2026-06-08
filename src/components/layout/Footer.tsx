@@ -1,14 +1,11 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { Container, Typography, Link, Box } from "@mui/material";
-import { Grid } from "@mui/material";
-import { motion } from "framer-motion";
+import { useMemo } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import LineIcon from "@/src/assets/icons/line-icon.svg";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
 import { trackLineClick } from "@/src/lib/track-event";
-import LineIcon from "@/src/assets/icons/line-icon.svg";
 
 interface FooterLinkItem {
   id: string;
@@ -20,7 +17,11 @@ interface FooterLinkItem {
 }
 
 interface FooterProps {
-  siteSettings?: any;
+  siteSettings?: {
+    footerImageUrl?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  } | null;
   footerLinks?: FooterLinkItem[];
 }
 
@@ -28,14 +29,41 @@ function normalizeSection(section: string) {
   return section.trim().toLowerCase();
 }
 
+function FooterColumn({
+  title,
+  items,
+}: {
+  title: string;
+  items: FooterLinkItem[];
+}) {
+  return (
+    <div>
+      <h2 className="mb-4 text-base font-bold uppercase text-red-500">{title}</h2>
+      <ul className="space-y-2 text-sm text-gray-300">
+        {items.map((item) => (
+          <li key={item.id}>
+            <a
+              href={item.path}
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noopener noreferrer" : undefined}
+              className="transition-colors hover:text-white"
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function Footer({ siteSettings, footerLinks }: FooterProps) {
   const pathname = usePathname();
-  const isHiddenRoute =
-    pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend") || pathname?.startsWith("/login");
   const { lineSupportUrl } = useSiteSettings();
-  const lineDisplay = lineSupportUrl
-    ? lineSupportUrl.replace(/^https?:\/\/(www\.)?/i, "")
-    : "@341tmfte";
+  const isHiddenRoute =
+    pathname?.startsWith("/dashboard") ||
+    pathname?.startsWith("/backend") ||
+    pathname?.startsWith("/login");
 
   const linksBySection = useMemo(() => {
     if (footerLinks && footerLinks.length > 0) {
@@ -51,38 +79,64 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
     }
 
     return {
-      company: [{ id: "company-contact", section: "company", label: "Contact", path: "/service", external: false }],
+      company: [
+        {
+          id: "company-contact",
+          section: "company",
+          label: "ติดต่อเรา",
+          path: "/service",
+          external: false,
+        },
+      ],
       services: [
-        { id: "services-internet", section: "services", label: "Internet", path: "/topup", external: false },
-        { id: "services-wifi", section: "services", label: "Wifi", path: "/boardband", external: false },
-        { id: "services-solar", section: "services", label: "SolarCell", path: "/wEnergy", external: false },
+        {
+          id: "services-internet",
+          section: "services",
+          label: "โปรเน็ตบ้าน",
+          path: "/boardband",
+          external: false,
+        },
+        {
+          id: "services-mobile",
+          section: "services",
+          label: "แพ็กเกจมือถือ",
+          path: "/monthly",
+          external: false,
+        },
+        {
+          id: "services-solar",
+          section: "services",
+          label: "โซล่าเซลล์",
+          path: "/wEnergy",
+          external: false,
+        },
       ],
       support: [
         {
-          id: "support-help-center",
+          id: "support-help",
           section: "support",
-          label: "Help Center",
+          label: "ศูนย์ช่วยเหลือ",
           path: lineSupportUrl || "/service",
           external: Boolean(lineSupportUrl),
         },
         {
           id: "support-privacy",
           section: "support",
-          label: "Privacy Policy",
+          label: "นโยบายความเป็นส่วนตัว",
           path: "/privacy-policy",
           external: false,
         },
         {
           id: "support-terms",
           section: "support",
-          label: "Terms of Service",
+          label: "ข้อกำหนดการใช้งาน",
           path: "/terms-of-service",
           external: false,
         },
         {
-          id: "support-anti-phishing",
+          id: "support-phishing",
           section: "support",
-          label: "Anti-Phishing",
+          label: "ป้องกันการหลอกลวง",
           path: "/anti-phishing",
           external: false,
         },
@@ -90,169 +144,74 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
     };
   }, [footerLinks, lineSupportUrl]);
 
-  const companyLinks = linksBySection.company ?? [];
-  const serviceLinks = linksBySection.services ?? [];
-  const supportLinks = linksBySection.support ?? [];
-
   if (isHiddenRoute) return null;
+
+  const phoneNumbers = siteSettings?.phone
+    ? siteSettings.phone.split(",").map((phone) => phone.trim()).filter(Boolean)
+    : ["0910192552", "0902518964", "0841041506"];
 
   return (
     <footer className="bg-black text-white">
-      <Container maxWidth="lg" className="py-10">
-        <Grid container spacing={4}>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="h6" component="h2" className="mb-4 font-bold uppercase tracking-wider text-red-500">
-              Company
-            </Typography>
-            <ul>
-              {companyLinks.map((item) => (
-                <li key={item.id}>
-                  <Link
-                    href={item.path}
-                    color="inherit"
-                    target={item.external ? "_blank" : undefined}
-                    rel={item.external ? "noopener noreferrer" : undefined}
-                    className="hover:text-gray-400"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Grid>
+      <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <FooterColumn title="Company" items={linksBySection.company ?? []} />
+          <FooterColumn title="Services" items={linksBySection.services ?? []} />
+          <FooterColumn title="Support" items={linksBySection.support ?? []} />
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="h6" component="h2" className="mb-4 font-bold uppercase tracking-wider text-red-500">
-              Services
-            </Typography>
-            <ul>
-              {serviceLinks.map((item) => (
-                <li key={item.id}>
-                  <Link
-                    href={item.path}
-                    color="inherit"
-                    target={item.external ? "_blank" : undefined}
-                    rel={item.external ? "noopener noreferrer" : undefined}
-                    className="hover:text-gray-400"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Grid>
+          <div>
+            <h2 className="mb-4 text-base font-bold uppercase text-red-500">
+              ติดต่อรับบริการ
+            </h2>
+            <a
+              href={lineSupportUrl || "/service"}
+              target={lineSupportUrl ? "_blank" : undefined}
+              rel={lineSupportUrl ? "noopener noreferrer" : undefined}
+              onClick={() => trackLineClick("footer", lineSupportUrl)}
+              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#00B900] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#009f00]"
+            >
+              <Image src={LineIcon} alt="" width={20} height={20} className="h-5 w-5" />
+              @truefiberhome
+            </a>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="h6" component="h2" className="mb-4 font-bold uppercase tracking-wider text-red-500">
-              Support
-            </Typography>
-            <ul>
-              {supportLinks.map((item) => (
-                <li key={item.id}>
-                  <Link
-                    href={item.path}
-                    color="inherit"
-                    target={item.external ? "_blank" : undefined}
-                    rel={item.external ? "noopener noreferrer" : undefined}
-                    className="hover:text-gray-400"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Grid>
+            {siteSettings?.footerImageUrl ? (
+              <div className="mt-5">
+                <Image
+                  src={siteSettings.footerImageUrl}
+                  alt="True Fiber Home"
+                  width={180}
+                  height={48}
+                  className="h-12 w-auto object-contain"
+                />
+              </div>
+            ) : null}
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="h6" component="h2" className="mb-4 font-bold uppercase tracking-wider text-red-500">
-              Follow Us
-            </Typography>
-            <Box className="flex flex-col space-y-4">
-              <Box className="flex items-center space-x-2">
-                <Link
-                  href={lineSupportUrl || "/service"}
-                  target={lineSupportUrl ? "_blank" : undefined}
-                  rel={lineSupportUrl ? "noopener noreferrer" : undefined}
-                  color="inherit"
-                  aria-label="LINE support"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#00B900] px-3 py-2 text-white transition-colors hover:bg-[#009f00] no-underline"
-                  sx={{ textDecoration: "none" }}
-                  onClick={() => trackLineClick("footer", lineSupportUrl)}
+            <div className="mt-5 space-y-1 text-sm text-gray-300">
+              {siteSettings?.email ? <p>อีเมล: {siteSettings.email}</p> : null}
+              {phoneNumbers.map((phone) => (
+                <a
+                  key={phone}
+                  href={`tel:${phone.replace(/\s+/g, "")}`}
+                  className="block transition-colors hover:text-white"
                 >
-                  <Image src={LineIcon} alt="LINE" width={20} height={20} className="h-5 w-5 object-contain" />
-                  <Typography variant="body1" sx={{ fontFamily: "Prompt" }} color="#ffffff">
-                    @truefiberhome
-                  </Typography>
-                </Link>
-              </Box>
+                  {phone}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
 
-              {siteSettings?.footerImageUrl && (
-                <Box className="flex items-center mt-2">
-                  <motion.img
-                    src={siteSettings.footerImageUrl}
-                    alt="Footer Logo"
-                    className="h-12 object-contain"
-                  />
-                </Box>
-              )}
-
-              <Box className="mt-4">
-                <Typography
-                  variant="body1"
-                  sx={{ fontFamily: "Prompt" }}
-                  color="#ffffff"
-                  className="mb-1 text-red-400 font-semibold"
-                >
-                  ติดต่อรับบริการ
-                </Typography>
-                {siteSettings?.email && (
-                  <Typography
-                    variant="body2"
-                    sx={{ fontFamily: "Prompt" }}
-                    color="#ffffff"
-                    className="mb-1"
-                  >
-                    อีเมล: {siteSettings.email}
-                  </Typography>
-                )}
-                {siteSettings?.phone ? (
-                  siteSettings.phone.split(",").map((p: string, i: number) => (
-                    <Typography key={i} variant="body2" sx={{ fontFamily: "Prompt" }} color="#ffffff">
-                      {p.trim()}
-                    </Typography>
-                  ))
-                ) : (
-                  <>
-                    <Typography sx={{ fontFamily: "Prompt" }} variant="body2" color="#ffffff">
-                      0910192552
-                    </Typography>
-                    <Typography sx={{ fontFamily: "Prompt" }} variant="body2" color="#ffffff">
-                      0902518964
-                    </Typography>
-                    <Typography sx={{ fontFamily: "Prompt" }} variant="body2" color="#ffffff">
-                      0841041506
-                    </Typography>
-                  </>
-                )}
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-
-        <Box className="mt-8 border-t border-gray-700 pt-4 text-center">
-          <Typography
-            variant="body2"
-            className="mb-4 text-gray-400 text-xs sm:text-sm max-w-4xl mx-auto leading-relaxed"
-          >
-            ข้อจำกัดความรับผิดชอบ (Disclaimer): เว็บไซต์นี้ดำเนินการโดย บริษัท เทเลมาร์ท คอมมิวนิเคชั่น จำกัด ซึ่งเป็นตัวแทนจำหน่ายที่ได้รับการแต่งตั้งอย่างเป็นทางการ (Authorized Dealer)
-            เว็บไซต์นี้ไม่ใช่เว็บไซต์หลักหรือบริษัทในเครือบริษัท ทรู คอร์ปอเรชั่น จำกัด (มหาชน) ทางเราจัดทำเว็บไซต์นี้ขึ้นเพื่อวัตถุประสงค์ในการนำเสนอแพ็กเกจและบริการติดตั้งเท่านั้น
-          </Typography>
-          <Typography variant="body2">
-            &copy; {new Date().getFullYear()} Telemart Communication co.,ltd.
-            copyright all. right reserved reserved.
-          </Typography>
-        </Box>
-      </Container>
+        <div className="mt-10 border-t border-gray-800 pt-6 text-center">
+          <p className="mx-auto max-w-5xl text-xs leading-6 text-gray-400">
+            เว็บไซต์นี้ดำเนินการโดย บริษัท เทเลมาร์ท คอมมิวนิเคชั่น จำกัด
+            ซึ่งเป็นตัวแทนจำหน่ายที่ได้รับการแต่งตั้งอย่างเป็นทางการ (Authorized Dealer)
+            ไม่ใช่เว็บไซต์หลักของบริษัท ทรู คอร์ปอเรชั่น จำกัด (มหาชน)
+            จัดทำขึ้นเพื่อนำเสนอแพ็กเกจและบริการติดตั้งเท่านั้น
+          </p>
+          <p className="mt-4 text-xs text-gray-500">
+            © {new Date().getFullYear()} Telemart Communication Co., Ltd.
+          </p>
+        </div>
+      </div>
     </footer>
   );
 }

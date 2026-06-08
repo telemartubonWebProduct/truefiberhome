@@ -18,6 +18,35 @@ body {
   font-family: "Prompt", Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
 
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 0.5rem;
+  z-index: 9999;
+  transform: translateY(-160%);
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: #111827;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Serif accent for blog headings */
 .font-serif {
   font-family: "Cormorant Garamond", "Playfair Display", "Prompt", Georgia, serif;
@@ -174,4 +203,3 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-

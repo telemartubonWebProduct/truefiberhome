@@ -37,6 +37,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   transpilePackages: ["@mui/material", "@mui/system", "@mui/icons-material"],
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 604800,
     remotePatterns: [
       {
         protocol: "https",

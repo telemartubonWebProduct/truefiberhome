@@ -296,8 +296,8 @@ export default function PackageForm({ pkg, onSuccess, onCancel }: PackageFormPro
         </div>
 
         {imagePreview ? (
-          <div className="relative rounded-xl overflow-hidden border border-gray-700 bg-gray-800 w-32 h-32 flex items-center justify-center group">
-            <Image src={imagePreview} alt="Preview" fill className="object-cover" sizes="128px" />
+          <div className="relative aspect-[16/7] w-full max-w-lg rounded-xl overflow-hidden border border-gray-700 bg-gray-800 flex items-center justify-center group">
+            <Image src={imagePreview} alt="Preview" fill className="object-contain p-2" sizes="(max-width: 768px) 100vw, 512px" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <button
                 type="button"

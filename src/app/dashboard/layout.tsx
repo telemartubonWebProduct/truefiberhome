@@ -44,9 +44,9 @@ export default async function DashboardLayout({
       <DashboardSidebar userEmail={user.email || ""} />
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-64 min-h-screen pt-16 lg:pt-0">
+      <div className="flex-1 lg:ml-64 min-h-screen pt-16 lg:pt-0">
         <div className="p-4 lg:p-8">{children}</div>
-      </main>
+      </div>
     </div>
   );
 }

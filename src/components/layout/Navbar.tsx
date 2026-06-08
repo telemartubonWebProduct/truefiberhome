@@ -1,11 +1,9 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { useHideOnScroll } from "../../hooks/useScrollDirection";
 
 interface NavigationItem {
   id: string;
@@ -31,7 +29,7 @@ interface NavbarProps {
 }
 
 const DEFAULT_PREVIEW_IMAGE =
-  "https://images.unsplash.com/photo-1544411135-e10eb7127e26?auto=format&fit=crop&q=80&w=1200";
+  "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt7e0dd3ed6dad1acd/6a0fb7339af2622baffee5e4/trueonline-home-next-1080x1080.jpg";
 
 const GROUP_ORDER: Array<{ key: string; title: string }> = [
   { key: "mega.broadband", title: "แพ็กเกจเน็ตบ้าน" },
@@ -63,7 +61,7 @@ const FALLBACK_NAV_ITEMS: NavigationItem[] = [
     path: "/boardband",
     parentKey: "mega.broadband",
     iconUrl:
-      "https://trueblog.info/blog/wp-content/uploads/2024/12/256_3-WiFi7-scaled.jpg",
+      "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt040771c058a482ff/691c98197a665989eb2fa25b/pack-card-tol-starter.jpg",
     displayOrder: 0,
     isActive: true,
   },
@@ -73,7 +71,7 @@ const FALLBACK_NAV_ITEMS: NavigationItem[] = [
     path: "/service",
     parentKey: "mega.broadband",
     iconUrl:
-      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=1200",
+      "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt8d9cf6c2de6d28f2/69c3565b58c98c757d814a58/tol-thumbnail-fiber-to-room-560x314.jpg",
     displayOrder: 1,
     isActive: true,
   },
@@ -83,7 +81,7 @@ const FALLBACK_NAV_ITEMS: NavigationItem[] = [
     path: "/topup",
     parentKey: "mega.mobile",
     iconUrl:
-      "https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&q=80&w=1200",
+      DEFAULT_PREVIEW_IMAGE,
     displayOrder: 2,
     isActive: true,
   },
@@ -93,7 +91,7 @@ const FALLBACK_NAV_ITEMS: NavigationItem[] = [
     path: "/monthly",
     parentKey: "mega.mobile",
     iconUrl:
-      "https://images.unsplash.com/photo-1485217988980-11786ced9454?auto=format&fit=crop&q=80&w=1200",
+      DEFAULT_PREVIEW_IMAGE,
     displayOrder: 3,
     isActive: true,
   },
@@ -103,7 +101,7 @@ const FALLBACK_NAV_ITEMS: NavigationItem[] = [
     path: "/wEnergy",
     parentKey: "mega.energy",
     iconUrl:
-      "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=1200",
+      "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt2e07ec23378532d2/698c659b206ddc2a6b398a33/TOL_True_X_Solar_Banner_3840_x_1236.jpg",
     displayOrder: 4,
     isActive: true,
   },
@@ -113,7 +111,7 @@ const FALLBACK_NAV_ITEMS: NavigationItem[] = [
     path: "/service",
     parentKey: "mega.service",
     iconUrl:
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=1200",
+      "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt8d9cf6c2de6d28f2/69c3565b58c98c757d814a58/tol-thumbnail-fiber-to-room-560x314.jpg",
     displayOrder: 5,
     isActive: true,
   },
@@ -153,6 +151,7 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState(DEFAULT_PREVIEW_IMAGE);
+  const closeMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const menuSourceItems = useMemo(() => {
     if (!Array.isArray(navigationItems) || navigationItems.length === 0) {
@@ -181,11 +180,21 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
   const pathname = usePathname();
   const isHiddenRoute =
     pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend") || pathname?.startsWith("/login");
-  const isHiddenByScroll = useHideOnScroll(50);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
-  const handleMouseEnter = (menu: string) => setActiveMenu(menu);
-  const handleMouseLeave = () => setActiveMenu(null);
+  const handleMouseEnter = (menu: string) => {
+    if (closeMenuTimer.current) {
+      clearTimeout(closeMenuTimer.current);
+      closeMenuTimer.current = null;
+    }
+    setActiveMenu(menu);
+  };
+  const handleMouseLeave = () => {
+    closeMenuTimer.current = setTimeout(() => {
+      setActiveMenu(null);
+      closeMenuTimer.current = null;
+    }, 180);
+  };
 
   useEffect(() => {
     if (activeMenu === "สินค้า") {
@@ -193,11 +202,18 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
     }
   }, [activeMenu, defaultPreviewImage]);
 
+  useEffect(
+    () => () => {
+      if (closeMenuTimer.current) clearTimeout(closeMenuTimer.current);
+    },
+    [],
+  );
+
   if (isHiddenRoute) return null;
 
   return (
     <header
-      className={`fixed top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4 transition-transform duration-500 ease-in-out ${isHiddenByScroll ? "-translate-y-[150%]" : "translate-y-0"}`}
+      className="fixed top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4"
       onMouseLeave={handleMouseLeave}
     >
       <div className="w-full max-w-[900px] bg-white rounded-[10px] shadow-[0_4px_24px_rgba(0,0,0,0.06)] pointer-events-auto relative border border-gray-100">
@@ -215,14 +231,26 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
           </div>
 
           <div className="hidden md:flex flex-1 items-center justify-center space-x-10">
-            <div className="flex items-center cursor-pointer h-full py-2" onMouseEnter={() => handleMouseEnter("สินค้า")}>
+            <button
+              type="button"
+              className="flex h-full items-center py-2"
+              onMouseEnter={() => handleMouseEnter("สินค้า")}
+              onFocus={() => handleMouseEnter("สินค้า")}
+              onClick={() =>
+                setActiveMenu((current) =>
+                  current === "สินค้า" ? null : "สินค้า"
+                )
+              }
+              aria-expanded={activeMenu === "สินค้า"}
+              aria-controls="desktop-product-menu"
+            >
               <span className="text-[12px] font-semibold tracking-widest text-[#4a4a4a] hover:text-black flex items-center transition-colors">
                 สินค้า
                 <svg className="ml-1 h-[14px] w-[14px] transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
                 </svg>
               </span>
-            </div>
+            </button>
 
             <Link
               href="/about"
@@ -248,7 +276,13 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
           </div>
 
           <div className="flex md:hidden items-center">
-            <button onClick={toggleMobileMenu} className="text-gray-800 focus:outline-none p-2">
+            <button
+              type="button"
+              onClick={toggleMobileMenu}
+              aria-label={isMobileMenuOpen ? "ปิดเมนู" : "เปิดเมนู"}
+              aria-expanded={isMobileMenuOpen}
+              className="p-2 text-gray-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+            >
               {isMobileMenuOpen ? (
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -262,16 +296,13 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
           </div>
         </nav>
 
-        <AnimatePresence>
-          {activeMenu === "สินค้า" && (
-            <motion.div
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="absolute left-0 top-[calc(100%+8px)] w-full bg-white rounded-[10px] border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.08)] z-40 hidden md:block overflow-hidden"
-              onMouseEnter={() => handleMouseEnter("สินค้า")}
-            >
+        {activeMenu === "สินค้า" && (
+          <div
+            id="desktop-product-menu"
+            className="absolute left-0 top-full z-40 hidden w-full pt-2 md:block"
+            onMouseEnter={() => handleMouseEnter("สินค้า")}
+          >
+            <div className="w-full overflow-hidden rounded-[10px] border border-gray-100 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
               <div className="mx-auto max-w-7xl flex flex-col md:flex-row pt-8 pb-10 px-8 h-auto min-h-[420px]">
                 <div className="w-[45%] flex flex-col justify-between pr-8">
                   <div className="flex flex-col space-y-5">
@@ -315,14 +346,15 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
                 </div>
 
                 <div className="w-[55%] pl-8 relative flex flex-col">
-                  <div
-                    className="w-full h-full rounded-xl overflow-hidden relative shadow-inner bg-stone-200"
-                    style={{
-                        backgroundImage: `url('${previewImage || defaultPreviewImage}')`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }}
-                  >
+                  <div className="w-full h-full rounded-xl overflow-hidden relative shadow-inner bg-stone-200">
+                    <Image
+                      src={previewImage || defaultPreviewImage}
+                      alt=""
+                      aria-hidden
+                      fill
+                      sizes="460px"
+                      className="object-cover"
+                    />
                     <div className="absolute inset-0 bg-stone-900/10"></div>
                   </div>
                 </div>
@@ -348,16 +380,12 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
                   </svg>
                 </button>
               </div> */}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </div>
+        )}
 
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
+        {isMobileMenuOpen && (
+            <div
               className="absolute left-0 top-[calc(100%+8px)] w-full rounded-[10px] md:hidden bg-white border border-gray-100 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.08)] z-40"
             >
               <div className="py-2 px-6">
@@ -388,9 +416,8 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
                   นโยบายและเงื่อนไข
                 </Link>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+        )}
       </div>
     </header>
   );

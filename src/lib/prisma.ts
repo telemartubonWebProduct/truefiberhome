@@ -1,12 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { assertEnvironmentAlignment } from "./environment";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const environment = assertEnvironmentAlignment("Prisma runtime");
+const pool = new Pool({ connectionString: environment.databaseUrl });
 
 const adapter = new PrismaPg(pool as any);
 
@@ -30,6 +32,9 @@ const hasExpectedDelegates =
   typeof (cachedClient as any).chatSession !== "undefined" &&
   typeof (cachedClient as any).chatMessage !== "undefined" &&
   typeof (cachedClient as any).knowledgeSnapshot !== "undefined" &&
+  typeof (cachedClient as any).contentAgentConfig !== "undefined" &&
+  typeof (cachedClient as any).contentAgentRun !== "undefined" &&
+  typeof (cachedClient as any).contentAgentDraft !== "undefined" &&
   typeof (cachedClient as any).article !== "undefined";
 
 export const prisma = hasExpectedDelegates ? cachedClient : createPrismaClient();

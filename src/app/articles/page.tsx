@@ -95,19 +95,31 @@ export default async function ArticlesPage(props: {
   const restArticles = featured
     ? articles.filter((a) => a.id !== featured.id)
     : articles;
+  const collectionStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "บทความและข่าวสาร True Fiber Home",
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: articles.slice(0, 30).map((article, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `/articles/${article.slug}`,
+        name: article.title,
+      })),
+    },
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#fff7f5] via-white to-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(collectionStructuredData),
+        }}
+      />
       {/* Hero header */}
       <section className="relative overflow-hidden border-b border-rose-100/60">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full bg-rose-200/40 blur-3xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-40 -left-24 h-96 w-96 rounded-full bg-orange-200/30 blur-3xl"
-        />
         <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-16 sm:pt-28 sm:pb-20 lg:px-10">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-500 mb-4">
             Stories · Insights · Updates

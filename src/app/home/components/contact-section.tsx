@@ -184,9 +184,9 @@ export default function ContactSection({ content, methods, sectionId = "home-con
                 <ContactIcon method={method} />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                   {method.title}
-                </h4>
+                </h3>
                 <p className="text-sm text-slate-500 leading-snug mt-0.5">
                   {method.desc}
                 </p>

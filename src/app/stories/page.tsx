@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function StoriesPage() {
   return (
-    <main className="mx-auto max-w-5xl px-4 py-24 text-slate-800">
+    <div className="mx-auto max-w-5xl px-4 py-24 text-slate-800">
       <h1 className="text-3xl font-bold text-slate-900">Stories & Insights</h1>
       <p className="mt-4 text-slate-700 leading-7">
         หน้านี้รวบรวมแนวทางการใช้งานแพ็กเกจให้คุ้มค่า ประสบการณ์การให้บริการ และข้อแนะนำด้านความปลอดภัยออนไลน์สำหรับผู้ใช้งานทั่วไป
@@ -22,6 +22,6 @@ export default function StoriesPage() {
           และเช็กลิสต์ก่อนติดตั้งอินเทอร์เน็ต เพื่อให้ผู้ใช้สามารถตัดสินใจได้อย่างมั่นใจ
         </p>
       </section>
-    </main>
+    </div>
   );
 }

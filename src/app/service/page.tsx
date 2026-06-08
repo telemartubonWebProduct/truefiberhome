@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/src/lib/prisma";
 import { lineSupport } from "@/src/context/line-path";
 import ServiceContactCard from "./components/ServiceContactCard";
 import ServiceCtaLink from "./components/ServiceCtaLink";
+import { safeAssetUrl } from "@/src/lib/api-normalize";
 
 export const metadata: Metadata = {
   title: "บริการของเรา",
@@ -22,6 +24,13 @@ type ServiceSection = {
 };
 
 type ContactCardType = "phone" | "line" | "facebook" | "location";
+
+const DEFAULT_SERVICE_HERO =
+  "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt4d83aa3b25f95d9b/6a0fb734a8e61ade616dcaab/trueonline-home-next-3840x1236.png";
+const DEFAULT_SERVICE_DETAIL =
+  "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt8d9cf6c2de6d28f2/69c3565b58c98c757d814a58/tol-thumbnail-fiber-to-room-560x314.jpg";
+
+export const revalidate = 300;
 
 function ContactCardIcon({ type }: { type: ContactCardType }) {
   if (type === "facebook") {
@@ -63,6 +72,17 @@ function normalizeHref(value: unknown, fallback = "") {
     return fallback;
   }
   return trimmed;
+}
+
+function normalizeServiceImage(value: unknown, fallback: string) {
+  const imageUrl = safeAssetUrl(value);
+  if (!imageUrl || !/\.(?:avif|gif|jpe?g|png|webp)(?:\?|$)/i.test(imageUrl)) {
+    return fallback;
+  }
+  if (/(?:logo|icon|ico-|favicon|sprite|qr)/i.test(imageUrl)) {
+    return fallback;
+  }
+  return imageUrl;
 }
 
 function extractEmbedSrc(value: unknown) {
@@ -164,8 +184,14 @@ export default async function ServicePage() {
   const subtitle =
     serviceSection?.subtitle ||
     "ตรวจสอบพิกัดพื้นที่บริการและนัดหมายติดตั้งได้รวดเร็ว พร้อมทีมงานมืออาชีพดูแลทุกขั้นตอน";
-  const heroImage = serviceSection?.imageUrl || "/assets/Trueonline-logo.svg.png";
-  const detailImage = serviceSection?.linkUrl || heroImage;
+  const heroImage = normalizeServiceImage(
+    serviceSection?.imageUrl,
+    DEFAULT_SERVICE_HERO
+  );
+  const detailImage = normalizeServiceImage(
+    serviceSection?.linkUrl,
+    DEFAULT_SERVICE_DETAIL
+  );
   const contactHref = normalizeHref(jsonData.topCtaHref, lineSupport);
   const lineHref = normalizeHref(jsonData.lineUrl, contactHref);
   const facebookHref = normalizeHref(jsonData.facebookUrl, contactHref);
@@ -216,7 +242,7 @@ export default async function ServicePage() {
   ];
 
   return (
-    <main className="bg-slate-50 min-h-screen pb-20 pt-28">
+    <div className="bg-slate-50 min-h-screen pb-20 pt-28">
       <section className="mx-auto max-w-7xl px-4">
         <div className="rounded-3xl bg-gradient-to-br from-[#0f3ab8] via-[#2c57e0] to-[#5d7eff] text-white p-6 md:p-10 shadow-[0_25px_70px_rgba(26,73,216,0.25)]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
@@ -232,8 +258,15 @@ export default async function ServicePage() {
               />
             </div>
 
-            <div className="rounded-2xl overflow-hidden border border-white/20 bg-white/10 backdrop-blur-sm">
-              <img src={heroImage} alt="Service hero" className="h-[260px] md:h-[320px] w-full object-cover" />
+            <div className="relative h-[260px] overflow-hidden rounded-2xl border border-white/20 bg-white/10 md:h-[320px]">
+              <Image
+                src={heroImage}
+                alt="บริการติดตั้งและดูแลอินเทอร์เน็ตบ้าน"
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
             </div>
           </div>
         </div>
@@ -281,8 +314,14 @@ export default async function ServicePage() {
             </ol>
           </div>
 
-          <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
-            <img src={detailImage} alt="Service detail" className="h-full min-h-[360px] w-full object-cover" />
+          <div className="relative min-h-[360px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <Image
+              src={detailImage}
+              alt="ตัวอย่างบริการอินเทอร์เน็ตไฟเบอร์ภายในบ้าน"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+            />
           </div>
         </div>
       </section>
@@ -327,6 +366,6 @@ export default async function ServicePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

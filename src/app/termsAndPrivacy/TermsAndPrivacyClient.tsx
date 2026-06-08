@@ -41,7 +41,7 @@ export default function TermsAndPrivacyClient() {
 
 
   return (
-    <main className="bg-slate-50 py-24 font-prompt text-slate-800">
+    <div className="bg-slate-50 py-24 font-prompt text-slate-800">
       <div className="mx-auto max-w-5xl px-4">
         <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm md:p-10">
           <header className="border-b border-slate-100 pb-6">
@@ -166,6 +166,6 @@ export default function TermsAndPrivacyClient() {
           </section>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

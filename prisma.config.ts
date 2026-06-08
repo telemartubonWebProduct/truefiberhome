@@ -1,15 +1,16 @@
 import path from "node:path";
 import { defineConfig } from "prisma/config";
-import dotenv from "dotenv";
+import { loadEnvConfig } from "@next/env";
+import { assertEnvironmentAlignment } from "./src/lib/environment";
 
-dotenv.config();
+const selectedEnvironment =
+  process.env.PRISMA_ENV || process.env.NODE_ENV || "development";
+loadEnvConfig(__dirname, selectedEnvironment !== "production");
+const environment = assertEnvironmentAlignment("Prisma CLI");
 
 export default defineConfig({
   schema: path.join(__dirname, "prisma", "schema.prisma"),
   datasource: {
-    url:
-      process.env.DIRECT_URL ||
-      process.env.DATABASE_URL ||
-      "postgresql://postgres:postgres@localhost:5432/postgres",
+    url: environment.directUrl || environment.databaseUrl,
   },
 });

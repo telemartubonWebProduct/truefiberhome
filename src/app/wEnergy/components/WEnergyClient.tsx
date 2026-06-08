@@ -155,7 +155,7 @@ export default function WEnergyClient({ plans, currentPage, totalPages, content 
   ];
 
   return (
-    <main className="bg-[#f4f6f5] pb-20 font-prompt text-slate-800">
+    <div className="bg-[#f4f6f5] pb-20 font-prompt text-slate-800">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <SafeFillImage
@@ -409,6 +409,6 @@ export default function WEnergyClient({ plans, currentPage, totalPages, content 
           </div>
         </motion.div>
       </section>
-    </main>
+    </div>
   );
 }

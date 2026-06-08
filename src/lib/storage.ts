@@ -16,6 +16,7 @@ export async function uploadBannerImage(file: File): Promise<string> {
     body: formData,
   });
 
+
   const json = (await res.json()) as { publicUrl?: string; error?: string };
 
   if (!res.ok || !json.publicUrl) {

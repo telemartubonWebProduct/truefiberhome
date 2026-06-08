@@ -99,25 +99,89 @@ model Package {
   @@map("packages")
 }
 
-model Promotion {
-  id           String   @id @default(cuid())
-  type         String
-  categoryName String?
-  name         String
-  price        Float
-  priceNote    String?
-  speed        String?
-  validity     String?
-  imageUrl     String?
-  promoBadge   String?
-  perks        Json?
-  details      Json?
-  buyUrl       String?
-  status       Boolean  @default(true)
-  displayOrder Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model ContentAgentConfig {
+  id            String    @id @default("singleton")
+  enabled       Boolean   @default(false)
+  autoPublish   Boolean   @default(false) @map("auto_publish")
+  sourceUrl     String    @default("https://www.true.th/true-online") @map("source_url")
+  model         String    @default("google/gemini-2.5-flash-lite")
+  maxItems      Int       @default(12) @map("max_items")
+  lastRunAt     DateTime? @map("last_run_at")
+  lastSuccessAt DateTime? @map("last_success_at")
+  lastError     String?   @map("last_error") @db.Text
+  lockedUntil   DateTime? @map("locked_until")
+  lockToken     String?   @map("lock_token")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
+  @@map("content_agent_config")
+}
+
+model ContentAgentRun {
+  id                String              @id @default(cuid())
+  trigger           String
+  status            String              @default("RUNNING")
+  sourceUrl         String              @map("source_url")
+  model             String
+  discoveredCount   Int                 @default(0) @map("discovered_count")
+  draftCount        Int                 @default(0) @map("draft_count")
+  publishedCount    Int                 @default(0) @map("published_count")
+  sourceFingerprint String?             @map("source_fingerprint")
+  errorMessage      String?             @map("error_message") @db.Text
+  startedAt         DateTime            @default(now()) @map("started_at")
+  finishedAt        DateTime?           @map("finished_at")
+  drafts            ContentAgentDraft[]
+
+  @@index([status, startedAt])
+  @@index([startedAt])
+  @@map("content_agent_runs")
+}
+
+model ContentAgentDraft {
+  id                 String          @id @default(cuid())
+  runId              String          @map("run_id")
+  externalKey        String          @map("external_key")
+  status             String          @default("PENDING")
+  title              String
+  sourceUrl          String          @map("source_url")
+  imageUrl           String?         @map("image_url")
+  payload            Json
+  sourceFingerprint  String          @map("source_fingerprint")
+  publishedPromotionId String?       @map("published_package_id")
+  reviewedAt         DateTime?       @map("reviewed_at")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  run                ContentAgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, externalKey])
+  @@index([status, createdAt])
+  @@index([externalKey])
+  @@map("content_agent_drafts")
+}
+
+model Promotion {
+  id               String   @id @default(cuid())
+  type             String
+  categoryName     String?
+  name             String
+  price            Float
+  priceNote        String?
+  speed            String?
+  validity         String?
+  imageUrl         String?
+  promoBadge       String?
+  perks            Json?
+  details          Json?
+  buyUrl           String?
+  status           Boolean  @default(true)
+  displayOrder     Int      @default(0)
+  agentExternalKey String?  @unique @map("agent_external_key")
+  sourceUrl        String?  @map("source_url")
+  managedByAgent   Boolean  @default(false) @map("managed_by_agent")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([type, status, displayOrder])
   @@map("promotions")
 }
 

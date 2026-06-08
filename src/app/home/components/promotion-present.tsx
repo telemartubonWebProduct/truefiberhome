@@ -26,11 +26,49 @@ interface PackageData {
   id: number | string;
   tag: string;
   name: string;
+  imageUrl?: string;
   speed: string;
   price: string;
   freebies: string[];
   gifts: GiftItem[];
   buyUrl?: string;
+}
+
+function PackageCardImage({ src, alt }: { src: string; alt: string }) {
+  const [fit, setFit] = useState<"cover" | "contain">("cover");
+
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        width: "100%",
+        aspectRatio: "16 / 7",
+        overflow: "hidden",
+        bgcolor: "#eef4ff",
+        borderBottom: "1px solid #e5e7eb",
+      }}
+    >
+      <Box
+        component="img"
+        src={src}
+        alt={alt}
+        loading="lazy"
+        onLoad={(event: React.SyntheticEvent<HTMLImageElement>) => {
+          const image = event.currentTarget;
+          const ratio = image.naturalWidth / Math.max(image.naturalHeight, 1);
+          setFit(ratio < 1.4 ? "contain" : "cover");
+        }}
+        sx={{
+          width: "100%",
+          height: "100%",
+          objectFit: fit,
+          objectPosition: "center",
+          p: fit === "contain" ? 1 : 0,
+          transition: "padding 0.2s ease",
+        }}
+      />
+    </Box>
+  );
 }
 
 interface ContactMethodItem {
@@ -282,7 +320,7 @@ export default function PromotionPresent({
         <Typography
           variant="body2"
           sx={{
-            color: "#9ca3af",
+            color: "#64748b",
             mb: 4,
             textAlign: { xs: "center", xl: "left" },
             fontWeight: 500,
@@ -342,6 +380,7 @@ export default function PromotionPresent({
           <IconButton
             onClick={() => scrollToIndex(Math.max(0, activeIndex - 1))}
             disabled={activeIndex === 0}
+            aria-label="ดูโปรโมชันก่อนหน้า"
             sx={{ 
               bgcolor: "#f3f4f6", 
               "&:hover": { bgcolor: "#e5e7eb" },
@@ -355,9 +394,15 @@ export default function PromotionPresent({
           <Box sx={{ display: "flex", gap: 1 }}>
             {displayPackages.map((_, idx) => (
               <Box
+                component="button"
+                type="button"
                 key={idx}
                 onClick={() => scrollToIndex(idx)}
+                aria-label={`ดูโปรโมชันรายการที่ ${idx + 1}`}
+                aria-current={activeIndex === idx ? "true" : undefined}
                 sx={{
+                  border: 0,
+                  p: 0,
                   width: activeIndex === idx ? 28 : 10,
                   height: 10,
                   borderRadius: "5px",
@@ -375,6 +420,7 @@ export default function PromotionPresent({
           <IconButton
             onClick={() => scrollToIndex(Math.min(displayPackages.length - 1, activeIndex + 1))}
             disabled={activeIndex === displayPackages.length - 1}
+            aria-label="ดูโปรโมชันถัดไป"
             sx={{ 
               bgcolor: "#f3f4f6", 
               "&:hover": { bgcolor: "#e5e7eb" },
@@ -566,12 +612,16 @@ function PromotionCard({ pkg, onInterestClick, isHighlighted = false }: { pkg: P
           </Box>
         </Box>
 
+        {pkg.imageUrl ? (
+          <PackageCardImage key={pkg.imageUrl} src={pkg.imageUrl} alt={pkg.name} />
+        ) : null}
+
         {/* ── Body ── */}
         <Box sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column" }}>
           {/* Package name */}
           <Typography
             variant="body2"
-            sx={{ color: "#9ca3af", fontWeight: 600, mb: 0.5, fontSize: { xs: "0.75rem", sm: "0.85rem" } }}
+            sx={{ color: "#64748b", fontWeight: 600, mb: 0.5, fontSize: { xs: "0.75rem", sm: "0.85rem" } }}
           >
             {pkg.name}
           </Typography>
@@ -596,6 +646,7 @@ function PromotionCard({ pkg, onInterestClick, isHighlighted = false }: { pkg: P
             <Box sx={{ minWidth: 0, width: { xs: "100%", sm: "auto" } }}>
               <Typography
                 variant="h4"
+                component="p"
                 sx={{
                   fontWeight: 900,
                   color: "#1a1a2e",
@@ -638,7 +689,7 @@ function PromotionCard({ pkg, onInterestClick, isHighlighted = false }: { pkg: P
               </Typography>
               <Typography
                 variant="caption"
-                sx={{ display: "block", color: "#9ca3af", fontWeight: 600, fontSize: { xs: "0.7rem", sm: "0.75rem" } }}
+                sx={{ display: "block", color: "#64748b", fontWeight: 600, fontSize: { xs: "0.7rem", sm: "0.75rem" } }}
               >
                 / เดือน
               </Typography>

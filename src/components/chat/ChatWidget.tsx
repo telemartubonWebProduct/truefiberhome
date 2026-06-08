@@ -786,7 +786,7 @@ export default function ChatWidget() {
           setIsOpen(nextOpen);
           if (nextOpen) trackChatOpen();
         }}
-        aria-label={isOpen ? "Close chat" : "Open chat"}
+        aria-label={isOpen ? "ปิดหน้าต่างติดต่อทีมงาน" : "ติดต่อทีมงาน"}
         className={`group fixed bottom-[calc(env(safe-area-inset-bottom,0px)+96px)] right-3 z-[9999] inline-flex items-center justify-center rounded-full text-white transition-all duration-300 sm:bottom-[calc(env(safe-area-inset-bottom,0px)+86px)] sm:right-4 lg:bottom-[calc(env(safe-area-inset-bottom,0px)+18px)] ${
           isOpen
             ? "h-12 w-12 bg-[#e61c50] ring-4 ring-white/90 shadow-2xl shadow-[#e61c50]/50 hover:scale-105 sm:h-14 sm:w-14 lg:h-16 lg:w-16"

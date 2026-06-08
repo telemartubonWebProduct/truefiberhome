@@ -179,8 +179,20 @@ export default async function ArticleDetailPage({ params }: Params) {
     description: article.excerpt || article.seoDescription || "",
     image: article.coverImage ? [article.coverImage] : undefined,
     author: article.author
-      ? { "@type": "Person", name: article.author }
-      : undefined,
+      ? { "@type": "Organization", name: article.author }
+      : { "@type": "Organization", name: "True Fiber Home" },
+    publisher: {
+      "@type": "Organization",
+      name: "True Fiber Home",
+      logo: {
+        "@type": "ImageObject",
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.truefiberhome.com"}/assets/Trueonline-logo.svg.png`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.truefiberhome.com"}/articles/${article.slug}`,
+    },
     datePublished: article.publishedAt
       ? new Date(article.publishedAt).toISOString()
       : undefined,

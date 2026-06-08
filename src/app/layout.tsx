@@ -2,29 +2,28 @@
 import "./globals.css";
 import { Prompt } from "next/font/google";
 import type { Metadata } from "next";
-import Script from "next/script";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 import Navbar from "@/src/components/layout/Navbar";
 import BottomNav from "@/src/components/layout/BottomNav";
-import { ToastContainer } from "react-toastify";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import { Analytics } from "@vercel/analytics/next";
 
 // 1) เรียกใช้ฟอนต์ Prompt จาก next/font/google
 const prompt = Prompt({
   subsets: ["thai"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "600", "700"],
   display: "swap",
   variable: "--font-prompt",
+  adjustFontFallback: true,
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://truefiberhome.com";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.truefiberhome.com";
 
 // ยิง analytics เฉพาะ production deploy (โดเมนหลัก) เท่านั้น
 // VERCEL_ENV: 'production' | 'preview' | 'development'
 const isProductionDeploy = process.env.VERCEL_ENV === "production";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: {
@@ -98,6 +97,7 @@ import CookieConsent from "@/src/components/layout/CookieConsent";
 import { prisma } from "@/src/lib/prisma";
 import { SiteSettingsProvider } from "@/src/context/SiteSettingsContext";
 import ChatWidgetVisibility from "@/src/components/chat/ChatWidgetVisibility";
+import ConsentAnalytics from "@/src/components/analytics/ConsentAnalytics";
 
 export default async function RootLayout({
   children,
@@ -131,10 +131,8 @@ export default async function RootLayout({
     // 2) เพิ่ม className จากตัวแปร prompt.className ตรงแท็ก html หรือ body
     <html lang="th" className={prompt.className} suppressHydrationWarning>
       <head>
-        <Script
-          id="structured-data-organization"
+        <script
           type="application/ld+json"
-          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
@@ -156,63 +154,6 @@ export default async function RootLayout({
         />
       </head>
       <body>
-        {/* ยิง GA/GTM เฉพาะ production domain เท่านั้น
-            preview/dev deploys (vercel.app) ไม่ยิง — กัน Google Tag เตือนเรื่อง domain แปลก ๆ */}
-        {isProductionDeploy && (
-          <>
-            {/* ── Google Tag Manager (noscript fallback) ── */}
-            <noscript>
-              <iframe
-                src="https://www.googletagmanager.com/ns.html?id=GTM-M82FD3NC"
-                height="0"
-                width="0"
-                style={{ display: "none", visibility: "hidden" }}
-              />
-            </noscript>
-
-            {/* ── gtag.js loader (single source) ── */}
-            <Script
-              src="https://www.googletagmanager.com/gtag/js?id=G-0X5TY75CH1"
-              strategy="afterInteractive"
-            />
-
-            {/* ── Unified gtag init: GA4 + Google Ads ── */}
-            <Script
-              id="gtag-init"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  window.gtag = gtag;
-                  gtag('js', new Date());
-                  gtag('consent', 'default', {
-                    ad_storage: 'denied',
-                    analytics_storage: 'granted',
-                    ad_user_data: 'denied',
-                    ad_personalization: 'denied',
-                    wait_for_update: 500
-                  });
-                  gtag('config', 'G-0X5TY75CH1', { anonymize_ip: true });
-                `,
-              }}
-            />
-
-            {/* ── Google Tag Manager container ── */}
-            <Script
-              id="gtm-init"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-M82FD3NC');`,
-              }}
-            />
-          </>
-        )}
-
         <SiteSettingsProvider
           settings={{
             lineSupportUrl: siteSettings?.lineSupportUrl || undefined,
@@ -221,18 +162,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <AppRouterCacheProvider>
             <CookieConsent />
             <ThemeProvider theme={theme}>
+              <a className="skip-link" href="#main-content">
+                ข้ามไปยังเนื้อหาหลัก
+              </a>
               <div className="min-h-screen flex flex-col">
                 <Navbar
                   siteSettings={siteSettings}
                   navigationItems={navigationItems}
                 />
                 <ScrollToTop />
-                <main className="flex-1 pb-[65px] lg:pb-0">{children}</main>
+                <main id="main-content" className="flex-1 pb-[65px] lg:pb-0">
+                  {children}
+                </main>
                 <Footer siteSettings={siteSettings} footerLinks={footerLinks} />
                 <BottomNav />
               </div>
-              <ToastContainer position="bottom-right" theme="dark" />
-              <Analytics />
+              {isProductionDeploy ? <Analytics /> : null}
+              {isProductionDeploy ? <ConsentAnalytics /> : null}
               <ChatWidgetVisibility />
             </ThemeProvider>
           </AppRouterCacheProvider>

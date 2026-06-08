@@ -6,9 +6,16 @@ import RevealText from "@/src/components/ui/RevealText";
 import PromotionPresent from "./components/promotion-present";
 import SalerService from "./components/saler-service";
 import ContactSection from "./components/contact-section";
+import LazyHeroVideo from "./components/LazyHeroVideo";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
 import { prisma } from "@/src/lib/prisma";
 import { lineSupport } from "@/src/context/line-path";
+import { safeLink } from "@/src/lib/api-normalize";
+
+const DEFAULT_HOME_POSTER =
+  "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt4d83aa3b25f95d9b/6a0fb734a8e61ade616dcaab/trueonline-home-next-3840x1236.png";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "แพ็กเกจเน็ตบ้าน มือถือ และบริการติดตั้ง",
@@ -21,13 +28,20 @@ export const metadata: Metadata = {
       "รวมแพ็กเกจยอดนิยมพร้อมช่องทางติดต่อที่ตรวจสอบได้ และข้อมูลนโยบายความเป็นส่วนตัวที่ชัดเจน",
     url: "/home",
     type: "website",
-    images: [{ url: "/assets/Trueonline-logo.svg.png", width: 512, height: 512, alt: "True Fiber Home" }],
+    images: [
+      {
+        url: DEFAULT_HOME_POSTER,
+        width: 1200,
+        height: 386,
+        alt: "แพ็กเกจและบริการอินเทอร์เน็ตบ้าน True Online",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "True Fiber Home | แพ็กเกจเน็ตบ้าน มือถือ และบริการติดตั้ง",
     description: "รวมแพ็กเกจยอดนิยม พร้อมทีมงานดูแลและช่องทางสมัครที่ปลอดภัย",
-    images: ["/assets/Trueonline-logo.svg.png"],
+    images: [DEFAULT_HOME_POSTER],
   },
 };
 
@@ -85,7 +99,7 @@ export default async function HomePage() {
     if (typeof data.buttonHref === "string") {
       const normalizedHref = data.buttonHref.trim();
       if (normalizedHref && normalizedHref !== "/service" && normalizedHref !== "#") {
-        buttonHref = normalizedHref;
+        buttonHref = safeLink(normalizedHref) || buttonHref;
       }
     }
   }
@@ -99,7 +113,8 @@ export default async function HomePage() {
   let installPrimaryButtonLabel = "ตรวจสอบพื้นที่ทางไลน์";
   let installPrimaryButtonHref = lineSupport;
   let installSecondaryButtonLabel = "ดูแพ็กเกจ";
-  let installSecondaryButtonHref = "/home#packages";
+  let installSecondaryButtonHref =
+    safeLink(installPromotionSection?.linkUrl) || "/boardband";
   let installFooterText = "ติดตั้งทั่วไทย | ทีมงานมืออาชีพ | บริการรวดเร็ว";
 
   if (
@@ -118,8 +133,9 @@ export default async function HomePage() {
       }
     }
     if (typeof data.secondaryButtonLabel === "string") installSecondaryButtonLabel = data.secondaryButtonLabel;
-    if (typeof data.secondaryButtonHref === "string" && data.secondaryButtonHref.trim()) {
-      installSecondaryButtonHref = data.secondaryButtonHref;
+    if (typeof data.secondaryButtonHref === "string") {
+      installSecondaryButtonHref =
+        safeLink(data.secondaryButtonHref) || installSecondaryButtonHref;
     }
     if (typeof data.footerText === "string") installFooterText = data.footerText;
   }
@@ -181,6 +197,7 @@ export default async function HomePage() {
       id: pkg.id ?? `pkg-${index}`,
       tag: pkg.code || `Package ${index + 1}`,
       name: pkg.name || "แพ็กเกจมาตรฐาน",
+      imageUrl: typeof pkg.imageUrl === "string" ? pkg.imageUrl : undefined,
       speed: pkg.speed || "-",
       price: Number.isFinite(priceNumber)
         ? Number.isInteger(priceNumber)
@@ -204,6 +221,7 @@ export default async function HomePage() {
     title: typeof banner.title === "string" ? banner.title : null,
     description: typeof banner.description === "string" ? banner.description : null,
     imageUrl: typeof banner.imageUrl === "string" ? banner.imageUrl : null,
+    mobileImage: typeof banner.mobileImage === "string" ? banner.mobileImage : null,
   }));
 
   const contactTitle = contactSection?.title || "ติดต่อและสมัครบริการ";
@@ -242,8 +260,41 @@ export default async function HomePage() {
     colorClass: typeof item.colorClass === "string" ? item.colorClass : null,
   }));
 
+  const packageStructuredData =
+    promotionPackages.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "แพ็กเกจเน็ตบ้าน True Online",
+          itemListElement: promotionPackages.slice(0, 12).map((pkg, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "Product",
+              name: pkg.name,
+              category: pkg.tag,
+              image: pkg.imageUrl || undefined,
+              description: `${pkg.speed} Mbps ${pkg.freebies.join(" ")}`.trim(),
+              offers: {
+                "@type": "Offer",
+                priceCurrency: "THB",
+                price: pkg.price,
+                url: safeLink(pkg.buyUrl) || "/boardband",
+                availability: "https://schema.org/InStock",
+              },
+            },
+          })),
+        }
+      : null;
+
   return (
     <>
+      {packageStructuredData ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(packageStructuredData) }}
+        />
+      ) : null}
       <Box
         sx={{
           minHeight: "100vh",
@@ -268,21 +319,16 @@ export default async function HomePage() {
                 minHeight: { xs: 400, lg: "auto" },
               }}
             >
-              <Box
-                component="video"
+              <LazyHeroVideo
                 src={heroVideoUrl}
-                autoPlay
-                muted
-                loop
-                sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                poster={autoLoopBanners[0]?.imageUrl || DEFAULT_HOME_POSTER}
               />
 
               <Box
                 sx={{
                   position: "absolute",
                   inset: 0,
-                  backgroundColor: "rgba(0, 0, 0, 0.45)",
-                  backdropFilter: "blur(4px)",
+                  backgroundColor: "rgba(0, 0, 0, 0.52)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
@@ -301,6 +347,7 @@ export default async function HomePage() {
                   }}
                 >
                   <Typography
+                    component="h1"
                     variant="h3"
                     sx={{
                       color: "white",
@@ -334,7 +381,7 @@ export default async function HomePage() {
                       py: { xs: 1.1, sm: 1.35 },
                       fontSize: { xs: "0.95rem", sm: "1.05rem" },
                       fontWeight: 700,
-                      letterSpacing: "0.01em",
+                      letterSpacing: 0,
                       textTransform: "none",
                       width: { xs: "100%", sm: "auto" },
                       maxWidth: { xs: "18rem", sm: "none" },
@@ -397,7 +444,17 @@ export default async function HomePage() {
       </Box>
 
       {promotionPresentVisible && (
-        <Box sx={{ py: 15, px: { xs: 4, md: 10 }, bgcolor: "white" }}>
+        <Box
+          id="packages"
+          sx={{
+            py: 15,
+            px: { xs: 4, md: 10 },
+            bgcolor: "white",
+            scrollMarginTop: 12,
+            contentVisibility: "auto",
+            containIntrinsicSize: "1200px",
+          }}
+        >
           <RevealText text="สัมผัสความเร็วเหนือระดับ. กับโปรโมชันเน็ตบ้านที่ดีที่สุดสำหรับคุณ." />
           <PromotionPresent
             packages={promotionPackages}

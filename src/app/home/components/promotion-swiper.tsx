@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMemo, useState, useRef, MouseEvent, useEffect } from "react";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import { safeLink } from "@/src/lib/api-normalize";
 
 const getCardId = (pkg: any) => {
   if (pkg.code && typeof pkg.code === "string" && pkg.code.trim()) {
@@ -406,6 +407,9 @@ export default function PromotionSwiper({ packages = [] }: PromotionSwiperProps)
 
 function PromoCard({ pkg, isHighlighted = false }: { pkg: any; isHighlighted?: boolean }) {
   const { lineSupportUrl } = useSiteSettings();
+  const ctaHref =
+    safeLink(pkg.buyUrl) || safeLink(lineSupportUrl) || "/service";
+  const opensNewTab = /^https?:\/\//i.test(ctaHref);
   const header = useMemo(() => {
     const pName = pkg.name || "";
     if (pName.toLowerCase().includes("netflix")) {
@@ -625,8 +629,9 @@ function PromoCard({ pkg, isHighlighted = false }: { pkg: any; isHighlighted?: b
         <Button
           fullWidth
           variant="contained"
-          href={(pkg.buyUrl && pkg.buyUrl !== "#") ? pkg.buyUrl : lineSupportUrl}
-          target="_blank"
+          href={ctaHref}
+          target={opensNewTab ? "_blank" : undefined}
+          rel={opensNewTab ? "noopener noreferrer" : undefined}
           sx={{
             mt: { xs: 2, sm: 3 },
             borderRadius: 999,

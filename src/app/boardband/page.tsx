@@ -1,14 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/src/lib/prisma";
-import { lineSupport } from "@/src/context/line-path";
 import ContactSection from "@/src/app/home/components/contact-section";
+import { lineSupport } from "@/src/context/line-path";
+import { prisma } from "@/src/lib/prisma";
 import BroadbandPromotionsClient from "./BroadbandPromotionsClient";
 
 export const metadata: Metadata = {
-  title: "โปรโมทเน็ตแพ็กเกจทั่วไป",
-  description: "รวมโปรโมชันและแพ็กเกจเน็ตบ้านยอดนิยม อัปเดตราคา ความเร็ว และสิทธิพิเศษในหน้าเดียว",
+  title: "โปรเน็ตบ้านทรู แพ็กเกจล่าสุด",
+  description:
+    "เปรียบเทียบโปรเน็ตบ้านทรู ความเร็ว ราคา และสิทธิพิเศษล่าสุด พร้อมเช็กพื้นที่ติดตั้งและสมัครกับทีมงาน True Fiber Home",
   alternates: { canonical: "/boardband" },
+  openGraph: {
+    title: "โปรเน็ตบ้านทรู แพ็กเกจล่าสุด | True Fiber Home",
+    description:
+      "รวมแพ็กเกจเน็ตบ้านทรู ราคาและสิทธิพิเศษล่าสุด เช็กพื้นที่และสมัครได้ทันที ",
+    url: "/boardband",
+    type: "website",
+  },
 };
 
 type PromotionItem = {
@@ -29,34 +37,41 @@ type PromotionItem = {
   displayOrder: number;
 };
 
-function getTextItems(value: unknown): string[] {
-  const items: string[] = [];
+type BenefitItem = {
+  label: string;
+  imageUrl: string | null;
+};
+
+function getBenefitItems(value: unknown): BenefitItem[] {
+  const items: BenefitItem[] = [];
 
   if (Array.isArray(value)) {
     value.forEach((item) => {
       if (typeof item === "string") {
-        const text = item.trim();
-        if (text) items.push(text);
+        const label = item.trim();
+        if (label) items.push({ label, imageUrl: null });
         return;
       }
 
       if (item && typeof item === "object" && !Array.isArray(item)) {
         const data = item as Record<string, unknown>;
-        const textRaw = data.text ?? data.label ?? data.title ?? data.name;
-        const text = typeof textRaw === "string" ? textRaw.trim() : "";
-        if (text) items.push(text);
+        const labelRaw = data.text ?? data.label ?? data.title ?? data.name;
+        const imageRaw = data.imageUrl ?? data.image;
+        const label = typeof labelRaw === "string" ? labelRaw.trim() : "";
+        const imageUrl =
+          typeof imageRaw === "string" && imageRaw.trim() ? imageRaw.trim() : null;
+        if (label) items.push({ label, imageUrl });
       }
     });
-
     return items;
   }
 
-  if (typeof value === "string" && value.trim()) {
+  if (typeof value === "string") {
     value
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean)
-      .forEach((item) => items.push(item));
+      .forEach((label) => items.push({ label, imageUrl: null }));
   }
 
   return items;
@@ -73,77 +88,106 @@ export default async function BroadbandPage() {
       })
     : [];
 
-  const totalPromotions = promotions.length;
-  const promotionCards = promotions.map((promo) => {
-    const promoDetails = getTextItems(promo.details);
-    const promoPerks = getTextItems(promo.perks);
+  const promotionCards = promotions.map((promotion) => {
+    const perks = getBenefitItems(promotion.perks);
+    const details = getBenefitItems(promotion.details);
 
     return {
-      id: promo.id,
-      categoryName: promo.categoryName,
-      name: promo.name,
-      price: promo.price,
-      priceNote: promo.priceNote,
-      speed: promo.speed,
-      validity: promo.validity,
-      imageUrl: promo.imageUrl,
-      promoBadge: promo.promoBadge,
-      buyUrl: promo.buyUrl,
-      highlightItems: promoDetails.length > 0 ? promoDetails : promoPerks,
+      id: promotion.id,
+      categoryName: promotion.categoryName,
+      name: promotion.name,
+      price: promotion.price,
+      priceNote: promotion.priceNote,
+      speed: promotion.speed,
+      validity: promotion.validity,
+      imageUrl: promotion.imageUrl,
+      promoBadge: promotion.promoBadge,
+      buyUrl: promotion.buyUrl,
+      benefitItems: perks.length > 0 ? perks : details,
     };
   });
 
-  const allCategories = new Set<string>();
-  promotions.forEach((p) => {
-    if (p.categoryName) {
-      p.categoryName.split(",").forEach((c) => {
-        const trimmed = c.trim();
-        if (trimmed) allCategories.add(trimmed);
-      });
-    }
-  });
-  const categories = Array.from(allCategories);
+  const categories = Array.from(
+    new Set(
+      promotions.flatMap((promotion) =>
+        promotion.categoryName
+          ? promotion.categoryName
+              .split(",")
+              .map((category) => category.trim())
+              .filter(Boolean)
+          : []
+      )
+    )
+  );
+
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "แพ็กเกจเน็ตบ้านทรู",
+    numberOfItems: promotions.length,
+    itemListElement: promotions.map((promotion, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Product",
+        name: promotion.name,
+        image: promotion.imageUrl || undefined,
+        category: promotion.categoryName || "โปรเน็ตบ้าน",
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "THB",
+          price: promotion.price,
+          availability: "https://schema.org/InStock",
+          url: promotion.buyUrl || "https://truefiberhome.com/boardband",
+        },
+      },
+    })),
+  };
 
   return (
-    <main className="bg-slate-50 min-h-screen pt-28 pb-20">
-      <section className="mx-auto max-w-7xl px-4">
-        <div className="rounded-3xl bg-gradient-to-br from-[#1f3fbf] via-[#2f58e9] to-[#4a72ff] text-white p-8 md:p-12 shadow-[0_25px_70px_rgba(37,76,220,0.28)]">
-          <p className="text-xs uppercase tracking-[0.22em] text-white/80">internet package showcase</p>
-          <h1 className="mt-3 text-3xl md:text-5xl font-black leading-tight">
-            โปรโมชันเน็ตบ้านยอดนิยม <br className="hidden md:block" /> อัปเดตล่าสุด
-          </h1>
-          <p className="mt-4 max-w-3xl text-white/90 text-sm md:text-base leading-7">
-            รวมข้อเสนอเน็ตบ้านที่คัดมาแล้วทั้งความเร็ว ราคา และสิทธิพิเศษ เปรียบเทียบง่าย สมัครได้ทันที
-          </p>
-          <div className="mt-3 inline-flex items-center rounded-full bg-white/20 px-4 py-2 backdrop-blur-sm border border-white/30">
-            <span className="text-sm md:text-base font-semibold">โปรโมชั่นที่พร้อมสมัครตอนนี้: {totalPromotions} รายการ</span>
-          </div>
-        </div>
-      </section>
+    <div className="min-h-screen bg-[#f7f9fc] pb-20 pt-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
 
-      <section className="mx-auto max-w-7xl px-4 mt-10">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl md:text-3xl font-black text-slate-900">แพ็กเกจและโปรโมชันเน็ตบ้าน</h2>
-          <span className="rounded-full border border-slate-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700">
-            {totalPromotions} รายการ
+      <section className="mx-auto max-w-[1240px] px-4 sm:px-6">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-black leading-tight text-slate-950 md:text-4xl">
+            แพ็กเกจเน็ตบ้านที่ตอบโจทย์ไลฟ์สไตล์คุณ
+          </h1>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600 md:text-base">
+            เปรียบเทียบความเร็ว ราคา และสิทธิพิเศษล่าสุด
+            พร้อมเช็กพื้นที่ติดตั้งกับทีมงานได้ทันที
+          </p>
+        </div>
+
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <h2 className="text-xl font-black text-slate-900 md:text-2xl">
+            โปรเน็ตบ้านและแพ็กเกจแนะนำ
+          </h2>
+          <span className="shrink-0 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold text-slate-700">
+            {promotions.length} รายการ
           </span>
         </div>
 
         {promotions.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-            <p className="text-slate-600">ขณะนี้ยังไม่มีโปรโมชันที่เปิดรับสมัคร กรุณาตรวจสอบอีกครั้งในภายหลัง</p>
+          <div className="rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
+            <p className="text-slate-600">
+              ขณะนี้ยังไม่มีโปรโมชันที่เปิดรับสมัคร กรุณาตรวจสอบอีกครั้งภายหลัง
+            </p>
             <Link
               href={lineSupport}
-              className="inline-flex mt-4 rounded-xl bg-[#2f58e9] px-5 py-2.5 text-white font-semibold hover:bg-[#1f3fbf] transition-colors"
+              className="mt-4 inline-flex rounded-lg bg-[#2864dc] px-5 py-2.5 font-semibold text-white transition-colors hover:bg-[#1649bd]"
             >
               ติดต่อเจ้าหน้าที่
             </Link>
           </div>
         ) : (
-          <BroadbandPromotionsClient 
-            promotions={promotionCards} 
+          <BroadbandPromotionsClient
+            promotions={promotionCards}
             categories={categories}
-            defaultContactUrl={lineSupport} 
+            defaultContactUrl={lineSupport}
           />
         )}
       </section>
@@ -152,10 +196,10 @@ export default async function BroadbandPage() {
         sectionId="boardband-contact-section"
         content={{
           title: "ติดต่อและสมัครบริการ",
-          subtitle: "เลือกช่องทางที่สะดวก ทีมงานพร้อมให้คำแนะนำแพ็กเกจที่เหมาะกับคุณ",
+          subtitle: "เลือกช่องทางที่สะดวก ทีมงานพร้อมแนะนำแพ็กเกจที่เหมาะกับคุณ",
           isActive: true,
         }}
       />
-    </main>
+    </div>
   );
 }

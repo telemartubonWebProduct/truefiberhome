@@ -1,159 +1,80 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Button, Typography, Link } from "@mui/material";
+import Link from "next/link";
 
 const COOKIE_KEY = "cookie-consent-accepted-v2";
+
+type GtagWindow = typeof window & {
+  gtag?: (...args: unknown[]) => void;
+};
 
 export default function CookieConsent() {
   const [open, setOpen] = useState(false);
 
-useEffect(() => {
-  const accepted =
-    typeof window !== "undefined" &&
-    window.localStorage.getItem(COOKIE_KEY) === "true";
-
-  const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
-
-  if (accepted) {
-    gtag?.("consent", "update", {
-      ad_storage: "granted",
-      analytics_storage: "granted",
-      ad_user_data: "granted",
-      ad_personalization: "granted",
-    });
-    setOpen(false);
-    return;
-  }
-
-  setOpen(true);
-}, []);
-
-  const handleAccept = () => {
-    try {
-      window.localStorage.setItem(COOKIE_KEY, "true");
-      const gtag = (window as typeof window & {
-        gtag?: (...args: unknown[]) => void;
-      }).gtag;
-
-      gtag?.("consent", "update", {
+  useEffect(() => {
+    const accepted = window.localStorage.getItem(COOKIE_KEY) === "true";
+    if (accepted) {
+      (window as GtagWindow).gtag?.("consent", "update", {
         ad_storage: "granted",
         analytics_storage: "granted",
         ad_user_data: "granted",
         ad_personalization: "granted",
       });
-    } catch {
-      // ignore
+      return;
     }
-    setOpen(false);
-  };
+    setOpen(true);
+  }, []);
 
-  const handleClose = () => {
-    // ปิดอย่างเดียว (สำหรับผู้ใช้ที่ยังไม่อยากยอมรับ)
+  const handleAccept = () => {
+    window.localStorage.setItem(COOKIE_KEY, "true");
+    (window as GtagWindow).gtag?.("consent", "update", {
+      ad_storage: "granted",
+      analytics_storage: "granted",
+      ad_user_data: "granted",
+      ad_personalization: "granted",
+    });
+    window.dispatchEvent(new Event("cookie-consent-accepted"));
     setOpen(false);
   };
 
   if (!open) return null;
 
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 1300,
-        px: { xs: 1, sm: 1.5 },
-        pb: { xs: 1, sm: 1.5 },
-        pointerEvents: "none",
-      }}
+    <aside
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-[110] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+      aria-label="การตั้งค่าคุกกี้"
     >
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: "780px",
-          mx: "auto",
-          bgcolor: "rgba(15, 23, 42, 0.95)",
-          color: "white",
-          p: { xs: 1.25, sm: 1.5 },
-          borderRadius: 1.5,
-          boxShadow: "0 10px 20px rgba(0,0,0,0.3)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          alignItems: { xs: "flex-start", sm: "center" },
-          gap: 1,
-          pointerEvents: "auto",
-        }}
-      >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography
-          variant="subtitle2"
-          sx={{ fontWeight: 600, mb: 0.25, fontFamily: "Prompt", fontSize: "0.84rem" }}
-        >
-          เราใช้คุกกี้เพื่อประสบการณ์ที่ดียิ่งขึ้น 🍪
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ opacity: 0.85, fontSize: "0.72rem", fontFamily: "Prompt", lineHeight: 1.35 }}
-        >
-          เราใช้คุกกี้และเทคโนโลยีที่คล้ายกันเพื่อปรับปรุงประสบการณ์ของคุณและวิเคราะห์การใช้งานเว็บไซต์ 
-          อ่านรายละเอียดเพิ่มเติมได้ที่{" "}
-          <Link
-            href="/termsAndPrivacy"
-            underline="hover"
-            sx={{ color: "#38bdf8", fontWeight: 500 }}
+      <div className="pointer-events-auto mx-auto flex w-full max-w-[780px] flex-col gap-3 rounded-lg border border-white/10 bg-slate-950/95 p-4 text-white shadow-2xl backdrop-blur-md sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold">เราใช้คุกกี้เพื่อปรับปรุงประสบการณ์ของคุณ</p>
+          <p className="mt-1 text-xs leading-5 text-slate-300">
+            คุกกี้ช่วยวิเคราะห์การใช้งานและวัดผลช่องทางสมัครบริการ อ่านรายละเอียดใน{" "}
+            <Link
+              href="/termsAndPrivacy"
+              className="font-medium text-sky-300 underline underline-offset-2"
+            >
+              นโยบายความเป็นส่วนตัว
+            </Link>
+          </p>
+        </div>
+        <div className="flex shrink-0 justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="min-h-9 rounded-md border border-slate-600 px-3 text-xs font-semibold text-slate-200 hover:bg-white/5"
           >
-            นโยบายความเป็นส่วนตัว
-          </Link>
-        </Typography>
-      </Box>
-
-      <Box
-        sx={{
-          display: "flex",
-          gap: 1,
-          justifyContent: { xs: "flex-end", sm: "flex-start" },
-          width: { xs: "100%", sm: "auto" },
-          flexShrink: 0,
-        }}
-      >
-        <Button
-          size="small"
-          variant="outlined"
-          color="inherit"
-          onClick={handleClose}
-          sx={{
-            borderColor: "rgba(148,163,184,0.4)",
-            color: "rgba(226,232,240,0.9)",
-            fontFamily: "Prompt",
-            fontSize: "0.68rem",
-            minHeight: 28,
-            px: 1.5,
-            "&:hover": { borderColor: "rgba(148,163,184,0.8)", bgcolor: "rgba(255,255,255,0.05)" }
-          }}
-        >
-          ปิด
-        </Button>
-        <Button
-          size="small"
-          variant="contained"
-          onClick={handleAccept}
-          sx={{
-            bgcolor: "#22c55e",
-            color: "#fff",
-            fontFamily: "Prompt",
-            fontSize: "0.68rem",
-            minHeight: 28,
-            px: 2,
-            "&:hover": { bgcolor: "#16a34a" },
-            boxShadow: "none"
-          }}
-        >
-          ยอมรับทั้งหมด
-        </Button>
-      </Box>
-      </Box>
-    </Box>
+            ปิด
+          </button>
+          <button
+            type="button"
+            onClick={handleAccept}
+            className="min-h-9 rounded-md bg-emerald-600 px-4 text-xs font-semibold text-white hover:bg-emerald-500"
+          >
+            ยอมรับทั้งหมด
+          </button>
+        </div>
+      </div>
+    </aside>
   );
 }

@@ -340,8 +340,8 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
         </div>
 
         {imagePreview ? (
-          <div className="relative rounded-xl overflow-hidden border border-gray-700 bg-gray-800 w-32 h-32 flex items-center justify-center group">
-            <Image src={imagePreview} alt="Preview" fill className="object-cover" sizes="128px" />
+          <div className="relative aspect-[16/7] w-full max-w-lg rounded-xl overflow-hidden border border-gray-700 bg-gray-800 flex items-center justify-center group">
+            <Image src={imagePreview} alt="Preview" fill className="object-contain p-2" sizes="(max-width: 768px) 100vw, 512px" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <button
                 type="button"
@@ -361,7 +361,7 @@ export default function PromotionForm({ promotion, activeType, lockType = false,
         ) : (
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="w-32 h-32 border-2 border-dashed border-gray-700 hover:border-blue-500/50 hover:bg-blue-500/5 rounded-xl flex flex-col items-center justify-center cursor-pointer text-gray-400 transition-all font-medium"
+            className="aspect-[16/7] w-full max-w-lg border-2 border-dashed border-gray-700 hover:border-blue-500/50 hover:bg-blue-500/5 rounded-xl flex flex-col items-center justify-center cursor-pointer text-gray-400 transition-all font-medium"
           >
             <svg className="w-6 h-6 mb-1 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
             <span className="text-[10px]">Add File</span>

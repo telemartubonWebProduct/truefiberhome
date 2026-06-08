@@ -1,40 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-
-function getSupabaseUrl() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!supabaseUrl) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL is missing");
-  }
-
-  return supabaseUrl;
-}
-
-function getSupabasePublicKey() {
-  const supabaseKey =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseKey) {
-    throw new Error(
-      "Supabase public key is missing. Set NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY fallback)."
-    );
-  }
-
-  return supabaseKey;
-}
+import { getSupabasePublicEnvironment } from "./supabase-env";
 
 export async function updateSupabaseSession(request: NextRequest) {
+  const { supabaseUrl, supabaseKey } = getSupabasePublicEnvironment();
   let response = NextResponse.next({
     request,
   });
 
-  const supabase = createServerClient(getSupabaseUrl(), getSupabasePublicKey(), {
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet, headers) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
 
         response = NextResponse.next({
@@ -42,11 +21,14 @@ export async function updateSupabaseSession(request: NextRequest) {
         });
 
         cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        Object.entries(headers).forEach(([name, value]) =>
+          response.headers.set(name, value)
+        );
       },
     },
   });
 
-  await supabase.auth.getUser();
+  await supabase.auth.getClaims();
 
   return response;
 }

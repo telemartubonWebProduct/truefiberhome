@@ -5,6 +5,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { motion } from "framer-motion";
 import { lineSupport } from "@/src/context/line-path";
 import { trackLineClick } from "@/src/lib/track-event";
+import { safeLink } from "@/src/lib/api-normalize";
 
 interface InstallPromotionContent {
   title: string;
@@ -34,9 +35,7 @@ export default function InstallPromotion({ content }: InstallPromotionProps) {
     normalizedPrimaryHref && normalizedPrimaryHref !== "/service" && normalizedPrimaryHref !== "#"
       ? normalizedPrimaryHref
       : lineSupport;
-  const secondaryButtonHref = content.secondaryButtonHref?.trim()
-    ? content.secondaryButtonHref
-    : "/home#packages";
+  const secondaryButtonHref = safeLink(content.secondaryButtonHref) || "/boardband";
 
   return (
     <Box

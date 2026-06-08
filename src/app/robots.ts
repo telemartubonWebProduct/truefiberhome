@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://truefiberhome.com";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.truefiberhome.com";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -21,6 +22,8 @@ export default function robots(): MetadataRoute.Robots {
           "/anti-phishing",
           "/about",
           "/stories",
+          "/articles",
+          "/articles/*",
         ],
         disallow: ["/dashboard", "/dashboard/*", "/login", "/api", "/api/*"],
       },

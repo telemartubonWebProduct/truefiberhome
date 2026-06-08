@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="mx-auto max-w-5xl px-4 py-24 text-slate-800">
+    <div className="mx-auto max-w-5xl px-4 py-24 text-slate-800">
       <h1 className="text-3xl font-bold text-slate-900">นโยบายความเป็นส่วนตัว</h1>
 
       <section className="mt-8 space-y-3 text-slate-700 leading-7">
@@ -31,6 +31,6 @@ export default function PrivacyPolicyPage() {
         <h2 className="text-xl font-semibold text-slate-900">4. สิทธิของเจ้าของข้อมูล</h2>
         <p>ท่านสามารถขอเข้าถึง แก้ไข หรือขอลบข้อมูลส่วนบุคคลได้ผ่านช่องทางติดต่อที่ประกาศบนเว็บไซต์</p>
       </section>
-    </main>
+    </div>
   );
 }

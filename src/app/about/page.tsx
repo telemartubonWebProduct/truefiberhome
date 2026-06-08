@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-5xl px-4 py-24 text-slate-800">
+    <div className="mx-auto max-w-5xl px-4 py-24 text-slate-800">
       <h1 className="text-3xl font-bold text-slate-900">เกี่ยวกับ True Fiber Home</h1>
       <p className="mt-4 text-slate-700 leading-7">
         True Fiber Home ให้บริการด้านแพ็กเกจอินเทอร์เน็ตบ้าน ซิมมือถือ และโซลูชันพลังงาน โดยมุ่งเน้นความชัดเจน โปร่งใส และตรวจสอบได้ทุกขั้นตอน
@@ -32,6 +32,6 @@ export default function AboutPage() {
           โปรดตรวจสอบโดเมนเว็บไซต์และช่องทางติดต่อจากหน้า Contact และนโยบาย Anti‑Phishing ทุกครั้งก่อนทำธุรกรรม
         </p>
       </section>
-    </main>
+    </div>
   );
 }
