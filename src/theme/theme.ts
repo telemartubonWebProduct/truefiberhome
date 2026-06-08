@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   typography: {
-    fontFamily: 'var(--font-prompt)',
+    fontFamily: '"Noto Sans Thai", "Leelawadee UI", Tahoma, Arial, sans-serif',
   },
 });
 

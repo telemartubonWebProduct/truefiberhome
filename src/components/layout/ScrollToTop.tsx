@@ -1,48 +1,41 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import { useEffect, useState } from "react";
 
-const ScrollToTop = () => {
+export default function ScrollToTop() {
   const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowButton(true);
-      } else {
-        setShowButton(false);
-      }
+    let scheduled = false;
+
+    const updateVisibility = () => {
+      scheduled = false;
+      setShowButton((current) => {
+        const next = window.scrollY > 600;
+        return current === next ? current : next;
+      });
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      if (scheduled) return;
+      scheduled = true;
+      window.requestAnimationFrame(updateVisibility);
     };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+  if (!showButton) return null;
 
   return (
-    showButton && (
-      <motion.button
-        initial={{ opacity: 0, x: 200 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 100 }}
-        transition={{ duration: 0.3 }}
-        onClick={scrollToTop}
-        className="fixed bottom-10 right-5 bg-gray-500 text-white p-3 rounded-full shadow-lg hover:bg-black z-50"
-      >
-        <ArrowDropUpIcon/>
-      </motion.button>
-    )
+    <button
+      type="button"
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="กลับไปด้านบน"
+      className="fixed bottom-24 right-4 z-50 flex min-h-11 items-center rounded-full bg-black px-4 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black lg:bottom-8"
+    >
+      กลับด้านบน
+    </button>
   );
-};
-
-export default ScrollToTop;
+}

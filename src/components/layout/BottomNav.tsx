@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import RocketLaunchRoundedIcon from "@mui/icons-material/RocketLaunchRounded";
@@ -40,7 +40,6 @@ const navItems = [
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const router = useRouter();
 
   // ซ่อน Bottom Bar หากอยู่ใน Dashboard / Backend
   const isHiddenRoute = pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend");
@@ -61,7 +60,7 @@ export default function BottomNav() {
             <Link
               key={idx}
               href={item.href}
-              prefetch={isInternalRoute ? true : undefined}
+              prefetch={false}
               target={isInternalRoute ? undefined : "_blank"}
               rel={isInternalRoute ? undefined : "noopener noreferrer"}
               onClick={() => {
@@ -69,22 +68,12 @@ export default function BottomNav() {
                   trackLineClick("bottom_nav", item.href);
                 }
               }}
-              onTouchStart={() => {
-                if (isInternalRoute) {
-                  router.prefetch(item.href);
-                }
-              }}
-              onMouseEnter={() => {
-                if (isInternalRoute) {
-                  router.prefetch(item.href);
-                }
-              }}
-              className={`group relative flex flex-1 flex-col items-center justify-center rounded-xl px-0.5 py-1.5 transition-all duration-200 ${
+              className={`group relative flex flex-1 flex-col items-center justify-center rounded-xl px-0.5 py-1.5 transition-colors duration-200 ${
                 isActive ? "bg-black/[0.04]" : "hover:bg-black/[0.03]"
               }`}
             >
               <div
-                className={`mb-1 flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-200 ${
+                className={`mb-1 flex h-9 w-9 items-center justify-center rounded-xl border transition-colors duration-200 ${
                   isActive
                     ? "border-[#d70018] bg-[#d70018] text-white shadow-[0_8px_18px_rgba(215,0,24,0.28)]"
                     : "border-black/10 bg-white text-black/85 group-hover:border-[#d70018]/40 group-hover:text-[#d70018]"

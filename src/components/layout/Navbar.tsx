@@ -30,6 +30,7 @@ interface NavbarProps {
 
 const DEFAULT_PREVIEW_IMAGE =
   "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt7e0dd3ed6dad1acd/6a0fb7339af2622baffee5e4/trueonline-home-next-1080x1080.jpg";
+const DEFAULT_LOGO_IMAGE = "/assets/Trueonline-logo.svg.png";
 
 const GROUP_ORDER: Array<{ key: string; title: string }> = [
   { key: "mega.broadband", title: "แพ็กเกจเน็ตบ้าน" },
@@ -219,14 +220,19 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
       <div className="w-full max-w-[900px] bg-white rounded-[10px] shadow-[0_4px_24px_rgba(0,0,0,0.06)] pointer-events-auto relative border border-gray-100">
         <nav className="flex items-center justify-between px-6 py-2.5 lg:px-8 relative z-50">
           <div className="flex items-center">
-            <Link href="/home" className="text-[26px] font-black tracking-tighter text-black flex items-center">
-              {siteSettings?.logoUrl ? (
-                <Image src={siteSettings.logoUrl} alt="Logo" width={110} height={35} className="object-contain" />
-              ) : (
-                <span>
-                  truefiberhome<sup className="text-xs font-bold ml-0.5">&reg;</sup>
-                </span>
-              )}
+            <Link
+              href="/home"
+              aria-label="True Online - กลับหน้าหลัก"
+              className="flex h-10 w-[138px] items-center"
+            >
+              <Image
+                src={siteSettings?.logoUrl?.trim() || DEFAULT_LOGO_IMAGE}
+                alt="True Online"
+                width={138}
+                height={27}
+                priority
+                className="h-auto w-full object-contain object-left"
+              />
             </Link>
           </div>
 

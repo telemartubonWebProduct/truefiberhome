@@ -52,7 +52,7 @@ export default function LazyHeroVideo({ src, poster }: LazyHeroVideoProps) {
           alt=""
           aria-hidden
           fill
-          priority
+          fetchPriority="high"
           sizes="(max-width: 1024px) 100vw, 50vw"
           className="object-cover"
         />

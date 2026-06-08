@@ -15,7 +15,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: "Prompt", Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-family: "Noto Sans Thai", "Leelawadee UI", Tahoma, Arial, sans-serif;
 }
 
 .skip-link {

@@ -1,20 +1,10 @@
 // app/layout.tsx (TypeScript) หรือ app/layout.jsx (JavaScript)
 import "./globals.css";
-import { Prompt } from "next/font/google";
 import type { Metadata } from "next";
 import Navbar from "@/src/components/layout/Navbar";
 import BottomNav from "@/src/components/layout/BottomNav";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import { Analytics } from "@vercel/analytics/next";
-
-// 1) เรียกใช้ฟอนต์ Prompt จาก next/font/google
-const prompt = Prompt({
-  subsets: ["thai"],
-  weight: ["400", "600", "700"],
-  display: "swap",
-  variable: "--font-prompt",
-  adjustFontFallback: true,
-});
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.truefiberhome.com";
@@ -129,7 +119,7 @@ export default async function RootLayout({
 
   return (
     // 2) เพิ่ม className จากตัวแปร prompt.className ตรงแท็ก html หรือ body
-    <html lang="th" className={prompt.className} suppressHydrationWarning>
+    <html lang="th" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"

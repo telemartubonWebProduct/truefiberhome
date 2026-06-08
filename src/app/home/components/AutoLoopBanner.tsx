@@ -59,7 +59,6 @@ export default function AutoLoopBanner({ banners = [] }: AutoLoopBannerProps) {
           src={desktopImage}
           alt={alt}
           fill
-          priority={activeIndex === 0}
           className="object-contain object-center"
           sizes="(max-width: 1024px) 100vw, 50vw"
         />
@@ -74,10 +73,15 @@ export default function AutoLoopBanner({ banners = [] }: AutoLoopBannerProps) {
               onClick={() => setActiveIndex(index)}
               aria-label={`แสดงโปรโมชัน ${index + 1}`}
               aria-current={index === activeIndex}
-              className={`h-2 rounded-full shadow-sm transition-[width,background-color] ${
-                index === activeIndex ? "w-7 bg-white" : "w-2 bg-white/60"
-              }`}
-            />
+              className="flex h-4 w-7 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <span
+                aria-hidden="true"
+                className={`block h-2 rounded-full ${
+                  index === activeIndex ? "w-7 bg-white" : "w-2 bg-white/60"
+                }`}
+              />
+            </button>
           ))}
         </div>
       ) : null}

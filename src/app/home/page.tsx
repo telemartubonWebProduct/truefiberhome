@@ -1,13 +1,8 @@
-import { Box, Stack, Typography, Button } from "@mui/material";
 import type { Metadata } from "next";
 import AutoLoopBanner from "./components/AutoLoopBanner";
 import InstallPromotion from "./components/InstallPromotion";
-import RevealText from "@/src/components/ui/RevealText";
-import PromotionPresent from "./components/promotion-present";
-import SalerService from "./components/saler-service";
-import ContactSection from "./components/contact-section";
 import LazyHeroVideo from "./components/LazyHeroVideo";
-import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
+import DeferredHomeSections from "./components/DeferredHomeSections";
 import { prisma } from "@/src/lib/prisma";
 import { lineSupport } from "@/src/context/line-path";
 import { safeLink } from "@/src/lib/api-normalize";
@@ -229,24 +224,6 @@ export default async function HomePage() {
   const contactVisible = contactSection?.isActive ?? true;
   const contactSectionId = "home-contact-section";
 
-  const ctaIcon = (
-    <Box
-      sx={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: { xs: 32, sm: 36 },
-        height: { xs: 32, sm: 36 },
-        borderRadius: "999px",
-        bgcolor: "rgba(255,255,255,0.2)",
-        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.35)",
-        backdropFilter: "blur(6px)",
-      }}
-    >
-      <PhoneIphoneIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
-    </Box>
-  );
-
   const displayContactMethods = (contactMethods as any[]).map((item, index) => ({
     id: item.id ?? `contact-${index}`,
     key: typeof item.key === "string" ? item.key : "phone",
@@ -295,135 +272,35 @@ export default async function HomePage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(packageStructuredData) }}
         />
       ) : null}
-      <Box
-        sx={{
-          minHeight: "100vh",
-          bgcolor: "#ffffff",
-          p: { xs: 1, md: 2 },
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Stack
-          direction={{ xs: "column", lg: "row" }}
-          spacing={{ xs: 1, md: 2 }}
-          sx={{ flex: 1, mt: { xs: 8, lg: 0 }, minHeight: "80vh" }}
-        >
+      <div className="flex min-h-screen flex-col bg-white p-2 md:p-4">
+        <div className="mt-20 flex min-h-[80vh] flex-1 flex-col gap-2 md:gap-4 lg:mt-0 lg:flex-row">
           {heroVisible && (
-            <Box
-              sx={{
-                flex: 1,
-                position: "relative",
-                borderRadius: "12px",
-                overflow: "hidden",
-                minHeight: { xs: 400, lg: "auto" },
-              }}
-            >
+            <section className="relative min-h-[400px] flex-1 overflow-hidden rounded-xl">
               <LazyHeroVideo
                 src={heroVideoUrl}
                 poster={autoLoopBanners[0]?.imageUrl || DEFAULT_HOME_POSTER}
               />
 
-              <Box
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  backgroundColor: "rgba(0, 0, 0, 0.52)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  textAlign: "center",
-                  p: { xs: 3, sm: 4, md: 6 },
-                }}
-              >
-                <Box
-                  sx={{
-                    maxWidth: { xs: "20rem", sm: "28rem", md: "34rem" },
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: { xs: 2, md: 3 },
-                  }}
-                >
-                  <Typography
-                    component="h1"
-                    variant="h3"
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      textShadow: "0px 4px 10px rgba(0,0,0,0.3)",
-                      fontSize: { xs: "1.9rem", sm: "2.4rem", md: "3rem" },
-                      lineHeight: { xs: 1.2, md: 1.15 },
-                    }}
-                  >
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/55 p-6 text-center sm:p-8 md:p-12">
+                <div className="flex max-w-[34rem] flex-col items-center gap-4 md:gap-6">
+                  <h1 className="text-[1.9rem] leading-[1.2] font-bold text-white [text-shadow:0_4px_10px_rgba(0,0,0,0.3)] sm:text-[2.4rem] md:text-5xl md:leading-[1.15]">
                     {heroTitle}
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: "rgba(255, 255, 255, 0.9)",
-                      fontWeight: 400,
-                      lineHeight: { xs: 1.6, md: 1.7 },
-                      fontSize: { xs: "0.95rem", sm: "1.05rem", md: "1.15rem" },
-                    }}
-                  >
+                  </h1>
+                  <p className="text-[0.95rem] leading-[1.6] text-white/90 sm:text-[1.05rem] md:text-[1.15rem] md:leading-[1.7]">
                     {heroSubtitle}
-                  </Typography>
-                  <Button
-                    component="a"
+                  </p>
+                  <a
                     href={buttonHref}
-                    variant="contained"
-                    disableElevation
-                    sx={{
-                      borderRadius: "999px",
-                      px: { xs: 2.75, sm: 3.5 },
-                      py: { xs: 1.1, sm: 1.35 },
-                      fontSize: { xs: "0.95rem", sm: "1.05rem" },
-                      fontWeight: 700,
-                      letterSpacing: 0,
-                      textTransform: "none",
-                      width: { xs: "100%", sm: "auto" },
-                      maxWidth: { xs: "18rem", sm: "none" },
-                      justifyContent: "center",
-                      gap: 1,
-                      color: "#fff",
-                      backgroundImage: "linear-gradient(135deg, #ff3b3b 0%, #ff6b4a 45%, #ff9a5a 100%)",
-                      border: "1px solid rgba(255,255,255,0.25)",
-                      boxShadow: "0px 10px 28px rgba(255, 59, 59, 0.45)",
-                      position: "relative",
-                      overflow: "hidden",
-                      transition: "transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease",
-                      "&::before": {
-                        content: '""',
-                        position: "absolute",
-                        inset: "1px",
-                        borderRadius: "999px",
-                        background: "linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0))",
-                        opacity: 0.5,
-                      },
-                      "&:hover": {
-                        transform: "translateY(-2px)",
-                        boxShadow: "0px 14px 36px rgba(255, 59, 59, 0.6)",
-                        filter: "brightness(1.05)",
-                      },
-                      "&:active": {
-                        transform: "translateY(-1px)",
-                      },
-                      "& .MuiButton-endIcon": {
-                        marginLeft: "0.6rem",
-                      },
-                    }}
-                    endIcon={ctaIcon}
+                    className="inline-flex w-full max-w-72 items-center justify-center rounded-full border border-white/25 bg-[#ff5346] px-6 py-3 text-[0.95rem] font-bold text-white shadow-[0_10px_28px_rgba(255,59,59,0.38)] transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:bg-[#f0443a] hover:shadow-[0_14px_32px_rgba(255,59,59,0.5)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-y-0 sm:w-auto sm:max-w-none sm:px-7 sm:text-[1.05rem]"
                   >
                     {buttonLabel}
-                  </Button>
-                </Box>
-              </Box>
-            </Box>
+                  </a>
+                </div>
+              </div>
+            </section>
           )}
 
-          <Stack spacing={{ xs: 1, md: 2 }} sx={{ flex: 1 }}>
+          <div className="flex flex-1 flex-col gap-2 md:gap-4">
             <AutoLoopBanner banners={autoLoopBanners} />
             <InstallPromotion
               content={{
@@ -439,46 +316,29 @@ export default async function HomePage() {
                 isActive: installIsActive,
               }}
             />
-          </Stack>
-        </Stack>
-      </Box>
+          </div>
+        </div>
+      </div>
 
-      {promotionPresentVisible && (
-        <Box
-          id="packages"
-          sx={{
-            py: 15,
-            px: { xs: 4, md: 10 },
-            bgcolor: "white",
-            scrollMarginTop: 12,
-            contentVisibility: "auto",
-            containIntrinsicSize: "1200px",
-          }}
-        >
-          <RevealText text="สัมผัสความเร็วเหนือระดับ. กับโปรโมชันเน็ตบ้านที่ดีที่สุดสำหรับคุณ." />
-          <PromotionPresent
-            packages={promotionPackages}
-            helperText={promotionPresentHelperText}
-            isActive={promotionPresentVisible}
-            contactSectionId={contactSectionId}
-            contactMethods={displayContactMethods}
-          />
-        </Box>
-      )}
-
-      <SalerService agents={agents as any[]} />
-      <ContactSection
-        sectionId={contactSectionId}
-        content={{
-          title: contactTitle,
-          subtitle: contactSubtitle,
-          isActive: contactVisible,
+      <DeferredHomeSections
+        promotionProps={{
+          packages: promotionPackages,
+          helperText: promotionPresentHelperText,
+          isActive: promotionPresentVisible,
+          contactSectionId,
+          contactMethods: displayContactMethods,
         }}
-        methods={displayContactMethods}
+        agents={agents as any[]}
+        contactProps={{
+          sectionId: contactSectionId,
+          content: {
+            title: contactTitle,
+            subtitle: contactSubtitle,
+            isActive: contactVisible,
+          },
+          methods: displayContactMethods,
+        }}
       />
-   
-     
-    
     </>
   );
 }
