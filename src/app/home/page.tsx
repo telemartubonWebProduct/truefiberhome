@@ -246,20 +246,8 @@ export default async function HomePage() {
           itemListElement: promotionPackages.slice(0, 12).map((pkg, index) => ({
             "@type": "ListItem",
             position: index + 1,
-            item: {
-              "@type": "Product",
-              name: pkg.name,
-              category: pkg.tag,
-              image: pkg.imageUrl || undefined,
-              description: `${pkg.speed} Mbps ${pkg.freebies.join(" ")}`.trim(),
-              offers: {
-                "@type": "Offer",
-                priceCurrency: "THB",
-                price: pkg.price,
-                url: safeLink(pkg.buyUrl) || "/boardband",
-                availability: "https://schema.org/InStock",
-              },
-            },
+            name: pkg.name,
+            url: safeLink(pkg.buyUrl) || "/boardband",
           })),
         }
       : null;
