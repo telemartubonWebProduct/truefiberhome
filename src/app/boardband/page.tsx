@@ -128,19 +128,8 @@ export default async function BroadbandPage() {
     itemListElement: promotions.map((promotion, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      item: {
-        "@type": "Product",
-        name: promotion.name,
-        image: promotion.imageUrl || undefined,
-        category: promotion.categoryName || "โปรเน็ตบ้าน",
-        offers: {
-          "@type": "Offer",
-          priceCurrency: "THB",
-          price: promotion.price,
-          availability: "https://schema.org/InStock",
-          url: promotion.buyUrl || "https://truefiberhome.com/boardband",
-        },
-      },
+      name: promotion.name,
+      url: promotion.buyUrl || "https://truefiberhome.com/boardband",
     })),
   };
 
