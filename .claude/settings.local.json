@@ -13,7 +13,10 @@
       "Bash(dir .env*)",
       "Bash(node -e ' *)",
       "Bash(findstr /I \"env database db prisma drizzle .sql docker deploy\")",
-      "Bash(findstr /V \"node_modules\")"
+      "Bash(findstr /V \"node_modules\")",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3001/home)",
+      "Bash(curl -s http://localhost:3001/home)"
     ]
   }
 }
