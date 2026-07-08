@@ -222,17 +222,18 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
           <div className="flex items-center">
             <Link
               href="/home"
-              aria-label="True Online - กลับหน้าหลัก"
-              className="flex h-10 w-[138px] items-center"
+              aria-label="true online - ตัวแทนจำหน่ายทรูที่ได้รับอนุญาต กลับหน้าหลัก"
+              className="flex flex-col items-start gap-[3px]"
             >
               <Image
                 src={siteSettings?.logoUrl?.trim() || DEFAULT_LOGO_IMAGE}
-                alt="True Online"
+                alt="true online - Authorized True Partner"
                 width={138}
                 height={27}
                 priority
-                className="h-auto w-full object-contain object-left"
+                className="h-auto w-[120px] object-contain object-left"
               />
+              
             </Link>
           </div>
 

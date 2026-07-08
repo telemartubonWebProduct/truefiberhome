@@ -97,24 +97,37 @@ export default async function RootLayout({
   const navigationItemDelegate = (prisma as any).navigationItem;
   const footerLinkDelegate = (prisma as any).footerLink;
 
+  // ดึงข้อมูลแบบทนทาน: ถ้า DB ต่อไม่ได้ ให้ fallback แทนการ 500 ทั้งหน้า
+  // (Navbar/Footer มีเมนูสำรองรองรับค่าว่างอยู่แล้ว)
+  const onDbError = (label: string) => (error: unknown) => {
+    console.error(`[layout] ดึง ${label} จากฐานข้อมูลไม่สำเร็จ ใช้ค่าสำรองแทน:`, error);
+    return null;
+  };
+
   const [siteSettings, navigationItems, footerLinks] = await Promise.all([
-    prisma.siteSettings.findUnique({ where: { id: "singleton" } }),
+    prisma.siteSettings
+      .findUnique({ where: { id: "singleton" } })
+      .catch(onDbError("siteSettings")),
     navigationItemDelegate
-      ? navigationItemDelegate.findMany({
-          where: { isActive: true },
-          orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
-        })
-      : [],
+      ? navigationItemDelegate
+          .findMany({
+            where: { isActive: true },
+            orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
+          })
+          .catch(onDbError("navigationItems"))
+      : Promise.resolve([]),
     footerLinkDelegate
-      ? footerLinkDelegate.findMany({
-          where: { isActive: true },
-          orderBy: [
-            { section: "asc" },
-            { displayOrder: "asc" },
-            { createdAt: "asc" },
-          ],
-        })
-      : [],
+      ? footerLinkDelegate
+          .findMany({
+            where: { isActive: true },
+            orderBy: [
+              { section: "asc" },
+              { displayOrder: "asc" },
+              { createdAt: "asc" },
+            ],
+          })
+          .catch(onDbError("footerLinks"))
+      : Promise.resolve([]),
   ]);
 
   return (
