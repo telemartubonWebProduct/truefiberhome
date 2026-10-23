@@ -2,8 +2,12 @@
 /*  Client-side Event Tracking Utility                                 */
 /*                                                                     */
 /*  Button clicks (LINE, Phone, Facebook, Signup) → POST to our DB     */
+/*  (and, after cookie consent, to the Meta Pixel + Conversions API)   */
 /*  Chat events → gtag (Google Analytics 4)                            */
 /* ------------------------------------------------------------------ */
+
+import { CONSENT_KEY } from "@/src/lib/consent";
+import { CLICK_META_EVENTS, hasTrackingConsent, newEventId, trackMetaEvent } from "@/src/lib/meta-pixel";
 
 declare global {
   interface Window {
@@ -25,11 +29,21 @@ function sendClickEvent(
 ) {
   if (typeof window === "undefined") return;
 
+  // The same id goes to the pixel here and to the Conversions API from the server.
+  const eventId = newEventId();
+  const consent = hasTrackingConsent(CONSENT_KEY);
+  const metaEvent = CLICK_META_EVENTS[eventName];
+  if (consent && metaEvent) {
+    trackMetaEvent(metaEvent, { content_name: source, contact_method: eventName.replace("_click", "") }, eventId);
+  }
+
   const payload = JSON.stringify({
     eventName,
     source,
     url: url || null,
     pagePath: window.location.pathname,
+    eventId,
+    consent,
   });
 
   // sendBeacon is the most reliable for click-then-navigate scenarios

@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-const COOKIE_KEY = "cookie-consent-accepted-v2";
+import { CONSENT_EVENT, CONSENT_KEY } from "@/src/lib/consent";
 
 type GtagWindow = typeof window & {
   gtag?: (...args: unknown[]) => void;
@@ -13,7 +12,7 @@ export default function CookieConsent() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const accepted = window.localStorage.getItem(COOKIE_KEY) === "true";
+    const accepted = window.localStorage.getItem(CONSENT_KEY) === "true";
     if (accepted) {
       (window as GtagWindow).gtag?.("consent", "update", {
         ad_storage: "granted",
@@ -27,14 +26,14 @@ export default function CookieConsent() {
   }, []);
 
   const handleAccept = () => {
-    window.localStorage.setItem(COOKIE_KEY, "true");
+    window.localStorage.setItem(CONSENT_KEY, "true");
     (window as GtagWindow).gtag?.("consent", "update", {
       ad_storage: "granted",
       analytics_storage: "granted",
       ad_user_data: "granted",
       ad_personalization: "granted",
     });
-    window.dispatchEvent(new Event("cookie-consent-accepted"));
+    window.dispatchEvent(new Event(CONSENT_EVENT));
     setOpen(false);
   };
 
@@ -49,7 +48,8 @@ export default function CookieConsent() {
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">เราใช้คุกกี้เพื่อปรับปรุงประสบการณ์ของคุณ</p>
           <p className="mt-1 text-xs leading-5 text-slate-300">
-            คุกกี้ช่วยวิเคราะห์การใช้งานและวัดผลช่องทางสมัครบริการ อ่านรายละเอียดใน{" "}
+            คุกกี้ช่วยวิเคราะห์การใช้งาน (Google Analytics) และวัดผลโฆษณาของเราบน Google และ Facebook
+            (Meta Pixel) อ่านรายละเอียดใน{" "}
             <Link
               href="/termsAndPrivacy"
               className="font-medium text-sky-300 underline underline-offset-2"

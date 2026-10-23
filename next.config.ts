@@ -9,7 +9,7 @@ const cspValue = [
   "frame-ancestors 'none'",
   "frame-src 'self' https://www.google.com https://maps.google.com",
   "form-action 'self'",
-  `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"} https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com`,
+  `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"} https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://connect.facebook.net`,
   "connect-src 'self' https: wss:",
   "img-src 'self' data: blob: https:",
   "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
