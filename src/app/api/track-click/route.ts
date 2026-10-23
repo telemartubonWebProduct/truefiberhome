@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
+import { capiConfigured, clientIpFrom, sendCapiEvent } from "@/src/lib/meta-capi";
+import { CLICK_META_EVENTS } from "@/src/lib/meta-pixel";
 
 /* ------------------------------------------------------------------ */
 /*  POST /api/track-click                                              */
@@ -14,11 +16,17 @@ const ALLOWED_EVENTS = new Set([
   "signup_interest",
 ]);
 
+const EVENT_ID = /^[A-Za-z0-9-]{8,64}$/;
+
 interface TrackClickBody {
   eventName?: string;
   source?: string;
   url?: string;
   pagePath?: string;
+  /** Shared with the browser pixel event, so Meta keeps one of the two. */
+  eventId?: string;
+  /** The visitor accepted cookies (only then does anything go to Meta). */
+  consent?: boolean;
 }
 
 export async function POST(request: NextRequest) {
@@ -53,6 +61,23 @@ export async function POST(request: NextRequest) {
         pagePath,
       },
     });
+
+    const eventId = typeof body.eventId === "string" ? body.eventId.trim() : "";
+    if (body.consent === true && EVENT_ID.test(eventId) && capiConfigured() && process.env.VERCEL_ENV === "production") {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.truefiberhome.com";
+      const capiEvent = {
+        eventName: CLICK_META_EVENTS[eventName],
+        eventId,
+        eventSourceUrl: new URL(pagePath && pagePath.startsWith("/") ? pagePath : "/", siteUrl).toString(),
+        clientIp: clientIpFrom(request.headers.get("x-forwarded-for"), request.headers.get("x-real-ip")),
+        userAgent: request.headers.get("user-agent"),
+        fbp: request.cookies.get("_fbp")?.value ?? null,
+        fbc: request.cookies.get("_fbc")?.value ?? null,
+        customData: { content_name: source, contact_method: eventName.replace("_click", "") },
+      };
+      // After the answer is sent: the visitor never waits for Meta.
+      after(() => sendCapiEvent(capiEvent));
+    }
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {

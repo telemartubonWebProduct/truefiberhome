@@ -2,20 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Script from "next/script";
-
-const COOKIE_KEY = "cookie-consent-accepted-v2";
+import { CONSENT_EVENT, CONSENT_KEY } from "@/src/lib/consent";
+import { META_PIXEL_ID, metaPixelSnippet } from "@/src/lib/meta-pixel";
 
 export default function ConsentAnalytics() {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
     const syncConsent = () => {
-      setEnabled(window.localStorage.getItem(COOKIE_KEY) === "true");
+      setEnabled(window.localStorage.getItem(CONSENT_KEY) === "true");
     };
     syncConsent();
-    window.addEventListener("cookie-consent-accepted", syncConsent);
+    window.addEventListener(CONSENT_EVENT, syncConsent);
     return () =>
-      window.removeEventListener("cookie-consent-accepted", syncConsent);
+      window.removeEventListener(CONSENT_EVENT, syncConsent);
   }, []);
 
   if (!enabled) return null;
@@ -60,6 +60,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-M82FD3NC');`,
         }}
       />
+      {/* Meta Pixel: PageView here (and on client-side navigation, by fbevents.js itself); clicks in src/lib/track-event.ts. */}
+      {META_PIXEL_ID ? (
+        <Script
+          id="meta-pixel"
+          strategy="lazyOnload"
+          dangerouslySetInnerHTML={{ __html: metaPixelSnippet(META_PIXEL_ID) }}
+        />
+      ) : null}
     </>
   );
 }
