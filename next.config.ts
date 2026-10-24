@@ -7,8 +7,9 @@ const cspValue = [
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
-  "frame-src 'self' https://www.google.com https://maps.google.com",
-  "form-action 'self'",
+  // The Meta Pixel can send events through a form targeting its tracking iframe.
+  "frame-src 'self' https://www.google.com https://maps.google.com https://www.facebook.com/tr/",
+  "form-action 'self' https://www.facebook.com/tr/",
   `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"} https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://connect.facebook.net`,
   "connect-src 'self' https: wss:",
   "img-src 'self' data: blob: https:",
