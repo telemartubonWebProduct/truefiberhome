@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/src/lib/prisma";
+import { SITE_URL } from "@/src/lib/site";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.truefiberhome.com";
+const siteUrl = SITE_URL;
 
 export const PUBLIC_SITE_ROUTES = [
-  "/home",
+  "/",
   "/boardband",
   "/topup",
   "/monthly",
@@ -16,7 +16,6 @@ export const PUBLIC_SITE_ROUTES = [
   "/terms-of-service",
   "/anti-phishing",
   "/about",
-  "/stories",
   "/articles",
 ];
 
@@ -32,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .catch(() => []);
 
   const routes: MetadataRoute.Sitemap = PUBLIC_SITE_ROUTES.map((route, index) => ({
-    url: `${siteUrl}${route}`,
+    url: route === "/" ? siteUrl : `${siteUrl}${route}`,
     lastModified: now,
     changeFrequency: index === 0 ? "daily" : "weekly",
     priority: index === 0 ? 1 : 0.8,

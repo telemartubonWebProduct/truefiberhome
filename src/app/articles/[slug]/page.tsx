@@ -147,7 +147,7 @@ export default async function ArticleDetailPage({ params }: Params) {
     >
       <ol className="flex items-center gap-2">
         <li>
-          <Link href="/home" className="hover:text-rose-600 transition">
+          <Link href="/" className="hover:text-rose-600 transition">
             หน้าแรก
           </Link>
         </li>

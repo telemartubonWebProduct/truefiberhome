@@ -53,7 +53,7 @@ export async function PUT(request: Request, context: Context) {
       },
     });
 
-    revalidatePath("/home");
+    revalidatePath("/");
     revalidatePath("/service");
     revalidatePath("/wEnergy");
     revalidatePath("/dashboard/home-content");
@@ -78,7 +78,7 @@ export async function DELETE(_: Request, context: Context) {
 
     await prisma.homeSection.deleteMany({ where: { sectionKey } });
 
-    revalidatePath("/home");
+    revalidatePath("/");
     revalidatePath("/service");
     revalidatePath("/wEnergy");
     revalidatePath("/dashboard/home-content");

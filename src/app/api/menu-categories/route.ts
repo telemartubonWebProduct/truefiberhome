@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       },
     });
 
-    revalidatePath("/home");
+    revalidatePath("/");
     revalidatePath("/dashboard/home-content");
 
     return NextResponse.json(created, { status: 201 });

@@ -67,7 +67,7 @@ export async function PUT(request: Request, context: Context) {
     });
 
     revalidatePath("/", "layout");
-    revalidatePath("/home");
+    revalidatePath("/");
     revalidatePath("/dashboard/home-content");
 
     return NextResponse.json(updated);
@@ -89,7 +89,7 @@ export async function DELETE(_: Request, context: Context) {
     await prisma.footerLink.delete({ where: { id } });
 
     revalidatePath("/", "layout");
-    revalidatePath("/home");
+    revalidatePath("/");
     revalidatePath("/dashboard/home-content");
 
     return NextResponse.json({ ok: true });

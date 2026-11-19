@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     });
 
     revalidatePath("/");
-    revalidatePath("/home");
+    revalidatePath("/");
     revalidatePath("/dashboard/banners");
     revalidatePath("/dashboard/home-content");
 

@@ -583,7 +583,7 @@ export async function publishSiteContentPayload(payload: SiteContentAgentPayload
 
 function revalidateSiteContentPaths() {
   revalidatePath("/");
-  revalidatePath("/home");
+  revalidatePath("/");
   revalidatePath("/dashboard/home-content");
   revalidatePath("/dashboard/banners");
   revalidatePath("/dashboard/content-agent");

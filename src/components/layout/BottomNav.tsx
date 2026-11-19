@@ -13,7 +13,7 @@ import { trackLineClick } from "@/src/lib/track-event";
 const navItems = [
   {
     name: "หน้าแรก",
-    href: "/home",
+    href: "/",
     icon: <HomeRoundedIcon className="w-5 h-5" />,
   },
   {
@@ -27,7 +27,7 @@ const navItems = [
     icon: <ChatBubbleRoundedIcon className="w-5 h-5" />,
   },
   {
-    name: "เซลลูลาร์",
+    name: "ซิมมือถือ",
     href: "/topup",
     icon: <SimCardRoundedIcon className="w-5 h-5" />,
   },
@@ -52,8 +52,8 @@ export default function BottomNav() {
           const isInternalRoute = item.href.startsWith("/");
           const isActive =
             isInternalRoute &&
-            (item.href === "/home"
-              ? pathname === "/" || pathname === "/home"
+            (item.href === "/"
+              ? pathname === "/"
               : pathname?.startsWith(item.href));
 
           return (
@@ -81,7 +81,7 @@ export default function BottomNav() {
               >
                 {item.icon}
               </div>
-              <span className={`whitespace-nowrap text-[9px] font-semibold tracking-tight transition-colors duration-200 ${
+              <span className={`whitespace-nowrap text-[11px] font-semibold tracking-tight transition-colors duration-200 ${
                 isActive ? "text-[#d70018]" : "text-black/55 group-hover:text-black/80"
               }`}>
                 {item.name}

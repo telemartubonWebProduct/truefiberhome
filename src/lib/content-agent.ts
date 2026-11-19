@@ -560,7 +560,7 @@ export async function publishContentAgentPayload(
 
 function revalidateContentAgentPaths() {
   revalidatePath("/");
-  revalidatePath("/home");
+  revalidatePath("/");
   revalidatePath("/boardband");
   revalidatePath("/dashboard/home-content");
   revalidatePath("/dashboard/promotions");
