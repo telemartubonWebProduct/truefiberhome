@@ -33,6 +33,16 @@ function finalize(items: Draft[]): HomePackage[] {
   const lowest = items.reduce((min, item) => Math.min(min, item.price), Number.POSITIVE_INFINITY);
   let hotAssigned = false;
 
+  // The CMS often reuses one name ("โปรเน็ตบ้าน") for several speeds. Cards and
+  // structured data need distinct names, so repeated names get their speed appended.
+  const nameCount = new Map<string, number>();
+  items.forEach((item) => nameCount.set(item.name, (nameCount.get(item.name) ?? 0) + 1));
+  items = items.map((item) =>
+    (nameCount.get(item.name) ?? 0) > 1 && item.speedLabel
+      ? { ...item, name: `${item.name} ${item.speedLabel}` }
+      : item,
+  );
+
   return items.map((item) => {
     const hot = !hotAssigned && item.price === lowest;
     if (hot) hotAssigned = true;
