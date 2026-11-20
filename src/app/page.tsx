@@ -226,33 +226,12 @@ export default async function HomePage() {
 
       <section id="areas">
         <div className="wrap areas">
-          <div className="rv">
-            <div className="deck" aria-hidden="true">
-              <div>
-                <span>
-                  เชียงใหม่<small>ภาคเหนือ</small>
-                </span>
-              </div>
-              <div>
-                <span>
-                  ขอนแก่น<small>ภาคอีสาน</small>
-                </span>
-              </div>
-              <div>
-                <span>
-                  กรุงเทพมหานคร<small>ภาคกลาง</small>
-                </span>
-                <Image src="/assets/home/k-house.webp" alt="" width={377} height={340} sizes="150px" />
-              </div>
-            </div>
-          </div>
-          <div className="rv">
+          <AreaSection regions={REGIONS}>
             <h2>
               <span className="nb">เช็กพื้นที่ติดเน็ตบ้านทรู</span> <span className="nb">ได้ทุกจังหวัด</span>
             </h2>
             <p className="sub">ส่งตำแหน่งบ้านมา เจ้าหน้าที่เช็กให้ว่าพื้นที่ของคุณติดตั้งได้หรือไม่</p>
-            <AreaSection regions={REGIONS} />
-          </div>
+          </AreaSection>
         </div>
       </section>
 
