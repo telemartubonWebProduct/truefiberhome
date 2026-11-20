@@ -177,3 +177,6 @@
 .tfh .prov li::before{content:"";position:absolute;left:0;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--red)}
 .tfh .fine a{display:inline-block;padding:11px 0}
 @media(max-width:759px){.tfh .who{height:66%}}
+.tfh .prov li a{padding:0;background:none;border-radius:0;font-weight:500;text-decoration:underline;text-decoration-color:rgba(20,20,20,.3);text-underline-offset:4px;transition:color .2s,text-decoration-color .2s}
+.tfh .prov li a:hover{background:none;color:var(--red);text-decoration-color:currentColor;transform:none}
+.tfh .prov li small{font-size:13px;font-weight:400;color:var(--ink2);margin-left:6px}
