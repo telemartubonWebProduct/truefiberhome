@@ -5,12 +5,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import "@/src/components/home/home.css";
 import "@/src/components/home/area.css";
+import "@/src/components/home/guide.css";
 import HomeIcon from "@/src/components/home/HomeIcon";
 import PackageGrid from "@/src/components/home/PackageGrid";
 import { tfhClass } from "@/src/components/home/fonts";
 import { formatPrice } from "@/src/components/home/package-art";
 import TrackedLineLink from "@/src/app/home/components/TrackedLineLink";
 import { lineSupport } from "@/src/context/line-path";
+import { GUIDES } from "@/src/data/guides";
 import { INSTALL_STEPS } from "@/src/data/install-steps";
 import type { ProvinceArea } from "@/src/data/province-areas";
 import { LISTED_AREAS, areaPath, districtUnit, findArea, provinceLabel } from "@/src/lib/areas";
@@ -247,6 +249,15 @@ export default async function AreaPage({ params }: Params) {
               </p>
             </>
           )}
+
+          <h2 style={{ marginTop: 96 }}>คู่มือก่อนติดเน็ตบ้าน</h2>
+          <ul className="gd-more">
+            {GUIDES.map((guide) => (
+              <li key={guide.slug}>
+                <Link href={`/guides/${guide.slug}`}>{guide.title}</Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </div>

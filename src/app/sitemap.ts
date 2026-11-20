@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/src/lib/prisma";
+import { GUIDES } from "@/src/data/guides";
 import { LISTED_AREAS, areaPath } from "@/src/lib/areas";
 import { SITE_URL } from "@/src/lib/site";
 
@@ -9,6 +10,7 @@ export const PUBLIC_SITE_ROUTES = [
   "/",
   "/boardband",
   "/areas",
+  "/guides",
   "/topup",
   "/monthly",
   "/wEnergy",
@@ -54,5 +56,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...routes, ...areaRoutes, ...articleRoutes];
+  const guideRoutes: MetadataRoute.Sitemap = GUIDES.map((guide) => ({
+    url: `${siteUrl}/guides/${guide.slug}`,
+    lastModified: new Date(guide.published),
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
+  return [...routes, ...areaRoutes, ...guideRoutes, ...articleRoutes];
 }
