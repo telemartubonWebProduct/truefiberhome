@@ -94,7 +94,7 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
           id: "services-internet",
           section: "services",
           label: "โปรเน็ตบ้าน",
-          path: "/boardband",
+          path: "/broadband",
           external: false,
         },
         {

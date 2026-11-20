@@ -18,7 +18,7 @@ const navItems = [
   },
   {
     name: "แพ็กเกจ",
-    href: "/boardband",
+    href: "/broadband",
     icon: <RocketLaunchRoundedIcon className="w-5 h-5" />,
   },
   {

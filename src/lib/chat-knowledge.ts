@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { PUBLIC_SITE_ROUTES } from "@/src/app/sitemap";
 import { lineSupport } from "@/src/context/line-path";
-import { broadbandPackageData } from "@/src/data/boardband";
+import { broadbandPackageData } from "@/src/data/broadband";
 import { contactInfo } from "@/src/data/contact";
 import { monthlyPackages } from "@/src/data/monthly";
 import { promotionPackages } from "@/src/data/promotions";

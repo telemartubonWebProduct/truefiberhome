@@ -25,7 +25,7 @@ interface FooterTemplate {
 }
 
 const SECTION_OPTIONS = ["company", "services", "support"];
-const FOOTER_PATH_OPTIONS = ["/home", "/service", "/boardband", "/topup", "/monthly", "/wEnergy", "/termsAndPrivacy"];
+const FOOTER_PATH_OPTIONS = ["/home", "/service", "/broadband", "/topup", "/monthly", "/wEnergy", "/termsAndPrivacy"];
 const LABEL_SUGGESTIONS_BY_SECTION: Record<string, string[]> = {
   company: ["Contact", "About Us", "Our Team"],
   services: ["Internet", "Wifi", "SolarCell", "เติมเงิน", "รายเดือน"],
@@ -35,7 +35,7 @@ const LABEL_SUGGESTIONS_BY_SECTION: Record<string, string[]> = {
 const DEFAULT_FOOTER_TEMPLATES: FooterTemplate[] = [
   { section: "company", label: "Contact", path: "/service", external: false, displayOrder: 0 },
   { section: "services", label: "Internet", path: "/topup", external: false, displayOrder: 1 },
-  { section: "services", label: "Wifi", path: "/boardband", external: false, displayOrder: 2 },
+  { section: "services", label: "Wifi", path: "/broadband", external: false, displayOrder: 2 },
   { section: "services", label: "SolarCell", path: "/wEnergy", external: false, displayOrder: 3 },
   { section: "support", label: "Help Center", path: "/service", external: false, displayOrder: 4 },
   { section: "support", label: "Terms & Privacy", path: "/termsAndPrivacy", external: false, displayOrder: 5 },

@@ -18,7 +18,7 @@ interface Props {
 }
 
 const VIDEO_PATH_OPTIONS = ["/assets/mock-vid-main.mp4"];
-const HERO_LINK_OPTIONS = [lineSupport, "/service", "/boardband", "/home#packages"];
+const HERO_LINK_OPTIONS = [lineSupport, "/service", "/broadband", "/home#packages"];
 
 function getButtonData(jsonData: unknown): { buttonLabel: string; buttonHref: string } {
   if (!jsonData || typeof jsonData !== "object" || Array.isArray(jsonData)) {

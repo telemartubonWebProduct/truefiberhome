@@ -17,7 +17,7 @@ interface Props {
   initialItems: MenuCategoryItem[];
 }
 
-const MENU_PATH_OPTIONS = ["/boardband", "/topup", "/monthly", "/wEnergy", "/service", "/home"];
+const MENU_PATH_OPTIONS = ["/broadband", "/topup", "/monthly", "/wEnergy", "/service", "/home"];
 
 const MENU_TEXT_OPTIONS = [
   "แพ็กเกจเน็ตบ้าน",
@@ -28,7 +28,7 @@ const MENU_TEXT_OPTIONS = [
 ];
 
 const TEXT_PATH_MAP: Record<string, string> = {
-  "แพ็กเกจเน็ตบ้าน": "/boardband",
+  "แพ็กเกจเน็ตบ้าน": "/broadband",
   "แพ็กเกจเติมเงิน": "/topup",
   "แพ็กเกจรายเดือน": "/monthly",
   "โซล่าเซลล์": "/wEnergy",

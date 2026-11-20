@@ -291,14 +291,14 @@ function BroadbandPromotionsClientInner({
           className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/55 p-4"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="boardband-modal-title"
+          aria-labelledby="broadband-modal-title"
           onClick={() => setSelectedPromotion(null)}
         >
           <div
             className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-[0_25px_60px_rgba(15,23,42,0.35)]"
             onClick={(event) => event.stopPropagation()}
           >
-            <h3 id="boardband-modal-title" className="text-xl font-black text-slate-900">
+            <h3 id="broadband-modal-title" className="text-xl font-black text-slate-900">
               สมัครแพ็กเกจ {selectedPromotion.name}
             </h3>
             <p className="mt-2 text-sm text-slate-600">

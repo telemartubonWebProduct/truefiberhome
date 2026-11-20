@@ -5,6 +5,7 @@ import Navbar from "@/src/components/layout/Navbar";
 import BottomNav from "@/src/components/layout/BottomNav";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import { Analytics } from "@vercel/analytics/next";
+import { fixLegacyPath } from "@/src/lib/api-normalize";
 import { SITE_URL, parsePhones } from "@/src/lib/site";
 
 const siteUrl = SITE_URL;
@@ -101,7 +102,7 @@ export default async function RootLayout({
     return null;
   };
 
-  const [siteSettings, navigationItems, footerLinks] = await Promise.all([
+  const [siteSettings, navigationRows, footerRows] = await Promise.all([
     prisma.siteSettings
       .findUnique({ where: { id: "singleton" } })
       .catch(onDbError("siteSettings")),
@@ -126,6 +127,14 @@ export default async function RootLayout({
           .catch(onDbError("footerLinks"))
       : Promise.resolve([]),
   ]);
+
+  // Menu and footer rows are rendered as stored, so legacy paths are fixed here.
+  const withFixedPath = (rows: any): any =>
+    Array.isArray(rows)
+      ? rows.map((row) => (typeof row?.path === "string" ? { ...row, path: fixLegacyPath(row.path) } : row))
+      : rows;
+  const navigationItems = withFixedPath(navigationRows);
+  const footerLinks = withFixedPath(footerRows);
 
   const phones = parsePhones(siteSettings?.phone);
 

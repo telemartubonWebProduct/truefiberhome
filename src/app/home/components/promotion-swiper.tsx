@@ -74,7 +74,7 @@ export default function PromotionSwiper({ packages = [] }: PromotionSwiperProps)
 
   const getCategoryLink = (catName?: string) => {
     if (!catName) return "#";
-    if (catName.includes("บ้าน")) return "/boardband";
+    if (catName.includes("บ้าน")) return "/broadband";
     if (catName.includes("รายเดือน")) return "/monthly";
     if (catName.includes("เติมเงิน")) return "/topup";
     return `/packages/${catName.toLowerCase().replace(/\s+/g, '-')}`;

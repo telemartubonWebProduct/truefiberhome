@@ -28,7 +28,7 @@ export default function InstallPromotion({ content }: InstallPromotionProps) {
   const primaryButtonHref =
     safeLink(content.primaryButtonHref) || lineSupport;
   const secondaryButtonHref =
-    safeLink(content.secondaryButtonHref) || "/boardband";
+    safeLink(content.secondaryButtonHref) || "/broadband";
 
   return (
     <section className="relative flex min-h-[280px] flex-1 flex-col items-center justify-center overflow-hidden rounded-xl bg-[#d9252a] p-7 text-center text-white shadow-[0_12px_36px_rgba(183,28,28,0.22)] md:p-9">

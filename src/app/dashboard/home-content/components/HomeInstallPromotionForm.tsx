@@ -17,7 +17,7 @@ interface Props {
 }
 
 const CTA_LABEL_OPTIONS = ["ตรวจสอบพื้นที่ทางไลน์", "สมัครเลย", "ดูแพ็กเกจ", "ติดต่อเจ้าหน้าที่"];
-const CTA_LINK_OPTIONS = [lineSupport, "/service", "/boardband", "/home#packages", "/topup", "/monthly"];
+const CTA_LINK_OPTIONS = [lineSupport, "/service", "/broadband", "/home#packages", "/topup", "/monthly"];
 
 function getJsonData(jsonData: unknown) {
   if (!jsonData || typeof jsonData !== "object" || Array.isArray(jsonData)) {
@@ -27,7 +27,7 @@ function getJsonData(jsonData: unknown) {
       primaryButtonLabel: "ตรวจสอบพื้นที่ทางไลน์",
       primaryButtonHref: lineSupport,
       secondaryButtonLabel: "ดูแพ็กเกจ",
-      secondaryButtonHref: "/boardband",
+      secondaryButtonHref: "/broadband",
       footerText: "ติดตั้งทั่วไทย | ทีมงานมืออาชีพ | บริการรวดเร็ว",
     };
   }
@@ -46,7 +46,7 @@ function getJsonData(jsonData: unknown) {
     secondaryButtonHref:
       typeof data.secondaryButtonHref === "string" && data.secondaryButtonHref.trim()
         ? data.secondaryButtonHref
-        : "/boardband",
+        : "/broadband",
     footerText:
       typeof data.footerText === "string"
         ? data.footerText

@@ -9,12 +9,12 @@ export const metadata: Metadata = {
   title: "โปรเน็ตบ้านทรู แพ็กเกจล่าสุด",
   description:
     "เปรียบเทียบโปรเน็ตบ้านทรู ความเร็ว ราคา และสิทธิพิเศษล่าสุด พร้อมเช็กพื้นที่ติดตั้งและสมัครกับทีมงาน True Fiber Home",
-  alternates: { canonical: "/boardband" },
+  alternates: { canonical: "/broadband" },
   openGraph: {
     title: "โปรเน็ตบ้านทรู แพ็กเกจล่าสุด | True Fiber Home",
     description:
       "รวมแพ็กเกจเน็ตบ้านทรู ราคาและสิทธิพิเศษล่าสุด เช็กพื้นที่และสมัครได้ทันที ",
-    url: "/boardband",
+    url: "/broadband",
     type: "website",
   },
 };
@@ -129,7 +129,7 @@ export default async function BroadbandPage() {
       "@type": "ListItem",
       position: index + 1,
       name: promotion.name,
-      url: promotion.buyUrl || "https://truefiberhome.com/boardband",
+      url: promotion.buyUrl || "https://truefiberhome.com/broadband",
     })),
   };
 
@@ -182,7 +182,7 @@ export default async function BroadbandPage() {
       </section>
 
       <ContactSection
-        sectionId="boardband-contact-section"
+        sectionId="broadband-contact-section"
         content={{
           title: "ติดต่อและสมัครบริการ",
           subtitle: "เลือกช่องทางที่สะดวก ทีมงานพร้อมแนะนำแพ็กเกจที่เหมาะกับคุณ",

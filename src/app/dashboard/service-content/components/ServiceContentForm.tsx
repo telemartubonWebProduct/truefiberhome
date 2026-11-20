@@ -36,7 +36,7 @@ interface Props {
 }
 
 const SERVICE_CTA_LABEL_OPTIONS = ["เช็กพื้นที่บริการติดตั้ง/ย้ายจุด", "เช็กพื้นที่บริการ", "นัดทีมติดตั้ง"];
-const SERVICE_LINK_OPTIONS = [lineSupport, "/service", "/boardband", "/home#packages"];
+const SERVICE_LINK_OPTIONS = [lineSupport, "/service", "/broadband", "/home#packages"];
 const FACEBOOK_LINK_OPTIONS = ["https://www.facebook.com/profile.php?id=61558200500505", "https://facebook.com/"];
 
 function normalizeEmbedInput(value: unknown): string {

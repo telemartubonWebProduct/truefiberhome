@@ -106,7 +106,7 @@ export async function PUT(request: Request, context: Context) {
     });
 
     revalidatePath("/");
-    revalidatePath("/boardband");
+    revalidatePath("/broadband");
     revalidatePath("/dashboard/home-content");
 
     return NextResponse.json(updated);
@@ -128,7 +128,7 @@ export async function DELETE(_: Request, context: Context) {
     await prisma.package.delete({ where: { id } });
 
     revalidatePath("/");
-    revalidatePath("/boardband");
+    revalidatePath("/broadband");
     revalidatePath("/dashboard/home-content");
 
     return NextResponse.json({ ok: true });

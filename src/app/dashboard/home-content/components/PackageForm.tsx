@@ -40,7 +40,7 @@ const SPEED_SUGGESTIONS: Record<string, string[]> = {
   "ไวไฟฮอตสปอต": ["10Mbps", "20Mbps", "100Mbps"],
   default: ["500/500 Mbps", "60GB", "ไม่จำกัด"],
 };
-const BUY_URL_SUGGESTIONS = [lineSupport, "/service", "/boardband", "/topup", "/monthly", "/wEnergy"];
+const BUY_URL_SUGGESTIONS = [lineSupport, "/service", "/broadband", "/topup", "/monthly", "/wEnergy"];
 
 function parseInitialFreebies(freebie: unknown): FreebieItemForm[] {
   if (Array.isArray(freebie)) {

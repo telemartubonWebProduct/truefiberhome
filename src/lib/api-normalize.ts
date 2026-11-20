@@ -37,6 +37,11 @@ function normalizeRawUssd(raw: string): string | null {
   return `tel:${encodeTelHash(compact)}`;
 }
 
+/** Links saved before the /boardband page was renamed still point at the old path. */
+export function fixLegacyPath(path: string): string {
+  return path.replace(/^\/boardband(?=$|[/?#])/, "/broadband");
+}
+
 export function safeLink(value: unknown): string | null {
   const normalized = nullableString(value);
   if (!normalized) {
@@ -48,7 +53,7 @@ export function safeLink(value: unknown): string | null {
   }
 
   if (normalized.startsWith("/") || normalized.startsWith("#")) {
-    return normalized;
+    return fixLegacyPath(normalized);
   }
 
   if (TEL_LINK_PREFIX_RE.test(normalized)) {

@@ -31,10 +31,10 @@ const PARENT_KEY_OPTIONS = [
   { value: "mega.service", label: "บริการและสอบถาม" },
 ];
 
-const NAV_PATH_OPTIONS = ["/boardband", "/topup", "/monthly", "/wEnergy", "/service", "/home", "/termsAndPrivacy"];
+const NAV_PATH_OPTIONS = ["/broadband", "/topup", "/monthly", "/wEnergy", "/service", "/home", "/termsAndPrivacy"];
 
 const DEFAULT_NAV_TEMPLATES: NavigationTemplate[] = [
-  { label: "แพ็กเกจเน็ตบ้านทรู", path: "/boardband", parentKey: "mega.broadband", displayOrder: 0 },
+  { label: "แพ็กเกจเน็ตบ้านทรู", path: "/broadband", parentKey: "mega.broadband", displayOrder: 0 },
   { label: "บริการติดตั้งและย้ายจุด", path: "/service", parentKey: "mega.broadband", displayOrder: 1 },
   { label: "เติมเงิน", path: "/topup", parentKey: "mega.mobile", displayOrder: 2 },
   { label: "รายเดือน", path: "/monthly", parentKey: "mega.mobile", displayOrder: 3 },

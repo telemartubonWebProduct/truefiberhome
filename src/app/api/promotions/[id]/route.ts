@@ -117,7 +117,7 @@ export async function PUT(request: Request, context: Context) {
     });
 
     revalidatePath("/");
-    revalidatePath("/boardband");
+    revalidatePath("/broadband");
     revalidatePath("/monthly");
     revalidatePath("/topup");
     revalidatePath("/wEnergy");
@@ -145,7 +145,7 @@ export async function DELETE(_: Request, context: Context) {
     await prisma.promotion.delete({ where: { id } });
 
     revalidatePath("/");
-    revalidatePath("/boardband");
+    revalidatePath("/broadband");
     revalidatePath("/monthly");
     revalidatePath("/topup");
     revalidatePath("/wEnergy");

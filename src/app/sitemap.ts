@@ -8,7 +8,7 @@ const siteUrl = SITE_URL;
 
 export const PUBLIC_SITE_ROUTES = [
   "/",
-  "/boardband",
+  "/broadband",
   "/areas",
   "/guides",
   "/topup",
