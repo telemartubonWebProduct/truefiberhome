@@ -262,8 +262,8 @@ export default async function HomePage() {
             className="techimg rv"
             src="/assets/home/k-tech.webp"
             alt="ภาพประกอบ 3 มิติ ช่างติดตั้งเน็ตบ้านถือเราเตอร์และยกนิ้ว"
-            width={532}
-            height={818}
+            width={475}
+            height={1088}
             sizes="(max-width: 900px) 70vw, 300px"
           />
           <div className="rv">
