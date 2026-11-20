@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import "@/src/components/home/home.css";
+import "@/src/components/home/guide.css";
 import AreaSection from "@/src/components/home/AreaSection";
 import { tfhClass } from "@/src/components/home/fonts";
 import HeroMotion from "@/src/components/home/HeroMotion";
@@ -13,6 +14,7 @@ import SpeedChooser from "@/src/components/home/SpeedChooser";
 import { formatPrice } from "@/src/components/home/package-art";
 import TrackedLineLink from "@/src/app/home/components/TrackedLineLink";
 import { lineSupport } from "@/src/context/line-path";
+import { GUIDES } from "@/src/data/guides";
 import { HOME_FAQ } from "@/src/data/home-faq";
 import { INSTALL_STEPS } from "@/src/data/install-steps";
 import { REGIONS } from "@/src/data/provinces";
@@ -201,6 +203,15 @@ export default async function HomePage() {
               </details>
             ))}
           </div>
+
+          <h2 style={{ marginTop: 96 }}>คู่มือก่อนติดเน็ตบ้าน</h2>
+          <ul className="gd-more">
+            {GUIDES.map((guide) => (
+              <li key={guide.slug}>
+                <Link href={`/guides/${guide.slug}`}>{guide.title}</Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
