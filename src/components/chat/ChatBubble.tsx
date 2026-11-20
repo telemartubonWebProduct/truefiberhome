@@ -173,7 +173,7 @@ function getPromotionHref(pkg: PackageItem) {
     return normalizedLink;
   }
 
-  return pkg.category_id === 1 ? "/boardband" : "/monthly";
+  return pkg.category_id === 1 ? "/broadband" : "/monthly";
 }
 
 export default function ChatBubble({ message, promotionFlexType = null }: ChatBubbleProps) {

@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     });
 
     revalidatePath("/");
-    revalidatePath("/boardband");
+    revalidatePath("/broadband");
     revalidatePath("/monthly");
     revalidatePath("/topup");
     revalidatePath("/wEnergy");

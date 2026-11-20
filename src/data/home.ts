@@ -3,7 +3,7 @@ import type { MenuItem, HeroContent, SlideData, BannerData } from "@/src/types/c
 // ===== Menu Items (HeaderBar) =====
 export const menuItems: MenuItem[] = [
   { src: "/assets/Icon/ico-package.svg", alt: "แพ็กเกจมือถือ", text: "แพ็กเกจมือถือ", path: "/topup" },
-  { src: "/assets/Icon/ico-true-online.svg", alt: "แพ็กเกจเน็ตบ้าน", text: "แพ็กเกจเน็ตบ้าน", path: "/boardband" },
+  { src: "/assets/Icon/ico-true-online.svg", alt: "แพ็กเกจเน็ตบ้าน", text: "แพ็กเกจเน็ตบ้าน", path: "/broadband" },
   { src: "/assets/Icon/ico-entertainment.svg", alt: "แพ็กเกจความบันเทิง", text: "แพ็กเกจความบันเทิง", path: "/monthly#entertainment" },
   { src: "/assets/Icon/ico-lifestyle.svg", alt: "ไลฟ์สไตล์", text: "ไลฟ์สไตล์", path: "/monthly#game" },
   { src: "/assets/Icon/ico-smart-living.svg", alt: "พลังงานทางเลือก", text: "พลังงานทางเลือก", path: "/wEnergy" },

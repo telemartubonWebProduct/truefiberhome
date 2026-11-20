@@ -48,7 +48,8 @@ export function safeLink(value: unknown): string | null {
   }
 
   if (normalized.startsWith("/") || normalized.startsWith("#")) {
-    return normalized;
+    // Links saved before the /boardband page was renamed still point at the old path.
+    return normalized.replace(/^\/boardband(?=$|[/?#])/, "/broadband");
   }
 
   if (TEL_LINK_PREFIX_RE.test(normalized)) {

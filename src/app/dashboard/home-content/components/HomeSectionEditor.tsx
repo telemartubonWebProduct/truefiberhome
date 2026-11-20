@@ -26,7 +26,7 @@ interface Props {
   jsonItemFields?: { key: string; label: string; type: "text" | "number" }[];
 }
 
-const GENERIC_LINK_OPTIONS = [lineSupport, "/service", "/boardband", "/topup", "/monthly", "/wEnergy", "/home"];
+const GENERIC_LINK_OPTIONS = [lineSupport, "/service", "/broadband", "/topup", "/monthly", "/wEnergy", "/home"];
 
 export default function HomeSectionEditor({
   sectionKey,

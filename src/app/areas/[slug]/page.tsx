@@ -195,7 +195,7 @@ export default async function AreaPage({ params }: Params) {
           <p className="fine">
             ราคายังไม่รวมภาษีมูลค่าเพิ่ม ค่าแรกเข้าและเงื่อนไขขึ้นกับโปรโมชัน ณ วันสมัคร
             เจ้าหน้าที่แจ้งยอดทั้งหมดก่อนยืนยัน{" "}
-            <Link href="/boardband" style={{ textDecoration: "underline" }}>
+            <Link href="/broadband" style={{ textDecoration: "underline" }}>
               ดูรายละเอียดโปรเน็ตบ้านทั้งหมด
             </Link>
           </p>

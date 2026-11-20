@@ -11,7 +11,7 @@ export const mockData: NavItem[] = [
   {
     title: "แพ็กเกจเน็ตบ้าน",
     subItems: [
-      { name: "แพ็กเกจเน็ตบ้าน", link: "/boardband" },
+      { name: "แพ็กเกจเน็ตบ้าน", link: "/broadband" },
     ],
   },
   {

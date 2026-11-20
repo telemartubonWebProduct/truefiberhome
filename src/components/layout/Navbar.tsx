@@ -61,7 +61,7 @@ const FALLBACK_NAV_ITEMS: NavigationItem[] = [
   {
     id: "fallback-broadband-1",
     label: "แพ็กเกจเน็ตบ้านทรู",
-    path: "/boardband",
+    path: "/broadband",
     parentKey: "mega.broadband",
     iconUrl:
       "https://images.contentstack.io/v3/assets/blt8ba403bee4433fd8/blt040771c058a482ff/691c98197a665989eb2fa25b/pack-card-tol-starter.jpg",
@@ -269,11 +269,11 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
               เกี่ยวกับ
             </Link>
             <Link
-              href="/articles"
+              href="/guides"
               className="text-[15px] font-semibold text-[#141414] hover:text-[#e5132d] transition-colors py-2"
               onMouseEnter={() => handleMouseEnter("none")}
             >
-              บทความ
+              คู่มือ
             </Link>
             <Link
               href="/termsAndPrivacy"
@@ -428,8 +428,8 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
                 <Link href="/about" className="block py-3 text-[13px] font-semibold tracking-widest text-gray-900 border-b border-gray-100">
                   เกี่ยวกับเรา
                 </Link>
-                <Link href="/articles" className="block py-3 text-[13px] font-semibold tracking-widest text-gray-900 border-b border-gray-100">
-                  บทความ
+                <Link href="/guides" className="block py-3 text-[13px] font-semibold tracking-widest text-gray-900 border-b border-gray-100">
+                  คู่มือ
                 </Link>
                 <Link href="/termsAndPrivacy" className="block py-3 text-[13px] font-semibold tracking-widest text-gray-900 text-left">
                   นโยบายและเงื่อนไข

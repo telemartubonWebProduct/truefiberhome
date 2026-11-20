@@ -1,4 +1,4 @@
-import { broadbandPackageData } from "@/src/data/boardband";
+import { broadbandPackageData } from "@/src/data/broadband";
 import { monthlyPackages } from "@/src/data/monthly";
 import { promotionPackages } from "@/src/data/promotions";
 import { topupPackages } from "@/src/data/topup";

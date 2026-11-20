@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     });
 
     revalidatePath("/");
-    revalidatePath("/boardband");
+    revalidatePath("/broadband");
     revalidatePath("/dashboard/home-content");
 
     return NextResponse.json(created, { status: 201 });

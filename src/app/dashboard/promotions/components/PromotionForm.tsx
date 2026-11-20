@@ -62,7 +62,7 @@ const BUY_URL_OPTIONS = [
   "*111*12345#",
   "tel:*111*12345%23",
   "/service",
-  "/boardband",
+  "/broadband",
   "/topup",
   "/monthly",
   "/wEnergy",

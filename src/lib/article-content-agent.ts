@@ -260,7 +260,7 @@ function buildSchema(maxItems: number) {
             ctaLabel: { type: "string" },
             ctaUrl: {
               type: "string",
-              enum: ["/boardband", "/service", "/home#packages"],
+              enum: ["/broadband", "/service", "/home#packages"],
             },
             sourceUrls: {
               type: "array",
@@ -466,11 +466,11 @@ function normalizeArticle(
     imageReview?.accepted
       ? coverImageUrl
       : null;
-  const ctaUrl = ["/boardband", "/service", "/home#packages"].includes(
+  const ctaUrl = ["/broadband", "/service", "/home#packages"].includes(
     value.ctaUrl
   )
     ? value.ctaUrl
-    : "/boardband";
+    : "/broadband";
   const slug = slugify(title);
   if (!slug) return null;
 

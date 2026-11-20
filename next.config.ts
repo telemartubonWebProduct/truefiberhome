@@ -53,7 +53,11 @@ const nextConfig: NextConfig = {
     ],
   },
   async redirects() {
-    return [{ source: "/home", destination: "/", permanent: true }];
+    return [
+      { source: "/home", destination: "/", permanent: true },
+      // The page was first published under a misspelled path.
+      { source: "/boardband", destination: "/broadband", permanent: true },
+    ];
   },
   async headers() {
     return [
