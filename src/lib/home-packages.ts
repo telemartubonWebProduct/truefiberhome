@@ -159,3 +159,44 @@ export async function getHomePackages(): Promise<HomePackage[]> {
     return FALLBACK_PACKAGES;
   }
 }
+
+export type HeroPlan = {
+  k: HomeArt;
+  label: string;
+  name: string;
+  price: number;
+  /** "500/500 Mbps · สัญญา 24 เดือน" */
+  meta: string;
+};
+
+const HERO_LABELS: Record<HomeArt, string> = {
+  net: "ทั่วไป",
+  movie: "ดูหนัง ซีรีส์",
+  game: "เล่นเกม",
+  cctv: "กล้องวงจรปิด",
+  mesh: "บ้านหลายชั้น",
+};
+
+/**
+ * One plan per use case for the hero. The first is always the cheapest package
+ * overall, so the hero's "เริ่ม N บาท" matches the page title. The rest are the
+ * cheapest package of each kind; kinds with no package are left out.
+ */
+export function buildHeroPlans(packages: HomePackage[]): HeroPlan[] {
+  const byPrice = [...packages].sort((a, b) => a.price - b.price);
+  const toPlan = (item: HomePackage, k: HomeArt): HeroPlan => ({
+    k,
+    label: HERO_LABELS[k],
+    name: item.name,
+    price: item.price,
+    meta: [item.speedLabel, item.termLabel].filter(Boolean).join(" · "),
+  });
+
+  const first = byPrice[0];
+  const plans = [toPlan(first, "net")];
+  (["movie", "game", "cctv", "mesh"] as const).forEach((k) => {
+    const match = byPrice.find((item) => item.art === k && item.id !== first.id);
+    if (match) plans.push(toPlan(match, k));
+  });
+  return plans;
+}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Anuphan, Bagel_Fat_One } from "next/font/google";
 import "@/src/components/home/home.css";
 import AreaSection from "@/src/components/home/AreaSection";
+import HeroMotion from "@/src/components/home/HeroMotion";
 import HomeIcon from "@/src/components/home/HomeIcon";
 import HomeMotion from "@/src/components/home/HomeMotion";
 import PackageGrid from "@/src/components/home/PackageGrid";
@@ -14,7 +15,7 @@ import TrackedLineLink from "@/src/app/home/components/TrackedLineLink";
 import { lineSupport } from "@/src/context/line-path";
 import { HOME_FAQ } from "@/src/data/home-faq";
 import { REGIONS } from "@/src/data/provinces";
-import { getHomePackages } from "@/src/lib/home-packages";
+import { buildHeroPlans, getHomePackages } from "@/src/lib/home-packages";
 import { SITE_URL, absoluteUrl, formatPhone, parsePhones, telHref } from "@/src/lib/site";
 
 const anuphan = Anuphan({
@@ -137,67 +138,7 @@ export default async function HomePage() {
       />
       <HomeMotion />
 
-      <section className="hero" id="tfh-hero">
-        <div className="stage">
-          <div className="big" aria-hidden="true">
-            <div id="tfh-big">
-              <span className="l l0">{from}</span>
-              <span className="l l1">{from}</span>
-              <span className="l l2">{from}</span>
-              <span className="f">{from}</span>
-              <b className="unit">บาท/เดือน</b>
-            </div>
-          </div>
-          <Image
-            className="who"
-            src="/assets/home/k-hero.webp"
-            alt="ภาพประกอบ 3 มิติ หญิงสาวนั่งใช้แล็ปท็อปบนเราเตอร์ WiFi"
-            width={656}
-            height={805}
-            sizes="(max-width: 768px) 90vw, 520px"
-            priority
-          />
-          <div className="words" aria-hidden="true">
-            <ul id="tfh-words-left">
-              <li>ไฟเบอร์แท้</li>
-              <li>500/500 Mbps</li>
-              <li>WiFi 6</li>
-            </ul>
-            <ul id="tfh-words-right">
-              <li>ดูหนัง</li>
-              <li>เล่นเกม</li>
-              <li>ประชุมงาน</li>
-            </ul>
-          </div>
-        </div>
-        <div className="wrap">
-          <div className="panel">
-            <div>
-              <h1>
-                <span className="nb">สมัครเน็ตบ้านทรู</span>{" "}
-                <em className="nb">เริ่ม {from} บาท/เดือน</em>
-              </h1>
-              <p>
-                ไฟเบอร์ 500/500 Mbps พร้อมเราเตอร์ WiFi 6 ส่งตำแหน่งบ้านมา
-                เจ้าหน้าที่เช็กคู่สายและนัดวันติดตั้งให้
-              </p>
-            </div>
-            <div className="acts">
-              <TrackedLineLink href={lineSupport} source="home_hero" className="btn btn-r">
-                <HomeIcon name="pin" />
-                เช็กพื้นที่ทาง LINE
-              </TrackedLineLink>
-              <a className="btn btn-l" href="#packages">
-                ดูแพ็กเกจ
-              </a>
-              <p className="trust">
-                ดำเนินการโดย บริษัท เทเลมาร์ท คอมมิวนิเคชั่น จำกัด
-                ตัวแทนจำหน่ายทรูออนไลน์ที่ได้รับการแต่งตั้ง
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroMotion plans={buildHeroPlans(packages)} lineHref={lineSupport} />
 
       <div className="mq" aria-hidden="true">
         <div>
