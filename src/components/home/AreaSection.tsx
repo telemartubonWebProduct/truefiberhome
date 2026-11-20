@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { Region } from "@/src/data/provinces";
 
 /** The province shown large on each region's card. Falls back to the region's first province. */
@@ -19,7 +20,16 @@ const FEATURED: Record<string, string> = {
  * `stack` holds region names from bottom to top; picking a region moves its card to the top.
  * All regions are in the HTML; the tabs only toggle `hidden`.
  */
-export default function AreaSection({ regions, children }: { regions: Region[]; children?: ReactNode }) {
+export default function AreaSection({
+  regions,
+  links = {},
+  children,
+}: {
+  regions: Region[];
+  /** Province name -> area page path. Provinces without one stay plain text. */
+  links?: Record<string, string>;
+  children?: ReactNode;
+}) {
   const [stack, setStack] = useState(() => regions.map((region) => region.name).reverse());
   const [picked, setPicked] = useState(false);
   const active = stack[stack.length - 1] ?? "";
@@ -67,10 +77,15 @@ export default function AreaSection({ regions, children }: { regions: Region[]; 
         {regions.map((region) => (
           <ul key={region.name} className="prov" aria-label={region.name} hidden={active !== region.name}>
             {region.provinces.map((province) => (
-              <li key={province}>{province}</li>
+              <li key={province}>{links[province] ? <Link href={links[province]}>{province}</Link> : province}</li>
             ))}
           </ul>
         ))}
+        <p className="fine">
+          <Link href="/areas" style={{ textDecoration: "underline" }}>
+            ดูพื้นที่ให้บริการทุกจังหวัด
+          </Link>
+        </p>
       </div>
     </>
   );

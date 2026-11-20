@@ -2,9 +2,9 @@ import { cache } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Anuphan, Bagel_Fat_One } from "next/font/google";
 import "@/src/components/home/home.css";
 import AreaSection from "@/src/components/home/AreaSection";
+import { tfhClass } from "@/src/components/home/fonts";
 import HeroMotion from "@/src/components/home/HeroMotion";
 import HomeIcon from "@/src/components/home/HomeIcon";
 import HomeMotion from "@/src/components/home/HomeMotion";
@@ -14,39 +14,16 @@ import { formatPrice } from "@/src/components/home/package-art";
 import TrackedLineLink from "@/src/app/home/components/TrackedLineLink";
 import { lineSupport } from "@/src/context/line-path";
 import { HOME_FAQ } from "@/src/data/home-faq";
+import { INSTALL_STEPS } from "@/src/data/install-steps";
 import { REGIONS } from "@/src/data/provinces";
+import { areaLinks } from "@/src/lib/areas";
 import { buildHeroPlans, getHomePackages } from "@/src/lib/home-packages";
-import { SITE_URL, absoluteUrl, formatPhone, parsePhones, telHref } from "@/src/lib/site";
-
-const anuphan = Anuphan({
-  subsets: ["thai", "latin"],
-  display: "swap",
-  variable: "--font-anuphan",
-});
-
-const fat = Bagel_Fat_One({
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap",
-  variable: "--font-fat",
-});
+import { SITE_URL, absoluteUrl, formatPhone, telHref } from "@/src/lib/site";
+import { getSitePhones } from "@/src/lib/site-phones";
 
 export const revalidate = 300;
 
-const FALLBACK_PHONE = "0639274977";
-
 const loadPackages = cache(getHomePackages);
-
-const loadPhones = cache(async (): Promise<string[]> => {
-  try {
-    const { prisma } = await import("@/src/lib/prisma");
-    const settings = await prisma.siteSettings.findUnique({ where: { id: "singleton" } });
-    const phones = parsePhones(settings?.phone);
-    return phones.length > 0 ? phones : [FALLBACK_PHONE];
-  } catch {
-    return [FALLBACK_PHONE];
-  }
-});
 
 function lowestPrice(prices: number[]): string {
   return formatPrice(Math.min(...prices));
@@ -67,13 +44,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const STEPS = [
-  { title: "ส่งตำแหน่งบ้าน", text: "แชร์โลเคชันหรือพิมพ์ที่อยู่ทาง LINE" },
-  { title: "เจ้าหน้าที่เช็กคู่สาย", text: "ยืนยันว่ามีสายไฟเบอร์ถึงบ้านคุณ" },
-  { title: "เลือกแพ็กเกจ", text: "เทียบราคาและของที่ได้ก่อนตกลง" },
-  { title: "นัดวันติดตั้ง", text: "ช่างเข้าติดตั้งตามวันที่คุณสะดวก" },
-];
-
 const SERVICES = [
   { href: "/monthly", title: "ซิมรายเดือน ทรู ดีแทค", text: "เปิดเบอร์ใหม่ ย้ายค่าย และแพ็กเสริม", cta: "ดูแพ็กเกจรายเดือน" },
   { href: "/topup", title: "ซิมเติมเงิน", text: "โปรเน็ตรายวัน รายสัปดาห์ และ 30 วัน", cta: "ดูโปรเติมเงิน" },
@@ -83,7 +53,7 @@ const SERVICES = [
 const MARQUEE = ["เน็ตบ้านทรู", "ไฟเบอร์แท้", "500/500 Mbps", "เราเตอร์ WiFi 6"];
 
 export default async function HomePage() {
-  const [packages, phones] = await Promise.all([loadPackages(), loadPhones()]);
+  const [packages, phones] = await Promise.all([loadPackages(), getSitePhones()]);
   const from = lowestPrice(packages.map((item) => item.price));
   const mainPhone = phones[0];
   const marquee = [...MARQUEE, `เริ่ม ${from} บาท`];
@@ -131,7 +101,7 @@ export default async function HomePage() {
   ];
 
   return (
-    <div className={`tfh ${anuphan.variable} ${fat.variable}`}>
+    <div className={tfhClass}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
@@ -167,7 +137,7 @@ export default async function HomePage() {
 
       <section id="areas">
         <div className="wrap areas">
-          <AreaSection regions={REGIONS}>
+          <AreaSection regions={REGIONS} links={areaLinks()}>
             <h2>
               <span className="nb">เช็กพื้นที่ติดเน็ตบ้านทรู</span> <span className="nb">ได้ทุกจังหวัด</span>
             </h2>
@@ -191,7 +161,7 @@ export default async function HomePage() {
               <span className="nb">ติดเน็ตบ้านทรู</span> <span className="nb">4 ขั้นตอน</span>
             </h2>
             <ol className="steps">
-              {STEPS.map((step) => (
+              {INSTALL_STEPS.map((step) => (
                 <li key={step.title}>
                   <div>
                     <h3>{step.title}</h3>

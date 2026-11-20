@@ -1,0 +1,31 @@
+/* Area (province) pages. Builds on home.css; scoped to .tfh */
+.tfh .ar-head{background:var(--sun);padding:112px 0 56px;overflow:hidden}
+.tfh .ar-head-grid{display:grid;gap:28px;align-items:end}
+.tfh .ar-head-grid>*{min-width:0}
+.tfh .ar-crumbs{display:flex;flex-wrap:wrap;gap:6px;font-size:14px;font-weight:500;margin-bottom:18px}
+.tfh .ar-crumbs a{text-decoration:underline;text-underline-offset:3px}
+.tfh .ar-crumbs a::after{content:"/";display:inline-block;margin-left:6px;text-decoration:none}
+.tfh .ar-crumbs span{opacity:.7}
+.tfh .ar-head h1{font-size:clamp(36px,6.4vw,76px);font-weight:700;line-height:1.1;letter-spacing:-.01em}
+.tfh .ar-head h1 em{font-style:normal;color:var(--red)}
+.tfh .ar-lead{font-size:18px;max-width:36rem;margin-top:14px}
+.tfh .ar-acts{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.tfh .ar-trust{font-size:14px;line-height:1.5;margin-top:16px;opacity:.75;max-width:34rem}
+.tfh .ar-fig{position:relative;justify-self:center;display:grid;justify-items:center;line-height:1;padding-right:120px}
+.tfh .ar-fig b{font-family:var(--fat);font-weight:400;font-size:clamp(96px,12vw,150px);color:#fff;text-shadow:5px 5px 0 var(--ink)}
+.tfh .ar-fig span{background:var(--ink);color:#fff;font-weight:700;font-size:15px;padding:6px 16px;border-radius:999px;rotate:-4deg}
+.tfh .ar-fig img{position:absolute;right:0;bottom:-70px;width:130px;filter:drop-shadow(0 14px 14px rgba(0,0,0,.25))}
+.tfh .ar-districts{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));margin-top:28px}
+.tfh .ar-tint{background:#fff}
+.tfh .ar-steps{max-width:760px}
+.tfh .ar-regions{display:grid;gap:56px}
+.tfh .ar-regions h2{font-size:clamp(24px,3.4vw,36px)}
+@media(min-width:900px){
+.tfh .ar-head-grid{grid-template-columns:1.25fr .75fr}
+.tfh .ar-fig img{width:170px}
+.tfh .ar-fig{padding-right:150px}
+}
+@media(max-width:899px){
+.tfh .ar-fig{display:none}
+.tfh .ar-head{padding-bottom:44px}
+}

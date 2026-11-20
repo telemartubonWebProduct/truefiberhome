@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/src/lib/prisma";
+import { LISTED_AREAS, areaPath } from "@/src/lib/areas";
 import { SITE_URL } from "@/src/lib/site";
 
 const siteUrl = SITE_URL;
@@ -7,6 +8,7 @@ const siteUrl = SITE_URL;
 export const PUBLIC_SITE_ROUTES = [
   "/",
   "/boardband",
+  "/areas",
   "/topup",
   "/monthly",
   "/wEnergy",
@@ -45,5 +47,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     images: article.coverImage ? [article.coverImage] : undefined,
   }));
 
-  return [...routes, ...articleRoutes];
+  const areaRoutes: MetadataRoute.Sitemap = LISTED_AREAS.map((area) => ({
+    url: `${siteUrl}${areaPath(area)}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  return [...routes, ...areaRoutes, ...articleRoutes];
 }
