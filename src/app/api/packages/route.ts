@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       },
     });
 
-    revalidatePath("/home");
+    revalidatePath("/");
     revalidatePath("/boardband");
     revalidatePath("/dashboard/home-content");
 

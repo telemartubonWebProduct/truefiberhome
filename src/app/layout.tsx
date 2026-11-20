@@ -5,9 +5,9 @@ import Navbar from "@/src/components/layout/Navbar";
 import BottomNav from "@/src/components/layout/BottomNav";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import { Analytics } from "@vercel/analytics/next";
+import { SITE_URL, parsePhones } from "@/src/lib/site";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.truefiberhome.com";
+const siteUrl = SITE_URL;
 
 // ยิง analytics เฉพาะ production deploy (โดเมนหลัก) เท่านั้น
 // VERCEL_ENV: 'production' | 'preview' | 'development'
@@ -23,9 +23,6 @@ export const metadata: Metadata = {
   description:
     "True Fiber Home ให้บริการ เน็ตบ้านทรูออนไลน์ ซิมมือถือทรู-ดีแทค แพ็กเกจความบันเทิง โซล่าเซลล์ครบวงจร และอุปกรณ์ไอที พร้อมช่องทางติดต่อที่ตรวจสอบได้",
   metadataBase: new URL(siteUrl),
-  alternates: {
-    canonical: "/home",
-  },
   keywords: [
     "เน็ตทรูไฟเบอร์",
     "เน็ตบ้านทรู",
@@ -61,7 +58,7 @@ export const metadata: Metadata = {
     title: "True Fiber Home | เน็ตบ้าน มือถือ โซล่าเซลล์",
     description:
       "สมัครเน็ตบ้านทรูออนไลน์ แพ็กเกจมือถือ และบริการติดตั้งครบวงจร โดยทีมผู้เชี่ยวชาญ พร้อมช่องทางติดต่อที่ตรวจสอบได้",
-    url: `${siteUrl}/home`,
+    url: siteUrl,
     images: [
       {
         url: "/assets/Trueonline-logo.svg.png",
@@ -130,6 +127,8 @@ export default async function RootLayout({
       : Promise.resolve([]),
   ]);
 
+  const phones = parsePhones(siteSettings?.phone);
+
   return (
     // 2) เพิ่ม className จากตัวแปร prompt.className ตรงแท็ก html หรือ body
     <html lang="th" suppressHydrationWarning>
@@ -143,15 +142,13 @@ export default async function RootLayout({
               name: "True Fiber Home",
               url: siteUrl,
               logo: `${siteUrl}/assets/Trueonline-logo.svg.png`,
-              contactPoint: [
-                {
-                  "@type": "ContactPoint",
-                  contactType: "customer support",
-                  telephone: siteSettings?.phone || "0910192552",
-                  areaServed: "TH",
-                  availableLanguage: ["th", "en"],
-                },
-              ],
+              contactPoint: phones.map((telephone) => ({
+                "@type": "ContactPoint",
+                contactType: "customer support",
+                telephone,
+                areaServed: "TH",
+                availableLanguage: ["th", "en"],
+              })),
             }),
           }}
         />

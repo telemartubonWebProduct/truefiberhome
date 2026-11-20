@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import LineIcon from "@/src/assets/icons/line-icon.svg";
 import { useSiteSettings } from "@/src/context/SiteSettingsContext";
 import { trackLineClick } from "@/src/lib/track-event";
+import { formatPhone, parsePhones, telHref } from "@/src/lib/site";
 
 interface FooterLinkItem {
   id: string;
@@ -146,17 +147,17 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
 
   if (isHiddenRoute) return null;
 
-  const phoneNumbers = siteSettings?.phone
-    ? siteSettings.phone.split(",").map((phone) => phone.trim()).filter(Boolean)
-    : ["0910192552", "0902518964", "0841041506"];
+  const parsedPhones = parsePhones(siteSettings?.phone);
+  const phoneNumbers =
+    parsedPhones.length > 0 ? parsedPhones : ["0910192552", "0902518964", "0841041506"];
 
   return (
     <footer className="bg-black text-white">
       <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <FooterColumn title="Company" items={linksBySection.company ?? []} />
-          <FooterColumn title="Services" items={linksBySection.services ?? []} />
-          <FooterColumn title="Support" items={linksBySection.support ?? []} />
+          <FooterColumn title="เกี่ยวกับเรา" items={linksBySection.company ?? []} />
+          <FooterColumn title="บริการ" items={linksBySection.services ?? []} />
+          <FooterColumn title="ช่วยเหลือ" items={linksBySection.support ?? []} />
 
           <div>
             <h2 className="mb-4 text-base font-bold uppercase text-red-500">
@@ -190,10 +191,10 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
               {phoneNumbers.map((phone) => (
                 <a
                   key={phone}
-                  href={`tel:${phone.replace(/\s+/g, "")}`}
+                  href={telHref(phone)}
                   className="block transition-colors hover:text-white"
                 >
-                  {phone}
+                  {formatPhone(phone)}
                 </a>
               ))}
             </div>

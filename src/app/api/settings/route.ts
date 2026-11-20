@@ -39,7 +39,7 @@ export async function PUT(request: Request) {
     });
 
     revalidatePath("/", "layout");
-    revalidatePath("/home");
+    revalidatePath("/");
     revalidatePath("/dashboard/home-content");
 
     return NextResponse.json(settings);

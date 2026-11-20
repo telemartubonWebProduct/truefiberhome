@@ -88,7 +88,7 @@ export async function PUT(request: Request, context: Context) {
       data,
     });
 
-    revalidatePath("/home");
+    revalidatePath("/");
     revalidatePath("/dashboard/home-content");
 
     return NextResponse.json(updated);
@@ -117,7 +117,7 @@ export async function DELETE(_: Request, context: Context) {
 
     await contactMethodDelegate.delete({ where: { id } });
 
-    revalidatePath("/home");
+    revalidatePath("/");
     revalidatePath("/dashboard/home-content");
 
     return NextResponse.json({ ok: true });

@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.truefiberhome.com";
+import { SITE_URL } from "@/src/lib/site";
+
+const siteUrl = SITE_URL;
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -10,7 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: [
           "/",
-          "/home",
           "/boardband",
           "/topup",
           "/monthly",
@@ -21,7 +21,6 @@ export default function robots(): MetadataRoute.Robots {
           "/terms-of-service",
           "/anti-phishing",
           "/about",
-          "/stories",
           "/articles",
           "/articles/*",
         ],

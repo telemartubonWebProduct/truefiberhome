@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { lineSupport } from "@/src/context/line-path";
+import { trackLineClick } from "@/src/lib/track-event";
 
 interface NavigationItem {
   id: string;
@@ -217,11 +219,11 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
       className="fixed top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4"
       onMouseLeave={handleMouseLeave}
     >
-      <div className="w-full max-w-[900px] bg-white rounded-[10px] shadow-[0_4px_24px_rgba(0,0,0,0.06)] pointer-events-auto relative border border-gray-100">
-        <nav className="flex items-center justify-between px-6 py-2.5 lg:px-8 relative z-50">
+      <div className="w-full max-w-[1000px] bg-white rounded-[22px] shadow-[0_10px_30px_-12px_rgba(20,20,20,0.35)] pointer-events-auto relative">
+        <nav className="flex items-center justify-between gap-4 px-5 py-2.5 lg:px-7 relative z-50">
           <div className="flex items-center">
             <Link
-              href="/home"
+              href="/"
               aria-label="true online - ตัวแทนจำหน่ายทรูที่ได้รับอนุญาต กลับหน้าหลัก"
               className="flex flex-col items-start gap-[3px]"
             >
@@ -237,7 +239,7 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
             </Link>
           </div>
 
-          <div className="hidden md:flex flex-1 items-center justify-center space-x-10">
+          <div className="hidden md:flex flex-1 items-center justify-center space-x-8">
             <button
               type="button"
               className="flex h-full items-center py-2"
@@ -251,8 +253,8 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
               aria-expanded={activeMenu === "สินค้า"}
               aria-controls="desktop-product-menu"
             >
-              <span className="text-[12px] font-semibold tracking-widest text-[#4a4a4a] hover:text-black flex items-center transition-colors">
-                สินค้า
+              <span className="text-[15px] font-semibold text-[#141414] hover:text-[#e5132d] flex items-center transition-colors">
+                แพ็กเกจและบริการ
                 <svg className="ml-1 h-[14px] w-[14px] transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -261,26 +263,36 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
 
             <Link
               href="/about"
-              className="text-[12px] font-semibold tracking-widest text-[#4a4a4a] hover:text-black transition-colors py-2"
+              className="text-[15px] font-semibold text-[#141414] hover:text-[#e5132d] transition-colors py-2"
               onMouseEnter={() => handleMouseEnter("none")}
             >
               เกี่ยวกับ
             </Link>
             <Link
               href="/articles"
-              className="text-[12px] font-semibold tracking-widest text-[#4a4a4a] hover:text-black transition-colors py-2"
+              className="text-[15px] font-semibold text-[#141414] hover:text-[#e5132d] transition-colors py-2"
               onMouseEnter={() => handleMouseEnter("none")}
             >
               บทความ
             </Link>
             <Link
               href="/termsAndPrivacy"
-              className="text-[12px] font-semibold tracking-widest text-[#4a4a4a] hover:text-black transition-colors py-2"
+              className="text-[15px] font-semibold text-[#141414] hover:text-[#e5132d] transition-colors py-2"
               onMouseEnter={() => handleMouseEnter("none")}
             >
               นโยบายและเงื่อนไข
             </Link>
           </div>
+
+          <a
+            href={lineSupport}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackLineClick("navbar", lineSupport)}
+            className="hidden md:inline-flex h-10 items-center rounded-full bg-[#141414] px-5 text-[15px] font-semibold text-white transition-colors hover:bg-[#e5132d]"
+          >
+            เช็กพื้นที่
+          </a>
 
           <div className="flex md:hidden items-center">
             <button
