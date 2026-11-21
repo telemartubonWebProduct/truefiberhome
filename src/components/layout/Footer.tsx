@@ -64,7 +64,8 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
   const isHiddenRoute =
     pathname?.startsWith("/dashboard") ||
     pathname?.startsWith("/backend") ||
-    pathname?.startsWith("/login");
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/pin");
 
   const linksBySection = useMemo(() => {
     if (footerLinks && footerLinks.length > 0) {

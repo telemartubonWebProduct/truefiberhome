@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { CONSENT_EVENT, CONSENT_KEY } from "@/src/lib/consent";
 
 type GtagWindow = typeof window & {
@@ -10,6 +11,8 @@ type GtagWindow = typeof window & {
 
 export default function CookieConsent() {
   const [open, setOpen] = useState(false);
+  // /pin does one job for customers coming from Messenger: no banner with links away.
+  const isHiddenRoute = usePathname()?.startsWith("/pin");
 
   useEffect(() => {
     const accepted = window.localStorage.getItem(CONSENT_KEY) === "true";
@@ -37,7 +40,7 @@ export default function CookieConsent() {
     setOpen(false);
   };
 
-  if (!open) return null;
+  if (!open || isHiddenRoute) return null;
 
   return (
     <aside
