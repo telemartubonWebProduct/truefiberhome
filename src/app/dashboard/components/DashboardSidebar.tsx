@@ -47,6 +47,15 @@ const navItems = [
     ),
   },
   {
+    label: "ลูกค้าที่กรอกฟอร์ม",
+    href: "/dashboard/leads",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m-7 5h8a2 2 0 002-2V5a2 2 0 00-2-2h-1.5a1.5 1.5 0 01-3 0H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
     label: "จัดการเนื้อหาหน้าแรก",
     href: "/dashboard/home-content",
     icon: (

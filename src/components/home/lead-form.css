@@ -1,0 +1,60 @@
+/* Lead form dialog. Scoped to .tfh; matches the hero panel's sticker look. */
+.tfh .lf{border:0;padding:0;background:transparent;color:var(--ink);width:min(560px,100% - 24px);max-width:none;max-height:calc(100dvh - 24px);margin:auto;overflow:visible}
+.tfh .lf::backdrop{background:rgba(20,20,20,.6)}
+.tfh .lf[open]{animation:lf-in .25s var(--ease)}
+.tfh .lf-box{display:flex;flex-direction:column;max-height:calc(100dvh - 32px);background:var(--cream);border:2.5px solid var(--ink);border-radius:28px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
+.tfh .lf-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px 0}
+.tfh .lf-head h2{font-size:24px;line-height:1.25}
+.tfh .lf-close{flex:none;width:40px;height:40px;border:0;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 2px var(--ink);font-size:24px;line-height:1;cursor:pointer}
+.tfh .lf-steps{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:16px 24px 0;margin:0}
+.tfh .lf-steps li{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink2);padding-top:10px;border-top:3px solid rgba(20,20,20,.15)}
+.tfh .lf-steps b{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 2px rgba(20,20,20,.25);font-size:13px}
+.tfh .lf-steps .is-now{color:var(--ink);border-top-color:var(--red)}
+.tfh .lf-steps .is-now b{background:var(--red);color:#fff;box-shadow:none}
+.tfh .lf-steps .is-done{color:var(--ink);border-top-color:var(--ink)}
+.tfh .lf-steps .is-done b{background:var(--ink);color:var(--sun);box-shadow:none}
+.tfh .lf-body{padding:20px 24px;display:grid;gap:14px;overflow-y:auto}
+.tfh .lf-label{font-weight:600;font-size:15px}
+.tfh .lf-picked{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--sun);border:2.5px solid var(--ink);border-radius:20px;padding:14px 18px}
+.tfh .lf-picked strong{display:block;font-size:18px;line-height:1.3}
+.tfh .lf-picked span{display:block;font-size:14px;line-height:1.5;margin-top:4px;opacity:.8}
+.tfh .lf-price{display:flex;align-items:baseline;gap:6px}
+.tfh .lf-price b{font-family:var(--fat);font-weight:400;font-size:44px;line-height:.9}
+.tfh .lf-price small{font-size:13px;font-weight:600}
+.tfh .lf-field{display:grid;gap:6px}
+.tfh .lf-field>span{font-weight:600;font-size:15px}
+.tfh .lf-field input,.tfh .lf-field select{width:100%;height:52px;padding:0 16px;font:inherit;font-size:17px;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:14px}
+.tfh .lf-field input:focus-visible,.tfh .lf-field select:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.tfh .lf-field input[aria-invalid=true]{border-color:var(--red)}
+.tfh .lf-field em,.tfh .lf-error{font-style:normal;font-size:14px;font-weight:600;color:#b00d22}
+.tfh .lf-hint{font-size:13px;line-height:1.55;color:var(--ink2)}
+.tfh .lf-hint a{text-decoration:underline}
+.tfh .lf-trap{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.tfh .lf-map{position:relative;height:260px;border:2px solid var(--ink);border-radius:18px;overflow:hidden;background:#e9e4d8;isolation:isolate}
+.tfh .lf-map-loading{display:grid;place-items:center;font-size:15px;color:var(--ink2)}
+.tfh .lf-map-canvas{position:absolute;inset:0}
+.tfh .lf-map img{max-width:none}
+.tfh .lf-map-pin{position:absolute;left:50%;top:50%;z-index:500;width:26px;height:26px;margin:-26px 0 0 -13px;background:var(--red);border:3px solid #fff;border-radius:50% 50% 50% 0;rotate:-45deg;box-shadow:0 3px 8px rgba(0,0,0,.4);pointer-events:none}
+.tfh .lf-map-locate{position:absolute;right:10px;bottom:10px;z-index:500;height:40px;padding:0 16px;border:0;border-radius:999px;font-weight:600;font-size:14px;color:#fff;background:var(--ink);cursor:pointer}
+.tfh .lf-map-locate:disabled{opacity:.7}
+.tfh .lf-map-note{position:absolute;left:10px;right:10px;top:10px;z-index:500;background:#fff;border:2px solid var(--ink);border-radius:12px;padding:8px 12px;font-size:13px;line-height:1.45}
+.tfh .lf-foot{display:flex;justify-content:space-between;gap:12px;padding:16px 24px 20px;border-top:2px solid rgba(20,20,20,.1)}
+.tfh .lf-foot .btn{height:52px;border:0;cursor:pointer}
+.tfh .lf-foot .btn:disabled{opacity:.6;cursor:default}
+.tfh .lf-done{text-align:center;justify-items:center}
+.tfh .lf-ref{font-size:17px}
+.tfh .lf-ref b{display:block;font-family:var(--fat);font-weight:400;font-size:48px;line-height:1.1;color:var(--red)}
+.tfh .lf-line{background:#06c755;color:#fff;width:100%;max-width:320px}
+.tfh .lf-qr{display:none;justify-items:center;gap:6px;font-size:13px;color:var(--ink2)}
+.tfh .lf-qr img{width:160px;height:160px;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:6px}
+@media(min-width:760px){
+.tfh .lf-qr{display:grid}
+}
+@media(max-width:520px){
+.tfh .lf-head,.tfh .lf-steps,.tfh .lf-body,.tfh .lf-foot{padding-left:18px;padding-right:18px}
+.tfh .lf-steps span{display:none}
+.tfh .lf-steps li{justify-content:center}
+.tfh .lf-box{box-shadow:5px 5px 0 var(--ink)}
+.tfh .lf-map{height:220px}
+}
+@keyframes lf-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}

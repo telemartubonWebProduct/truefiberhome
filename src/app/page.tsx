@@ -19,7 +19,7 @@ import { HOME_FAQ } from "@/src/data/home-faq";
 import { INSTALL_STEPS } from "@/src/data/install-steps";
 import { REGIONS } from "@/src/data/provinces";
 import { areaLinks } from "@/src/lib/areas";
-import { buildHeroPlans, getHomePackages } from "@/src/lib/home-packages";
+import { buildHeroPlans, buildLeadPlans, getHomePackages } from "@/src/lib/home-packages";
 import { SITE_URL, absoluteUrl, formatPhone, telHref } from "@/src/lib/site";
 import { getSitePhones } from "@/src/lib/site-phones";
 
@@ -110,7 +110,7 @@ export default async function HomePage() {
       />
       <HomeMotion />
 
-      <HeroMotion plans={buildHeroPlans(packages)} lineHref={lineSupport} />
+      <HeroMotion plans={buildHeroPlans(packages)} leadPlans={buildLeadPlans(packages)} lineHref={lineSupport} />
 
       <div className="mq" aria-hidden="true">
         <div>
