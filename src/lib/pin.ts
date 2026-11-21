@@ -44,8 +44,35 @@ export const LOW_ACCURACY_METERS = 100;
 /** Centre of Thailand, used when the location is not available. */
 export const THAILAND_VIEW = { lat: 13.2, lng: 101.0, zoom: 5 } as const;
 
+/**
+ * Messenger and Facebook's in-app browser on Android refuse the location without
+ * ever asking the customer, so on Android the page hands over to Chrome instead.
+ */
+export function isAndroidInAppBrowser(userAgent: string): boolean {
+  return /Android/i.test(userAgent) && /FBAN|FBAV|FB_IAB|FB4A|Orca|Messenger|Instagram|Line\//i.test(userAgent);
+}
+
+/** Query flag that makes the page ask for the location as soon as it opens. */
+export const AUTO_LOCATE_PARAM = "go";
+
+/**
+ * Android intent link that opens this page in Chrome and asks for the location at once.
+ * Without Chrome, Android opens the fallback (the same page without the flag).
+ */
+export function chromeIntentUrl(origin: string, page: PinPage): string {
+  const url = new URL(origin);
+  const path = `/pin?p=${page.key}`;
+  const fallback = `${url.origin}${path}`;
+  return (
+    `intent://${url.host}${path}&${AUTO_LOCATE_PARAM}=1` +
+    `#Intent;scheme=${url.protocol.replace(":", "")};package=com.android.chrome;` +
+    `S.browser_fallback_url=${encodeURIComponent(fallback)};end`
+  );
+}
+
 export type PinEventName =
   | "pin_open"
+  | "pin_open_chrome"
   | "pin_locate_ok"
   | "pin_locate_denied"
   | "pin_copy"

@@ -211,3 +211,51 @@ test.describe("page rules", () => {
     expect(await sitemap.text()).not.toContain("/pin");
   });
 });
+
+// Messenger's in-app browser on Android never shows the location prompt.
+const ANDROID_MESSENGER_UA =
+  "Mozilla/5.0 (Linux; Android 13; CPH2211 Build/TP1A.220905.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0.6099.230 Mobile Safari/537.36 [FB_IAB/Orca-Android;FBAV/440.0.0.30.110;]";
+
+test.describe("Android Messenger", () => {
+  test.use({ userAgent: ANDROID_MESSENGER_UA });
+
+  for (const key of ["tt", "tas"] as const) {
+    test(`p=${key}: the main button opens this page in Chrome with auto-locate`, async ({ page }) => {
+      await stubNetwork(page);
+      await page.goto(`/pin?p=${key}`);
+      const button = page.getByRole("link", { name: "📍 กดเพื่อส่งตำแหน่งบ้าน" });
+      await expect(button).toBeVisible();
+      const href = (await button.getAttribute("href"))!;
+      expect(href.startsWith(`intent://localhost:`)).toBe(true);
+      expect(href).toContain(`/pin?p=${key}&go=1#Intent;scheme=http;package=com.android.chrome;`);
+      expect(href).toContain(`S.browser_fallback_url=${encodeURIComponent(new URL(`/pin?p=${key}`, page.url()).toString())};end`);
+      await expect(page.getByText("ระบบจะเปิดแอป Chrome")).toBeVisible();
+      await expect(page.getByRole("button", { name: "📍 ใช้ตำแหน่งปัจจุบัน" })).toHaveCount(0);
+    });
+  }
+
+  test("the search fallback also offers Chrome and the type-it-in-chat way out", async ({ page }) => {
+    await stubNetwork(page);
+    await page.goto("/pin?p=tas");
+    await page.getByRole("button", { name: "ไม่ได้อยู่บ้าน ขอค้นหาเองค่ะ" }).click();
+    await expect(page.getByTestId("pin-chrome-manual")).toHaveAttribute("href", /^intent:\/\//);
+    await expect(page.getByTestId("pin-manual")).toContainText("พิมพ์บอกชื่อหมู่บ้านในแชทได้เลย");
+  });
+});
+
+test.describe("opened in Chrome from the Android button", () => {
+  test.use({
+    geolocation: { ...HOME, accuracy: 20 },
+    permissions: ["geolocation", "clipboard-read", "clipboard-write"],
+  });
+
+  test("asks for the location without another tap and drops the flag from the address", async ({ page }) => {
+    await stubNetwork(page);
+    await page.goto("/pin?p=tt&go=1");
+    await expect(page.getByTestId("pin-status")).toContainText("ความแม่นยำประมาณ 20 เมตร");
+    expect(new URL(page.url()).searchParams.get("go")).toBeNull();
+    await page.getByRole("button", { name: "คัดลอกพิกัด แล้วกลับไปแชท" }).click();
+    expect(await readClipboard(page)).toBe(EXPECTED_MESSAGE);
+    await page.waitForURL(`https://m.me/${PAGES.tt}`);
+  });
+});

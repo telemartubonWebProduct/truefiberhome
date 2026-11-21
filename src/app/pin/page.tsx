@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { resolvePinPage } from "@/src/lib/pin";
+import { AUTO_LOCATE_PARAM, resolvePinPage } from "@/src/lib/pin";
 import PinClient from "./PinClient";
 
 type PinPageProps = {
@@ -31,6 +31,9 @@ export async function generateMetadata({ searchParams }: PinPageProps): Promise<
 }
 
 export default async function PinPage({ searchParams }: PinPageProps) {
-  const page = resolvePinPage((await searchParams).p);
-  return <PinClient page={page} />;
+  const params = await searchParams;
+  const page = resolvePinPage(params.p);
+  // Set by the "open in Chrome" link: ask for the location straight away.
+  const autoLocate = params[AUTO_LOCATE_PARAM] === "1";
+  return <PinClient page={page} autoLocate={autoLocate} />;
 }
