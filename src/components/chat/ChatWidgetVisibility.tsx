@@ -13,7 +13,7 @@ export default function ChatWidgetVisibility() {
   const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
   const isHiddenRoute =
-    pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend");
+    pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend") || pathname?.startsWith("/pin");
 
   useEffect(() => {
     if (isHiddenRoute) {

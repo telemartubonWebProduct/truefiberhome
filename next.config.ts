@@ -73,6 +73,15 @@ const nextConfig: NextConfig = {
         source: "/login",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }],
       },
+      {
+        // The location page for Messenger customers: the only route allowed to ask for
+        // the location (this entry overrides the site-wide geolocation=()), and kept out of search.
+        source: "/pin",
+        headers: [
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+        ],
+      },
     ];
   },
 };
