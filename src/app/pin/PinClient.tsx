@@ -4,9 +4,12 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
 import {
+  AUTO_LOCATE_PARAM,
   LOW_ACCURACY_METERS,
   THAILAND_VIEW,
   buildPinMessage,
+  chromeIntentUrl,
+  isAndroidInAppBrowser,
   messengerUrl,
   type PinEventName,
   type PinPage,
@@ -76,7 +79,10 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
-export default function PinClient({ page }: { page: PinPage }) {
+export default function PinClient({ page, autoLocate = false }: { page: PinPage; autoLocate?: boolean }) {
+  // Android in-app browsers (Messenger, Facebook) never show the location prompt,
+  // so there the main button opens this page in Chrome instead.
+  const [chromeUrl, setChromeUrl] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>("start");
   const [pin, setPin] = useState<LatLng | null>(null);
   const [accuracy, setAccuracy] = useState<number | null>(null);
@@ -144,6 +150,25 @@ export default function PinClient({ page }: { page: PinPage }) {
       GEO_OPTIONS,
     );
   }, [goManual, moveMap, page]);
+
+  useEffect(() => {
+    if (isAndroidInAppBrowser(navigator.userAgent)) {
+      setChromeUrl(chromeIntentUrl(window.location.origin, page));
+    }
+  }, [page]);
+
+  // Opened from the Chrome link: ask for the location without another tap.
+  const autoLocated = useRef(false);
+  useEffect(() => {
+    if (!autoLocate || autoLocated.current) return;
+    autoLocated.current = true;
+    const url = new URL(window.location.href);
+    url.searchParams.delete(AUTO_LOCATE_PARAM);
+    window.history.replaceState(null, "", url.toString());
+    locate();
+  }, [autoLocate, locate]);
+
+  const openInChrome = () => sendEvent("pin_open_chrome", page);
 
   const handlePinChange = useCallback((next: LatLng) => {
     setPin(next);
@@ -244,19 +269,34 @@ export default function PinClient({ page }: { page: PinPage }) {
       {phase === "start" || phase === "locating" ? (
         <section className="flex flex-1 flex-col justify-center gap-5 px-5 py-8">
           <h1 className="text-2xl font-bold leading-snug">ส่งพิกัดบ้านกลับไปในแชทได้ใน 3 ขั้นค่ะ</h1>
-          <ol className="space-y-2 text-base leading-relaxed text-slate-700">
-            <li>1. กดปุ่มด้านล่าง แล้วกด “อนุญาต” ให้ใช้ตำแหน่ง</li>
-            <li>2. เช็กหมุดให้ตรงบ้าน ถ้าไม่ตรง ลากหมุดได้เลยค่ะ</li>
+          <ol className="space-y-2 text-lg leading-relaxed text-slate-700">
+            <li>1. กดปุ่มแดงด้านล่าง แล้วกด “อนุญาต”</li>
+            <li>2. ดูหมุดให้ตรงบ้าน ถ้าไม่ตรง ลากหมุดได้เลยค่ะ</li>
             <li>3. กด “คัดลอกพิกัด แล้วกลับไปแชท” แล้วกดค้างที่ช่องพิมพ์ เลือกวาง จากนั้นกดส่งค่ะ</li>
           </ol>
-          <button
-            type="button"
-            onClick={locate}
-            disabled={phase === "locating"}
-            className="min-h-16 w-full rounded-2xl bg-red-600 px-5 text-xl font-bold text-white shadow-lg active:bg-red-700 disabled:opacity-70"
-          >
-            {phase === "locating" ? "กำลังหาตำแหน่งค่ะ…" : "📍 ใช้ตำแหน่งปัจจุบัน"}
-          </button>
+          {chromeUrl && phase === "start" ? (
+            <div className="space-y-2" data-testid="pin-chrome">
+              <a
+                href={chromeUrl}
+                onClick={openInChrome}
+                className="flex min-h-16 w-full items-center justify-center rounded-2xl bg-red-600 px-5 text-xl font-bold text-white shadow-lg active:bg-red-700"
+              >
+                📍 กดเพื่อส่งตำแหน่งบ้าน
+              </a>
+              <p className="text-center text-base leading-relaxed text-slate-600">
+                ระบบจะเปิดแอป Chrome แล้วถามขอใช้ตำแหน่ง ให้กด “อนุญาต” ค่ะ
+              </p>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={locate}
+              disabled={phase === "locating"}
+              className="min-h-16 w-full rounded-2xl bg-red-600 px-5 text-xl font-bold text-white shadow-lg active:bg-red-700 disabled:opacity-70"
+            >
+              {phase === "locating" ? "กำลังหาตำแหน่งค่ะ…" : "📍 ใช้ตำแหน่งปัจจุบัน"}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => goManual(false)}
@@ -272,10 +312,28 @@ export default function PinClient({ page }: { page: PinPage }) {
         <section className="flex flex-1 flex-col">
           {phase === "manual" ? (
             <div className="space-y-3 px-4 pt-3" data-testid="pin-manual">
-              <div className="rounded-xl bg-amber-50 px-3 py-2 text-sm leading-relaxed text-amber-900">
-                ใช้ตำแหน่งไม่ได้ ไม่เป็นไรค่ะ พิมพ์ชื่อหมู่บ้าน ตำบล หรืออำเภอ แล้วแตะแผนที่ตรงบ้านได้เลย
+              {chromeUrl ? (
+                <a
+                  href={chromeUrl}
+                  onClick={openInChrome}
+                  className="flex min-h-14 w-full items-center justify-center rounded-2xl bg-red-600 px-4 text-lg font-bold text-white shadow-lg active:bg-red-700"
+                  data-testid="pin-chrome-manual"
+                >
+                  📍 เปิด Chrome เพื่อใช้ตำแหน่งบ้าน
+                </a>
+              ) : null}
+              <div className="rounded-xl bg-amber-50 px-3 py-2 text-base leading-relaxed text-amber-900">
+                {chromeUrl
+                  ? "หรือพิมพ์ชื่อหมู่บ้าน ตำบล อำเภอ แล้วแตะแผนที่ตรงบ้านได้เลยค่ะ"
+                  : "ใช้ตำแหน่งไม่ได้ ไม่เป็นไรค่ะ พิมพ์ชื่อหมู่บ้าน ตำบล หรืออำเภอ แล้วแตะแผนที่ตรงบ้านได้เลย"}
+                {chromeUrl ? null : (
+                  <>
+                    <br />
+                    ถ้าอยากลองใช้ตำแหน่งอีกครั้ง กด ⋯ มุมขวาบน แล้วเลือกเปิดในเบราว์เซอร์ จากนั้นลองใหม่ค่ะ
+                  </>
+                )}
                 <br />
-                ถ้าอยากลองใช้ตำแหน่งอีกครั้ง กด ⋯ มุมขวาบน แล้วเลือกเปิดในเบราว์เซอร์ จากนั้นลองใหม่ค่ะ
+                ถ้าทำไม่ถนัด กลับไปพิมพ์บอกชื่อหมู่บ้านในแชทได้เลย แอดมินช่วยหาให้ค่ะ
               </div>
               <form onSubmit={handleSearch} className="flex gap-2" role="search">
                 <input
@@ -370,6 +428,8 @@ export default function PinClient({ page }: { page: PinPage }) {
                 <a href={chatUrl} className="font-semibold underline underline-offset-2" data-testid="pin-chat-link">
                   ถ้ายังไม่กลับไปแชท กดตรงนี้ค่ะ
                 </a>
+                <br />
+                หรือกดปุ่มย้อนกลับของมือถือ ก็จะกลับไปที่แชทค่ะ
               </div>
             ) : null}
 
