@@ -50,7 +50,9 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    // Server-only name first: Vercel will not save a Secret under a NEXT_PUBLIC_ name,
+    // and the tag is rendered on the server anyway.
+    google: process.env.GOOGLE_SITE_VERIFICATION || process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
   },
   openGraph: {
     siteName: "True Fiber Home",
