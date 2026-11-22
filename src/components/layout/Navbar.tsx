@@ -182,7 +182,7 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
 
   const pathname = usePathname();
   const isHiddenRoute =
-    pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend") || pathname?.startsWith("/login");
+    pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend") || pathname?.startsWith("/login") || pathname?.startsWith("/pin");
 
   const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
   const handleMouseEnter = (menu: string) => {

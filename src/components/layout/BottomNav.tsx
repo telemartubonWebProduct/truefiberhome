@@ -42,7 +42,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   // ซ่อน Bottom Bar หากอยู่ใน Dashboard / Backend
-  const isHiddenRoute = pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend");
+  const isHiddenRoute = pathname?.startsWith("/dashboard") || pathname?.startsWith("/backend") || pathname?.startsWith("/pin");
   if (isHiddenRoute) return null;
 
   return (

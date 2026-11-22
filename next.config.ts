@@ -73,6 +73,16 @@ const nextConfig: NextConfig = {
         source: "/login",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }],
       },
+      {
+        // The location page for Messenger customers, kept out of search. Location is also
+        // allowed site-wide (the lead form's map); it stays explicit here so /pin keeps working
+        // if the site-wide policy is narrowed again.
+        source: "/pin",
+        headers: [
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+        ],
+      },
     ];
   },
 };
