@@ -72,7 +72,7 @@ export default function CookieConsent() {
           <button
             type="button"
             onClick={handleAccept}
-            className="min-h-9 rounded-md bg-emerald-600 px-4 text-xs font-semibold text-white hover:bg-emerald-500"
+            className="min-h-9 rounded-md bg-emerald-700 px-4 text-xs font-semibold text-white hover:bg-emerald-800"
           >
             ยอมรับทั้งหมด
           </button>

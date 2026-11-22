@@ -76,6 +76,15 @@ export default function HeroMotion({
     return () => window.clearTimeout(timer);
   }, []);
 
+  // Looping animations stop while the hero is off screen, so they cost nothing further down the page.
+  useEffect(() => {
+    const element = root.current;
+    if (!element || !("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(([entry]) => element.classList.toggle("hm-off", !entry.isIntersecting));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
   // Pointer parallax, written straight to CSS variables to avoid re-rendering.
   useEffect(() => {
     const element = root.current;
@@ -148,7 +157,7 @@ export default function HeroMotion({
                 alt=""
                 width={prop.width}
                 height={prop.height}
-                sizes="(max-width: 759px) 80vw, 520px"
+                sizes="(max-width: 759px) 55vw, 480px"
                 // Props wait off-screen, where lazy loading would never fetch them.
                 loading="eager"
                 style={prop.style as CSSProperties}
@@ -162,7 +171,7 @@ export default function HeroMotion({
             alt="น้องฟ้า มาสคอตของร้าน ชี้ไปที่ราคาโปรเน็ตบ้านทรู"
             width={796}
             height={1100}
-            sizes="(max-width: 759px) 60vw, 420px"
+            sizes="(max-width: 759px) 160px, 380px"
             priority
           />
         </div>

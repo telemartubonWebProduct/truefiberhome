@@ -169,7 +169,7 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
               target={lineSupportUrl ? "_blank" : undefined}
               rel={lineSupportUrl ? "noopener noreferrer" : undefined}
               onClick={() => trackLineClick("footer", lineSupportUrl)}
-              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#00B900] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#009f00]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#007a2f] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#006627]"
             >
               <Image src={LineIcon} alt="" width={20} height={20} className="h-5 w-5" />
               @truefiberhome
@@ -209,7 +209,7 @@ export default function Footer({ siteSettings, footerLinks }: FooterProps) {
             ไม่ใช่เว็บไซต์หลักของบริษัท ทรู คอร์ปอเรชั่น จำกัด (มหาชน)
             จัดทำขึ้นเพื่อนำเสนอแพ็กเกจและบริการติดตั้งเท่านั้น
           </p>
-          <p className="mt-4 text-xs text-gray-500">
+          <p className="mt-4 text-xs text-gray-400">
             © {new Date().getFullYear()} Telemart Communication Co., Ltd.
           </p>
         </div>
