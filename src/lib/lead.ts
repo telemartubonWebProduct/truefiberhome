@@ -11,6 +11,11 @@
 /** Where customers add the shop on LINE after sending the form. */
 export const LINE_ADD_FRIEND_URL = "https://line.me/R/ti/p/@594wrbvr?ts=09071721&oat_content=url";
 
+/** Opens a chat with the shop's LINE account with `text` typed in, ready to send. */
+export function lineMessageUrl(text: string): string {
+  return `https://line.me/R/oaMessage/@594wrbvr/?${encodeURIComponent(text)}`;
+}
+
 export type LeadInput = {
   fullName: string;
   phone: string;

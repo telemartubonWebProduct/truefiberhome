@@ -8,7 +8,7 @@ import "./lead-form.css";
 import TrackedLineLink from "@/src/app/home/components/TrackedLineLink";
 import { CONSENT_KEY } from "@/src/lib/consent";
 import type { LeadPlan } from "@/src/lib/home-packages";
-import { LINE_ADD_FRIEND_URL, normalizePhone } from "@/src/lib/lead";
+import { LINE_ADD_FRIEND_URL, leadMessage, lineMessageUrl, normalizePhone } from "@/src/lib/lead";
 import { hasTrackingConsent, newEventId, trackMetaEvent } from "@/src/lib/meta-pixel";
 import { formatPrice } from "./package-art";
 import type { Pin } from "./LeadMap";
@@ -18,7 +18,8 @@ const LeadMap = dynamic(() => import("./LeadMap"), {
   loading: () => <div className="lf-map lf-map-loading">กำลังโหลดแผนที่</div>,
 });
 
-type Step = 1 | 2 | 3 | "done";
+/** "line": the site could not take the lead, so the visitor sends it in LINE instead. */
+type Step = 1 | 2 | 3 | "done" | "line";
 
 const STEPS = ["เลือกโปร", "ข้อมูลติดต่อ", "ตำแหน่งติดตั้ง"];
 
@@ -50,6 +51,7 @@ export default function LeadForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const [refCode, setRefCode] = useState("");
+  const [lineText, setLineText] = useState("");
 
   const plan = plans.find((item) => item.id === selected) ?? plans[0];
 
@@ -58,7 +60,7 @@ export default function LeadForm({
     if (!element) return;
     if (open && !element.open) {
       setSelected(planId);
-      setStep((current) => (current === "done" ? 1 : current));
+      setStep((current) => (current === "done" || current === "line" ? 1 : current));
       element.showModal();
     }
     if (!open && element.open) element.close();
@@ -87,25 +89,29 @@ export default function LeadForm({
     setSending(true);
     const eventId = newEventId();
     const consent = hasTrackingConsent(CONSENT_KEY);
+    const lead = {
+      fullName: fullName.trim(),
+      phone: normalizePhone(phone) ?? phone.trim(),
+      packageName: `${plan.name} ${formatPrice(plan.price)} บาท/เดือน`,
+      packageInfo: plan.info || null,
+      latitude: pin?.latitude ?? null,
+      longitude: pin?.longitude ?? null,
+      addressNote: addressNote.trim() || null,
+      source: window.location.pathname,
+    };
+    // When the site cannot take the lead, the visitor sends the same text in LINE.
+    const handOverToLine = () => {
+      setLineText(leadMessage({ ...lead, source: null }, "ส่งจากหน้าเว็บ"));
+      setStep("line");
+    };
     try {
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName,
-          phone,
-          packageName: `${plan.name} ${formatPrice(plan.price)} บาท/เดือน`,
-          packageInfo: plan.info,
-          latitude: pin?.latitude ?? null,
-          longitude: pin?.longitude ?? null,
-          addressNote,
-          source: window.location.pathname,
-          website,
-          eventId,
-          consent,
-        }),
+        body: JSON.stringify({ ...lead, website, eventId, consent }),
       });
       const result = await response.json().catch(() => ({}));
+      if (response.status >= 500) return handOverToLine();
       if (!response.ok || !result.ok) {
         setErrors(result.errors ?? { form: result.error ?? "ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่" });
         if (result.errors?.fullName || result.errors?.phone) setStep(2);
@@ -115,25 +121,27 @@ export default function LeadForm({
       setRefCode(result.refCode);
       setStep("done");
     } catch {
-      setErrors({ form: "เชื่อมต่อไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่" });
+      handOverToLine();
     } finally {
       setSending(false);
     }
   };
 
-  const current = step === "done" ? 4 : step;
+  const finished = step === "done" || step === "line";
+  const current = finished ? 4 : step;
+  const title = step === "done" ? "ส่งข้อมูลเรียบร้อย" : step === "line" ? "ส่งต่อทาง LINE" : "เช็กพื้นที่ติดตั้ง";
 
   return (
     <dialog ref={dialog} className="lf" aria-labelledby="lf-title" onClose={onClose}>
       <form className="lf-box" onSubmit={submit} noValidate>
         <header className="lf-head">
-          <h2 id="lf-title">{step === "done" ? "ส่งข้อมูลเรียบร้อย" : "เช็กพื้นที่ติดตั้ง"}</h2>
+          <h2 id="lf-title">{title}</h2>
           <button type="button" className="lf-close" onClick={onClose} aria-label="ปิด">
             ×
           </button>
         </header>
 
-        {step !== "done" && (
+        {!finished && (
           <ol className="lf-steps">
             {STEPS.map((label, index) => (
               <li
@@ -283,9 +291,22 @@ export default function LeadForm({
           </div>
         )}
 
-        {step !== "done" && (
+        {step === "line" && (
+          <div className="lf-body lf-done">
+            <p>
+              ระบบรับข้อมูลขัดข้องชั่วคราว ข้อมูลที่กรอกไว้ยังอยู่ครบ กดปุ่มด้านล่าง LINE
+              จะเปิดพร้อมข้อความนี้ แล้วกดส่งในแชตได้เลย
+            </p>
+            <pre className="lf-text">{lineText}</pre>
+            <TrackedLineLink href={lineMessageUrl(lineText)} source="lead_fallback" className="btn lf-line">
+              ส่งข้อมูลทาง LINE
+            </TrackedLineLink>
+          </div>
+        )}
+
+        {!finished && (
           <footer className="lf-foot">
-            {step > 1 ? (
+            {typeof step === "number" && step > 1 ? (
               <button type="button" className="btn btn-l" onClick={() => setStep((step - 1) as Step)} disabled={sending}>
                 ย้อนกลับ
               </button>
@@ -297,7 +318,7 @@ export default function LeadForm({
             </button>
           </footer>
         )}
-        {step === "done" && (
+        {finished && (
           <footer className="lf-foot">
             <span />
             <button type="button" className="btn btn-l" onClick={onClose}>

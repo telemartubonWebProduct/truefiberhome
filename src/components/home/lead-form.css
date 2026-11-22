@@ -44,6 +44,7 @@
 .tfh .lf-done{text-align:center;justify-items:center}
 .tfh .lf-ref{font-size:17px}
 .tfh .lf-ref b{display:block;font-family:var(--fat);font-weight:400;font-size:48px;line-height:1.1;color:var(--red)}
+.tfh .lf-text{width:100%;margin:0;padding:12px 14px;text-align:left;white-space:pre-wrap;word-break:break-word;font:inherit;font-size:14px;line-height:1.6;background:#fff;border:2px solid var(--ink);border-radius:14px;max-height:180px;overflow-y:auto}
 .tfh .lf-line{background:#06c755;color:#fff;width:100%;max-width:320px}
 .tfh .lf-qr{display:none;justify-items:center;gap:6px;font-size:13px;color:var(--ink2)}
 .tfh .lf-qr img{width:160px;height:160px;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:6px}
