@@ -163,7 +163,7 @@ export default async function AreaPage({ params }: Params) {
           <div className="ar-fig" aria-hidden="true">
             <b>{from}</b>
             <span>บาท/เดือน</span>
-            <Image src="/assets/home/k-tech.webp" alt="" width={475} height={1088} sizes="220px" priority />
+            <Image src="/assets/home/k-tech.webp" alt="" width={475} height={1088} sizes="170px" />
           </div>
         </div>
       </section>

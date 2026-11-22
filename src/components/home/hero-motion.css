@@ -10,7 +10,10 @@
 .tfh .hm-pulse i:nth-child(3){animation-delay:2.4s}
 
 /* stacked odometer numeral */
-.tfh .hm-num{position:absolute;inset:0;display:flex;justify-content:center;align-items:flex-start;padding-top:1vh;pointer-events:none;--o:12px;animation:hm-breathe 5s ease-in-out infinite}
+.tfh .hm-num{position:absolute;inset:0;display:flex;justify-content:center;align-items:flex-start;padding-top:1vh;pointer-events:none;--o:12px}
+@media(min-width:760px) and (prefers-reduced-motion:no-preference){
+.tfh .hm-num{animation:hm-breathe 5s ease-in-out infinite}
+}
 .tfh .hm-box{position:relative;font-family:var(--fat);font-size:clamp(9rem,36vw,30rem);line-height:.86;letter-spacing:-.02em;user-select:none}
 .tfh .hm-layer{display:flex;position:absolute;inset:0;transform:translate(calc(var(--px)*var(--z)*1px),calc(var(--o)*var(--n)*(1 + var(--hm-b)*.45) + var(--py)*var(--z)*1px));transition:transform .25s ease-out}
 .tfh .hm-layer.hm-front{position:relative;color:#fff;--n:0;--z:0}
@@ -103,6 +106,7 @@
 @keyframes hm-landing{0%{opacity:0;transform:translate(var(--tx),calc(var(--ty) - 70%))}55%{opacity:1;transform:translate(var(--tx),calc(var(--ty) + 4%)) scaleY(.96)}78%{transform:translate(var(--tx),calc(var(--ty) - 2%)) scaleY(1.02)}100%{opacity:1;transform:translate(var(--tx),var(--ty))}}
 @keyframes hm-popup{from{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}to{opacity:1;transform:translate(var(--tx),var(--ty)) scale(1)}}
 
+.tfh .hm-off .hm-pulse i,.tfh .hm-off .hm-num,.tfh .hm-off .hm-who,.tfh .hm-off .hm-orb img{animation-play-state:paused}
 .tfh .hm-still .hm-pulse i,.tfh .hm-still .hm-num,.tfh .hm-still .hm-who,.tfh .hm-still .hm-orb img{animation-play-state:paused}
 .tfh .hm-still .hm-sc,.tfh .hm-still .hm-flip{animation-duration:.01ms!important;animation-delay:0s!important}
 @media(prefers-reduced-motion:reduce){
