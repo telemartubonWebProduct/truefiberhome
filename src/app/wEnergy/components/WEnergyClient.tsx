@@ -97,7 +97,8 @@ function SafeFillImage({
       alt={alt}
       fill
       sizes={sizes}
-      priority={priority}
+      fetchPriority={priority ? "high" : undefined}
+      loading={priority ? "eager" : undefined}
       className={className}
       onError={() => setHasError(true)}
     />

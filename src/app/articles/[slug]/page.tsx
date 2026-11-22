@@ -297,7 +297,8 @@ function DefaultLayout({
             fill
             sizes="(min-width: 768px) 768px, 100vw"
             className="object-cover"
-            priority
+            fetchPriority="high"
+            loading="eager"
           />
         </div>
       )}
@@ -332,7 +333,8 @@ function FullWidthLayout({
             fill
             sizes="100vw"
             className="object-cover"
-            priority
+            fetchPriority="high"
+            loading="eager"
           />
         ) : (
           <div className="h-full w-full bg-gradient-to-br from-rose-200 via-orange-200 to-amber-100" />
@@ -411,7 +413,8 @@ function MagazineLayout({
             fill
             sizes="(min-width: 1024px) 1024px, 100vw"
             className="object-cover"
-            priority
+            fetchPriority="high"
+            loading="eager"
           />
         </div>
       )}

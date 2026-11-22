@@ -189,7 +189,8 @@ export default async function ArticlesPage(props: {
                     fill
                     sizes="(min-width: 1024px) 60vw, 100vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                    priority
+                    fetchPriority="high"
+                    loading="eager"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-rose-300 font-serif text-4xl">

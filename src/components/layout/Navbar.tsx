@@ -232,7 +232,7 @@ export default function Navbar({ siteSettings, navigationItems }: NavbarProps) {
                 alt="true online - Authorized True Partner"
                 width={138}
                 height={27}
-                priority
+                loading="eager"
                 className="h-auto w-[120px] object-contain object-left"
               />
               

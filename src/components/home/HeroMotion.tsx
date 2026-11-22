@@ -172,7 +172,8 @@ export default function HeroMotion({
             width={796}
             height={1100}
             sizes="(max-width: 759px) 160px, 380px"
-            priority
+            fetchPriority="high"
+            loading="eager"
           />
         </div>
       </div>
