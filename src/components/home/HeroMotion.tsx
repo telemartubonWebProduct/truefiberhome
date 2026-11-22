@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Image from "next/image";
 import "./hero-motion.css";
 import TrackedLineLink from "@/src/app/home/components/TrackedLineLink";
-import type { HeroPlan, HomeArt } from "@/src/lib/home-packages";
+import type { HeroPlan, HomeArt, LeadPlan } from "@/src/lib/home-packages";
+import LeadForm from "./LeadForm";
 import { formatPrice } from "./package-art";
 
 type Prop = {
@@ -48,11 +49,21 @@ const DIGITS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
  * Picking a chip rolls the price and swaps the scene. The first plan is rendered
  * on the server, so the heading and price are in the HTML without JavaScript.
  */
-export default function HeroMotion({ plans, lineHref }: { plans: HeroPlan[]; lineHref: string }) {
+export default function HeroMotion({
+  plans,
+  leadPlans,
+  lineHref,
+}: {
+  plans: HeroPlan[];
+  /** Every package, for the plan picker inside the lead form. */
+  leadPlans: LeadPlan[];
+  lineHref: string;
+}) {
   const [current, setCurrent] = useState(plans[0].k);
   const [previous, setPrevious] = useState<HomeArt | null>(null);
   const [armed, setArmed] = useState(false);
   const [still, setStill] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
   const root = useRef<HTMLElement>(null);
 
   const plan = plans.find((item) => item.k === current) ?? plans[0];
@@ -187,10 +198,16 @@ export default function HeroMotion({ plans, lineHref }: { plans: HeroPlan[]; lin
                   ต่อเดือน
                 </small>
               </div>
-              <TrackedLineLink href={lineHref} source="home_hero" className="btn hm-cta">
-                เช็กพื้นที่ทาง LINE
-              </TrackedLineLink>
+              <button type="button" className="btn hm-cta" onClick={() => setFormOpen(true)}>
+                เช็กพื้นที่ติดตั้ง
+              </button>
             </div>
+            <p className="hm-alt">
+              หรือ{" "}
+              <TrackedLineLink href={lineHref} source="home_hero" className="hm-alt-link">
+                คุยทาง LINE เลย
+              </TrackedLineLink>
+            </p>
             {plans.length > 1 && (
               <div className="hm-choose">
                 <b>บ้านคุณใช้เน็ตทำอะไร</b>
@@ -206,6 +223,8 @@ export default function HeroMotion({ plans, lineHref }: { plans: HeroPlan[]; lin
           </div>
         </div>
       </div>
+
+      <LeadForm plans={leadPlans} planId={plan.id} open={formOpen} onClose={() => setFormOpen(false)} />
 
       <button className="hm-stop" type="button" aria-pressed={still} onClick={() => setStill((value) => !value)}>
         {still ? "เล่นการเคลื่อนไหว" : "หยุดการเคลื่อนไหว"}

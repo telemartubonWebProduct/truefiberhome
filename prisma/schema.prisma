@@ -429,3 +429,25 @@ model Article {
   @@index([category])
   @@map("articles")
 }
+
+/// Install requests from the site's lead form. Saved first, then announced in LINE.
+model LeadRequest {
+  id          String   @id @default(cuid())
+  /// Short code the customer quotes in LINE, e.g. "TF-4821".
+  refCode     String   @map("ref_code")
+  fullName    String   @map("full_name")
+  phone       String
+  packageName String   @map("package_name")
+  packageInfo String?  @map("package_info") @db.Text
+  latitude    Float?
+  longitude   Float?
+  addressNote String?  @map("address_note") @db.Text
+  source      String?
+  lineSent    Boolean  @default(false) @map("line_sent")
+  status      String   @default("new")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([refCode])
+  @@map("lead_requests")
+}

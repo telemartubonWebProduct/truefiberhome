@@ -26,7 +26,7 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "Cross-Origin-Resource-Policy", value: "same-site" },
   ...(isProduction
@@ -74,8 +74,9 @@ const nextConfig: NextConfig = {
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }],
       },
       {
-        // The location page for Messenger customers: the only route allowed to ask for
-        // the location (this entry overrides the site-wide geolocation=()), and kept out of search.
+        // The location page for Messenger customers, kept out of search. Location is also
+        // allowed site-wide (the lead form's map); it stays explicit here so /pin keeps working
+        // if the site-wide policy is narrowed again.
         source: "/pin",
         headers: [
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" },

@@ -161,6 +161,8 @@ export async function getHomePackages(): Promise<HomePackage[]> {
 }
 
 export type HeroPlan = {
+  /** Id of the package behind this plan. */
+  id: string;
   k: HomeArt;
   label: string;
   name: string;
@@ -185,6 +187,7 @@ const HERO_LABELS: Record<HomeArt, string> = {
 export function buildHeroPlans(packages: HomePackage[]): HeroPlan[] {
   const byPrice = [...packages].sort((a, b) => a.price - b.price);
   const toPlan = (item: HomePackage, k: HomeArt): HeroPlan => ({
+    id: item.id,
     k,
     label: HERO_LABELS[k],
     name: item.name,
@@ -199,4 +202,22 @@ export function buildHeroPlans(packages: HomePackage[]): HeroPlan[] {
     if (match) plans.push(toPlan(match, k));
   });
   return plans;
+}
+
+export type LeadPlan = {
+  id: string;
+  name: string;
+  price: number;
+  /** Speed, contract term and what comes with the plan, in one line. */
+  info: string;
+};
+
+/** Every package as a choice in the lead form. */
+export function buildLeadPlans(packages: HomePackage[]): LeadPlan[] {
+  return packages.map((item) => ({
+    id: item.id,
+    name: item.name,
+    price: item.price,
+    info: [item.speedLabel, item.termLabel, ...item.perks].filter(Boolean).join(" · "),
+  }));
 }
