@@ -70,7 +70,8 @@ function PromotionCardImage({
         src={src}
         alt={alt}
         fill
-        priority={priority}
+        fetchPriority={priority ? "high" : undefined}
+        loading={priority ? "eager" : undefined}
         className="object-cover object-center"
         sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
       />

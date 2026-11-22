@@ -263,7 +263,8 @@ export default async function ServicePage() {
                 src={heroImage}
                 alt="บริการติดตั้งและดูแลอินเทอร์เน็ตบ้าน"
                 fill
-                priority
+                fetchPriority="high"
+                loading="eager"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
               />
